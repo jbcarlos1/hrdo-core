@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { Status } from "@prisma/client";
 import { auth } from "@/auth";
-
-const determineStatus = (
-    quantity: number,
-    reorderPoint: number,
-    isArchived: boolean
-): Status =>
-    isArchived
-        ? quantity === 0
-            ? Status.DISCONTINUED
-            : Status.PHASED_OUT
-        : quantity === 0
-        ? Status.OUT_OF_STOCK
-        : quantity <= reorderPoint
-        ? Status.FOR_REORDER
-        : Status.AVAILABLE;
 
 export async function PATCH(
     request: NextRequest,
@@ -40,15 +24,15 @@ export async function PATCH(
 
     if (!id) {
         return NextResponse.json(
-            { error: "Item ID is required" },
+            { error: "Document ID is required" },
             { status: 400 }
         );
     }
 
     try {
         // Using Prisma transaction for atomic operation
-        const item = await db.$transaction(async (tx) => {
-            const currentItem = await tx.item.findUnique({
+        const document = await db.$transaction(async (tx) => {
+            const currentDocument = await tx.document.findUnique({
                 where: { id },
                 select: {
                     quantity: true,
@@ -57,29 +41,23 @@ export async function PATCH(
                 },
             });
 
-            if (!currentItem) {
-                throw new Error("Item not found");
+            if (!currentDocument) {
+                throw new Error("Document not found");
             }
 
-            return tx.item.update({
+            return tx.document.update({
                 where: { id },
                 data: {
-                    isArchived: !currentItem.isArchived,
-                    status: determineStatus(
-                        currentItem.quantity,
-                        currentItem.reorderPoint,
-                        !currentItem.isArchived
-                    ),
+                    isArchived: !currentDocument.isArchived,
                 },
                 select: {
                     id: true,
                     isArchived: true,
-                    status: true,
                 },
             });
         });
 
-        return NextResponse.json(item);
+        return NextResponse.json(document);
     } catch (error) {
         console.error("Failed to toggle archive status:", error);
         return NextResponse.json(

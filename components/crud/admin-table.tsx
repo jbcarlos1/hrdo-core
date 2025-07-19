@@ -24,50 +24,38 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-interface Item {
+interface Document {
     id: string;
     name: string;
     quantity: number;
-    unit: string;
     reorderPoint: number;
-    status:
-        | "OUT_OF_STOCK"
-        | "FOR_REORDER"
-        | "AVAILABLE"
-        | "PHASED_OUT"
-        | "DISCONTINUED";
-    location: string;
     image: string;
     isArchived: boolean;
 }
 
 interface TableComponentProps {
-    items: Item[];
-    handleEdit: (item: Item) => void;
+    documents: Document[];
+    handleEdit: (document: Document) => void;
     handleDelete: (id: string) => void;
     handleArchive: (id: string, currentState: boolean) => void;
     deleteLoading: boolean;
     selectedImage: string | null;
     setSelectedImage: (image: string | null) => void;
-    statusMap: { [key in Item["status"]]: string };
-    statusStyles: { [key in Item["status"]]: string };
 }
 
 export const TableComponent = ({
-    items,
+    documents,
     handleEdit,
     handleDelete,
     handleArchive,
     deleteLoading,
     selectedImage,
     setSelectedImage,
-    statusMap,
-    statusStyles,
 }: TableComponentProps) => {
     return (
         <>
             <div className="border bg-white rounded-md h-full overflow-hidden">
-                {items.length !== 0 ? (
+                {documents.length !== 0 ? (
                     <div className="overflow-auto h-full">
                         <div className="min-w-max">
                             <Table>
@@ -77,25 +65,17 @@ export const TableComponent = ({
                                             Image
                                         </TableHead>
                                         <TableHead className="px-4">
-                                            Item name
+                                            Document name
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Qty
                                         </TableHead>
-                                        <TableHead className="px-4">
-                                            Unit
-                                        </TableHead>
+
                                         <TableHead
                                             className="px-4"
                                             title="Reorder Point"
                                         >
                                             Reorder Point
-                                        </TableHead>
-                                        <TableHead className="px-4">
-                                            Status
-                                        </TableHead>
-                                        <TableHead className="px-4">
-                                            Location
                                         </TableHead>
                                         <TableHead className="px-2 text-center">
                                             Edit
@@ -109,66 +89,49 @@ export const TableComponent = ({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="overflow-auto">
-                                    {items.map((item, i) => (
+                                    {documents.map((document, i) => (
                                         <TableRow
-                                            key={item.id}
+                                            key={document.id}
                                             className="hover:bg-gray-100 border-[#e4e4e7]"
                                         >
                                             <TableCell className="px-4">
                                                 <div
                                                     onClick={() =>
                                                         setSelectedImage(
-                                                            item.image
+                                                            document.image
                                                         )
                                                     }
                                                     className="cursor-pointer hover:opacity-80 transition-opacity h-10 flex items-center justify-center"
                                                 >
                                                     <Image
-                                                        src={item.image}
+                                                        src={document.image}
                                                         width={40}
                                                         height={40}
-                                                        alt={item.name}
+                                                        alt={document.name}
                                                         className="rounded-md object-contain h-full max-h-full w-auto"
                                                     />
                                                 </div>
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
-                                                title={item.name}
+                                                title={document.name}
                                             >
-                                                {item.name}
+                                                {document.name}
                                             </TableCell>
                                             <TableCell className="px-4">
-                                                {item.quantity}
+                                                {document.quantity}
                                             </TableCell>
                                             <TableCell className="px-4">
-                                                {item.unit}
-                                            </TableCell>
-                                            <TableCell className="px-4">
-                                                {item.reorderPoint}
-                                            </TableCell>
-                                            <TableCell className="px-4">
-                                                <span
-                                                    className={`px-3 py-1.5 rounded-full text-sm flex items-center gap-1.5 w-fit border ${
-                                                        statusStyles[
-                                                            item.status
-                                                        ]
-                                                    }`}
-                                                >
-                                                    {statusMap[item.status]}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="px-4">
-                                                {item.location}
+                                                {document.reorderPoint}
                                             </TableCell>
                                             <TableCell className="px-2 text-center">
                                                 <Button
-                                                    title="Edit item"
+                                                    title="Edit document"
                                                     className="mx-1"
                                                     variant="outline"
                                                     size="icon"
                                                     onClick={() =>
-                                                        handleEdit(item)
+                                                        handleEdit(document)
                                                     }
                                                     disabled={deleteLoading}
                                                 >
@@ -179,7 +142,7 @@ export const TableComponent = ({
                                                 <AlertDialog>
                                                     <AlertDialogTrigger>
                                                         <Button
-                                                            title="Delete item"
+                                                            title="Delete document"
                                                             className="mx-1"
                                                             variant="outline"
                                                             size="icon"
@@ -200,8 +163,8 @@ export const TableComponent = ({
                                                                 This action
                                                                 cannot be
                                                                 undone. Deleting
-                                                                this item will
-                                                                permanently
+                                                                this document
+                                                                will permanently
                                                                 remove it and
                                                                 its associated
                                                                 data.
@@ -214,7 +177,7 @@ export const TableComponent = ({
                                                             <AlertDialogAction
                                                                 onClick={() =>
                                                                     handleDelete(
-                                                                        item.id
+                                                                        document.id
                                                                     )
                                                                 }
                                                             >
@@ -236,7 +199,7 @@ export const TableComponent = ({
                                                     >
                                                         <Switch
                                                             checked={
-                                                                item.isArchived
+                                                                document.isArchived
                                                             }
                                                             disabled={
                                                                 deleteLoading
@@ -249,10 +212,11 @@ export const TableComponent = ({
                                                                 Are you sure you
                                                                 want to proceed?
                                                             </AlertDialogTitle>
-                                                            {item.isArchived ? (
+                                                            {document.isArchived ? (
                                                                 <AlertDialogDescription>
                                                                     Unarchiving
-                                                                    this item
+                                                                    this
+                                                                    document
                                                                     will restore
                                                                     it to the
                                                                     active list,
@@ -264,7 +228,8 @@ export const TableComponent = ({
                                                             ) : (
                                                                 <AlertDialogDescription>
                                                                     Archiving
-                                                                    this item
+                                                                    this
+                                                                    document
                                                                     will remove
                                                                     it from the
                                                                     active list
@@ -281,12 +246,12 @@ export const TableComponent = ({
                                                             <AlertDialogAction
                                                                 onClick={() =>
                                                                     handleArchive(
-                                                                        item.id,
-                                                                        item.isArchived
+                                                                        document.id,
+                                                                        document.isArchived
                                                                     )
                                                                 }
                                                             >
-                                                                {item.isArchived
+                                                                {document.isArchived
                                                                     ? "Unarchive"
                                                                     : "Archive"}
                                                             </AlertDialogAction>
@@ -302,7 +267,7 @@ export const TableComponent = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No items found.
+                        No documents found.
                     </p>
                 )}
             </div>

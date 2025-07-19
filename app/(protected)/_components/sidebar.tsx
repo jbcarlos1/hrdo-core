@@ -9,10 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
     Menu,
-    ClipboardList,
     Boxes,
-    PackageOpen,
-    PackageCheck,
     LogOut,
     ShieldCheck,
     Building2,
@@ -45,25 +42,10 @@ const formatName = (name: string) => {
 
 const navItems: NavItem[] = [
     {
-        title: "Supply-Out",
-        href: "/supply-out-dashboard",
-        icon: PackageOpen,
-    },
-    {
-        title: "Supply-In",
-        href: "/supply-in-dashboard",
-        icon: PackageCheck,
-    },
-    {
-        title: "Inventory",
+        title: "Policy",
         href: "/admin-dashboard",
         icon: Boxes,
         roles: ["ADMIN"],
-    },
-    {
-        title: "Transactions",
-        href: "/requests-dashboard",
-        icon: ClipboardList,
     },
 ];
 

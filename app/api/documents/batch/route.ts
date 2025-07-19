@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
 
     if (ids.length === 0) {
         return NextResponse.json(
-            { error: "No item IDs provided" },
+            { error: "No document IDs provided" },
             { status: 400 }
         );
     }
 
     try {
-        const items = await db.item.findMany({
+        const documents = await db.document.findMany({
             where: {
                 id: { in: ids },
             },
@@ -27,17 +27,15 @@ export async function GET(request: NextRequest) {
                 id: true,
                 name: true,
                 quantity: true,
-                unit: true,
                 image: true,
-                status: true,
             },
         });
 
-        return NextResponse.json(items);
+        return NextResponse.json(documents);
     } catch (error) {
-        console.error("Failed to fetch items:", error);
+        console.error("Failed to fetch documents:", error);
         return NextResponse.json(
-            { error: "Failed to fetch items" },
+            { error: "Failed to fetch documents" },
             { status: 500 }
         );
     }

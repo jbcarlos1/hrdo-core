@@ -10,13 +10,13 @@ export default function AdminPage() {
     const { data: session } = useSession();
     const role = session?.user?.role;
 
-    useEffect(() => {
-        if (role === "USER") {
-            router.push("/supply-out-dashboard");
-        } else if (role === "APPROVER") {
-            router.push("/requests-dashboard");
-        }
-    }, [role, router]);
+    // useEffect(() => {
+    //     if (role === "USER") {
+    //         router.push("/supply-out-dashboard");
+    //     } else if (role === "APPROVER") {
+    //         router.push("/requests-dashboard");
+    //     }
+    // }, [role, router]);
 
     if (!role) {
         return null;

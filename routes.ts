@@ -33,13 +33,8 @@ export const apiAuthPrefix = "/api/auth";
  * The default redirect path after logging in
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/supply-out-dashboard";
+export const DEFAULT_LOGIN_REDIRECT = "/admin-dashboard";
 
 export const pendingApproval = "/pending-approval";
 
-export const dashboardPages = [
-    "/admin-dashboard",
-    "/supply-out-dashboard",
-    "/supply-in-dashboard",
-    "/requests-dashboard",
-];
+export const dashboardPages = ["/admin-dashboard"];

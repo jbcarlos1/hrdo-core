@@ -34,20 +34,6 @@ enum Section {
     BENEFITS
 }
 
-enum Status {
-    OUT_OF_STOCK
-    FOR_REORDER
-    AVAILABLE
-    PHASED_OUT
-    DISCONTINUED
-}
-
-enum RequestStatus {
-    PENDING
-    APPROVED
-    REJECTED
-}
-
 model User {
     id            String    @id @default(cuid())
     name          String?
@@ -123,52 +109,19 @@ model TwoFactorConfirmation {
     @@unique([userId])
 }
 
-model Item {
+model Document {
     id           String        @id @default(cuid())
     name         String
     quantity     Int
-    unit         String
     reorderPoint Int
-    status       Status
-    location     String
     image        String?
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @updatedAt
     isArchived   Boolean       @default(false)
-    RequestItem  RequestItem[]
 }
 
-model Unit {
-    id   String @id @default(cuid())
-    name String @unique
-}
 
-model Location {
-    id   String @id @default(cuid())
-    name String @unique
-}
 
-model Request {
-    id          String        @id @default(cuid())
-    user        String
-    email       String        
-    division    Division
-    section     Section
-    status      RequestStatus @default(PENDING)
-    items       RequestItem[]
-    isSupplyIn  Boolean       @default(false)
-    additionalNotes String?
-    approver   String?
-    isReceived  Boolean       @default(false)
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-}
 
-model RequestItem {
-    id        String  @id @default(cuid())
-    request   Request @relation(fields: [requestId], references: [id])
-    requestId String
-    item      Item    @relation(fields: [itemId], references: [id])
-    itemId    String
-    quantity  Int
-}
+
+

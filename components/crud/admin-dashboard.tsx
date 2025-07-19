@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { itemSchema } from "@/schemas";
+import { documentSchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
@@ -44,72 +44,50 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type ItemFormInputs = z.infer<typeof itemSchema>;
+type DocumentFormInputs = z.infer<typeof documentSchema>;
 
-interface Item {
+interface Document {
     id: string;
     name: string;
     quantity: number;
-    unit: string;
     reorderPoint: number;
-    status:
-        | "OUT_OF_STOCK"
-        | "FOR_REORDER"
-        | "AVAILABLE"
-        | "PHASED_OUT"
-        | "DISCONTINUED";
-    location: string;
     image: string;
     isArchived: boolean;
-    hasRequests?: boolean;
 }
 
-interface Unit {
-    id: string;
-    name: string;
-}
-
-interface Location {
-    id: string;
-    name: string;
-}
-
-interface PaginatedItems {
-    items: Item[];
-    totalItems: number;
+interface PaginatedDocuments {
+    documents: Document[];
+    totalDocuments: number;
     currentPage: number;
     totalPages: number;
 }
 
-const fetchItems = async (
+const fetchDocuments = async (
     page: number = 1,
     searchInput: string = "",
-    status: string = "",
     sort: string = "createdAt:desc",
-    itemState: string = "active",
+    documentState: string = "active",
     signal?: AbortSignal
-): Promise<PaginatedItems> => {
+): Promise<PaginatedDocuments> => {
     try {
         const res = await fetch(
-            `/api/items?page=${page}&search=${encodeURIComponent(
+            `/api/documents?page=${page}&search=${encodeURIComponent(
                 searchInput
-            )}&status=${encodeURIComponent(
-                status
-            )}&itemState=${encodeURIComponent(
-                itemState
+            )}&documentState=${encodeURIComponent(
+                documentState
             )}&sort=${encodeURIComponent(sort)}`,
             { signal }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch items");
+        if (!res.ok) throw new Error("Failed to fetch documents");
         return res.json();
     } catch (error: unknown) {
         if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Failed to load items:", error);
+            console.error("Failed to load documents:", error);
         }
         return {
-            items: [],
-            totalItems: 0,
+            documents: [],
+            totalDocuments: 0,
             currentPage: page,
             totalPages: 1,
         };
@@ -117,21 +95,22 @@ const fetchItems = async (
 };
 
 export default function AdminDashboard() {
-    const [items, setItems] = useState<Item[]>([]);
-    const [units, setUnits] = useState<Unit[]>([]);
-    const [locations, setLocations] = useState<Location[]>([]);
+    const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
-    const [editingItem, setEditingItem] = useState<Item | null>(null);
+    const [editingDocument, setEditingDocument] = useState<Document | null>(
+        null
+    );
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("");
     const [sortOption, setSortOption] = useState<string>("createdAt:desc");
     const [viewMode, setViewMode] = useState<"table" | "card">("card");
-    const [itemState, setItemState] = useState<"active" | "archived">("active");
+    const [documentState, setDocumentState] = useState<"active" | "archived">(
+        "active"
+    );
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const debouncedSearchInput = useDebounce(searchInput, 250);
     const controllerRef = useRef<AbortController | null>(null);
@@ -139,24 +118,8 @@ export default function AdminDashboard() {
     const [isExporting, setIsExporting] = useState(false);
     const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] =
         useState(false);
-    const [deleteRestrictedItemName, setDeleteRestrictedItemName] =
+    const [deleteRestrictedDocumentName, setDeleteRestrictedDocumentName] =
         useState("");
-
-    const statusMap: { [key in Item["status"]]: string } = {
-        OUT_OF_STOCK: "Out of stock",
-        FOR_REORDER: "For reorder",
-        AVAILABLE: "Available",
-        PHASED_OUT: "Phased out",
-        DISCONTINUED: "Discontinued",
-    };
-
-    const statusStyles = {
-        AVAILABLE: "bg-green-100 text-green-800 border-green-200",
-        OUT_OF_STOCK: "bg-red-100 text-red-800 border-red-200",
-        FOR_REORDER: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        PHASED_OUT: "bg-gray-100 text-gray-800 border-gray-200",
-        DISCONTINUED: "bg-purple-100 text-purple-800 border-purple-200",
-    };
 
     const {
         register,
@@ -166,8 +129,8 @@ export default function AdminDashboard() {
         setValue,
         watch,
         trigger,
-    } = useForm<ItemFormInputs>({
-        resolver: zodResolver(itemSchema),
+    } = useForm<DocumentFormInputs>({
+        resolver: zodResolver(documentSchema),
         mode: "onChange",
     });
 
@@ -181,7 +144,7 @@ export default function AdminDashboard() {
         []
     );
 
-    const loadItems = useCallback(
+    const loadDocuments = useCallback(
         async (page = 1) => {
             setLoading(true);
 
@@ -193,93 +156,61 @@ export default function AdminDashboard() {
             controllerRef.current = controller;
 
             try {
-                const { items: fetchedItems, totalPages } = await fetchItems(
-                    page,
-                    debouncedSearchInput,
-                    statusFilter,
-                    sortOption,
-                    itemState,
-                    controller.signal
-                );
+                const { documents: fetchedDocuments, totalPages } =
+                    await fetchDocuments(
+                        page,
+                        debouncedSearchInput,
+                        sortOption,
+                        documentState,
+                        controller.signal
+                    );
 
-                setItems(fetchedItems);
+                setDocuments(fetchedDocuments);
                 setTotalPages(totalPages);
             } catch (error: unknown) {
                 if (error instanceof Error && error.name !== "AbortError") {
-                    console.error("Failed to load items:", error);
+                    console.error("Failed to load documents:", error);
                 }
             } finally {
                 setLoading(false);
             }
         },
-        [debouncedSearchInput, statusFilter, sortOption, itemState]
+        [debouncedSearchInput, sortOption, documentState]
     );
 
     useEffect(() => {
-        const fetchUnits = async () => {
-            try {
-                const res = await fetch("/api/units");
-                if (!res.ok) {
-                    throw new Error("Failed to fetch units");
-                }
-                const data = await res.json();
-                setUnits(data.units);
-            } catch (error) {
-                console.error("Error fetching units:", error);
-            }
-        };
-
-        const fetchLocations = async () => {
-            try {
-                const res = await fetch("/api/locations");
-                if (!res.ok) {
-                    throw new Error("Failed to fetch locations");
-                }
-                const data = await res.json();
-                setLocations(data.locations);
-            } catch (error) {
-                console.error("Error fetching units:", error);
-            }
-        };
-
-        fetchUnits();
-        fetchLocations();
-    }, []);
-
-    useEffect(() => {
-        loadItems(page);
+        loadDocuments(page);
         return () => {
             controllerRef.current?.abort();
         };
-    }, [page, loadItems]);
+    }, [page, loadDocuments]);
 
-    const refreshItems = useCallback(
+    const refreshDocuments = useCallback(
         async (add = false) => {
-            const updatedItems = await fetchItems(
+            const updatedDocuments = await fetchDocuments(
                 page,
                 debouncedSearchInput,
-                statusFilter,
                 sortOption,
-                itemState,
+                documentState,
                 controllerRef.current?.signal
             );
 
-            if (updatedItems.items.length === 0 && page > 1) {
+            if (updatedDocuments.documents.length === 0 && page > 1) {
                 setPage((prevPage) => prevPage - 1);
             } else {
-                setItems(updatedItems.items);
-                setTotalPages(updatedItems.totalPages);
+                setDocuments(updatedDocuments.documents);
+                setTotalPages(updatedDocuments.totalPages);
                 if (add) setPage(1);
             }
         },
-        [page, debouncedSearchInput, statusFilter, sortOption, itemState]
+        [page, debouncedSearchInput, sortOption, documentState]
     );
 
-    const onSubmit = async (data: ItemFormInputs) => {
+    const onSubmit = async (data: DocumentFormInputs) => {
         setSubmitLoading(true);
         try {
             const formData = new FormData();
-            const { status, ...restData } = data;
+            const { ...restData } = data;
             Object.entries(restData).forEach(([key, value]) => {
                 if (key !== "image") {
                     formData.append(key, String(value));
@@ -293,10 +224,10 @@ export default function AdminDashboard() {
                 formData.append("image", imageValue);
             }
 
-            const method = editingItem ? "PUT" : "POST";
-            const url = editingItem
-                ? `/api/items/${editingItem.id}`
-                : `/api/items`;
+            const method = editingDocument ? "PUT" : "POST";
+            const url = editingDocument
+                ? `/api/documents/${editingDocument.id}`
+                : `/api/documents`;
 
             const res = await fetch(url, {
                 method,
@@ -307,18 +238,18 @@ export default function AdminDashboard() {
                 const errorData = await res.json();
                 throw new Error(
                     errorData.error ||
-                        (editingItem
-                            ? "Failed to update item"
-                            : "Failed to add item")
+                        (editingDocument
+                            ? "Failed to update document"
+                            : "Failed to add document")
                 );
             }
 
             reset();
             setIsDialogOpen(false);
-            await refreshItems(method === "POST");
+            await refreshDocuments(method === "POST");
             toast({
-                title: `Item ${method === "POST" ? "Added" : "Updated"}`,
-                description: `The item has been successfully ${
+                title: `Document ${method === "POST" ? "Added" : "Updated"}`,
+                description: `The document has been successfully ${
                     method === "POST" ? "added" : "updated"
                 }.`,
             });
@@ -340,7 +271,7 @@ export default function AdminDashboard() {
     const handleDelete = async (id: string) => {
         setDeleteLoading(true);
         try {
-            const res = await fetch(`/api/items/${id}`, {
+            const res = await fetch(`/api/documents/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -351,22 +282,24 @@ export default function AdminDashboard() {
                 const errorData = await res.json();
                 if (
                     errorData.error ===
-                    "Cannot delete item with associated requests"
+                    "Cannot delete document with associated requests"
                 ) {
-                    const itemToDelete = items.find((item) => item.id === id);
-                    if (itemToDelete) {
-                        setDeleteRestrictedItemName(itemToDelete.name);
+                    const documentToDelete = documents.find(
+                        (document) => document.id === id
+                    );
+                    if (documentToDelete) {
+                        setDeleteRestrictedDocumentName(documentToDelete.name);
                         setIsDeleteRestrictedDialogOpen(true);
                     }
                     return;
                 }
-                throw new Error(errorData.error || "Failed to delete item");
+                throw new Error(errorData.error || "Failed to delete document");
             }
 
-            await refreshItems();
+            await refreshDocuments();
             toast({
-                title: "Item Deleted",
-                description: "The item has been successfully removed.",
+                title: "Document Deleted",
+                description: "The document has been successfully removed.",
             });
         } catch (error) {
             console.error("Delete failed", error);
@@ -375,7 +308,7 @@ export default function AdminDashboard() {
                 description:
                     error instanceof Error
                         ? error.message
-                        : "Failed to delete item",
+                        : "Failed to delete document",
                 variant: "destructive",
             });
         } finally {
@@ -386,17 +319,19 @@ export default function AdminDashboard() {
     const handleArchive = async (id: string, currentState: boolean) => {
         setDeleteLoading(true);
         try {
-            const res = await fetch(`/api/items/${id}/archive`, {
+            const res = await fetch(`/api/documents/${id}/archive`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
             if (!res.ok) throw new Error("Failed to update archive status");
-            await refreshItems();
+            await refreshDocuments();
             toast({
-                title: currentState ? "Item Unarchived" : "Item Archived",
-                description: `The item has been successfully ${
+                title: currentState
+                    ? "Document Unarchived"
+                    : "Document Archived",
+                description: `The document has been successfully ${
                     currentState ? "unarchived" : "archived"
                 }.`,
             });
@@ -414,17 +349,16 @@ export default function AdminDashboard() {
     };
 
     const handleEdit = useCallback(
-        (item: Item) => {
-            setEditingItem(item);
-            reset(item);
+        (document: Document) => {
+            setEditingDocument(document);
+            reset(document);
             setIsDialogOpen(true);
         },
         [reset]
     );
 
     const openAddModal = useCallback(() => {
-        setEditingItem(null);
-        reset({ status: "AVAILABLE" });
+        setEditingDocument(null);
         setIsDialogOpen(true);
     }, [reset]);
 
@@ -445,12 +379,10 @@ export default function AdminDashboard() {
             setIsExporting(true);
 
             const response = await fetch(
-                `/api/items/export?search=${encodeURIComponent(
+                `/api/documents/export?search=${encodeURIComponent(
                     debouncedSearchInput
-                )}&status=${encodeURIComponent(
-                    statusFilter
-                )}&itemState=${encodeURIComponent(
-                    itemState
+                )}&documentState=${encodeURIComponent(
+                    documentState
                 )}&sort=${encodeURIComponent(sortOption)}`
             );
 
@@ -494,16 +426,18 @@ export default function AdminDashboard() {
                     <div className="flex gap-2">
                         <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
-                                title="Active items"
+                                title="Active Documents"
                                 variant={
-                                    itemState === "active" ? "default" : "ghost"
+                                    documentState === "active"
+                                        ? "default"
+                                        : "ghost"
                                 }
                                 size="sm"
                                 onClick={() => {
-                                    setItemState("active");
+                                    setDocumentState("active");
                                     setPage(1);
                                     setSearchInput("");
-                                    setStatusFilter("");
+
                                     setSortOption("createdAt:desc");
                                 }}
                                 className="px-2"
@@ -511,18 +445,17 @@ export default function AdminDashboard() {
                                 <Package className="h-5 w-5" />
                             </Button>
                             <Button
-                                title="Archived Items"
+                                title="Archived Documents"
                                 variant={
-                                    itemState === "archived"
+                                    documentState === "archived"
                                         ? "default"
                                         : "ghost"
                                 }
                                 size="sm"
                                 onClick={() => {
-                                    setItemState("archived");
+                                    setDocumentState("archived");
                                     setPage(1);
                                     setSearchInput("");
-                                    setStatusFilter("");
                                     setSortOption("createdAt:desc");
                                 }}
                                 className="px-2"
@@ -568,7 +501,7 @@ export default function AdminDashboard() {
                             disabled={loading}
                             className={loading ? "opacity-50" : ""}
                         >
-                            Add New Item
+                            Add New Document
                         </Button>
                     </div>
                 </div>
@@ -576,7 +509,7 @@ export default function AdminDashboard() {
                 <div className="flex pb-2">
                     <div className="flex-none w-1/2 pe-1">
                         <Input
-                            placeholder="Search items..."
+                            placeholder="Search documents..."
                             value={searchInput}
                             onChange={(e) => {
                                 setSearchInput(e.target.value);
@@ -586,46 +519,6 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex w-1/2 ms-1">
                         <div className="flex flex-grow">
-                            <div className="w-1/2 me-1">
-                                <Select
-                                    value={statusFilter}
-                                    onValueChange={(value) => {
-                                        setStatusFilter(
-                                            value === "ALL" ? "" : value
-                                        );
-                                        setPage(1);
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Filter by status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">All</SelectItem>
-                                        {itemState === "archived" ? (
-                                            <>
-                                                <SelectItem value="PHASED_OUT">
-                                                    Phased out
-                                                </SelectItem>
-                                                <SelectItem value="DISCONTINUED">
-                                                    Discontinued
-                                                </SelectItem>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <SelectItem value="AVAILABLE">
-                                                    Available
-                                                </SelectItem>
-                                                <SelectItem value="OUT_OF_STOCK">
-                                                    Out of stock
-                                                </SelectItem>
-                                                <SelectItem value="FOR_REORDER">
-                                                    For reorder
-                                                </SelectItem>
-                                            </>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
                             <div className="w-1/2 mx-1">
                                 <Select
                                     value={sortOption}
@@ -657,7 +550,6 @@ export default function AdminDashboard() {
                             onClick={() => {
                                 setPage(1);
                                 setSearchInput("");
-                                setStatusFilter("");
                                 setSortOption("createdAt:desc");
                             }}
                             disabled={loading}
@@ -674,27 +566,23 @@ export default function AdminDashboard() {
                         </div>
                     ) : viewMode === "table" ? (
                         <TableComponent
-                            items={items}
+                            documents={documents}
                             handleEdit={handleEdit}
                             deleteLoading={deleteLoading}
                             handleDelete={handleDelete}
                             handleArchive={handleArchive}
                             selectedImage={selectedImage}
                             setSelectedImage={setSelectedImage}
-                            statusMap={statusMap}
-                            statusStyles={statusStyles}
                         />
                     ) : (
                         <CardView
-                            items={items}
+                            documents={documents}
                             handleEdit={handleEdit}
                             deleteLoading={deleteLoading}
                             handleDelete={handleDelete}
                             handleArchive={handleArchive}
                             selectedImage={selectedImage}
                             setSelectedImage={setSelectedImage}
-                            statusMap={statusMap}
-                            statusStyles={statusStyles}
                         />
                     )}
                 </div>
@@ -715,7 +603,7 @@ export default function AdminDashboard() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {editingItem ? "Edit Item" : "Add Item"}
+                            {editingDocument ? "Edit Document" : "Add Document"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -725,11 +613,7 @@ export default function AdminDashboard() {
                     >
                         <div>
                             <p className="text-sm my-2 text-gray-500">Name</p>
-                            <Input
-                                {...register("name")}
-                                className="w-full"
-                                disabled={editingItem?.hasRequests}
-                            />
+                            <Input {...register("name")} className="w-full" />
                             {errors.name && (
                                 <p className="text-red-500 text-sm my-1">
                                     {errors.name.message}
@@ -746,7 +630,6 @@ export default function AdminDashboard() {
                                     valueAsNumber: true,
                                 })}
                                 className="w-full"
-                                disabled={editingItem?.hasRequests}
                             />
                             {errors.quantity && (
                                 <p className="text-red-500 text-sm my-1">
@@ -754,40 +637,7 @@ export default function AdminDashboard() {
                                 </p>
                             )}
                         </div>
-                        <div>
-                            <p className="text-sm my-2 text-gray-500">
-                                Unit of measurement
-                            </p>
-                            <Select
-                                {...register("unit")}
-                                value={watch("unit")}
-                                onValueChange={(value) => {
-                                    setValue("unit", value);
-                                    trigger("unit");
-                                }}
-                                disabled={editingItem?.hasRequests}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {units.map((unit) => (
-                                        <SelectItem
-                                            key={unit.id}
-                                            value={unit.name}
-                                        >
-                                            {unit.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
 
-                            {errors.unit && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {errors.unit.message}
-                                </p>
-                            )}
-                        </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Reorder point
@@ -807,47 +657,12 @@ export default function AdminDashboard() {
                         </div>
 
                         <div>
-                            <p className="text-sm my-2 text-gray-500">
-                                Location
-                            </p>
-
-                            <Select
-                                {...register("location")}
-                                value={watch("location")}
-                                onValueChange={(value) => {
-                                    setValue("location", value);
-                                    trigger("location");
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {locations.map((location) => (
-                                        <SelectItem
-                                            key={location.id}
-                                            value={location.name}
-                                        >
-                                            {location.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            {errors.location && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {errors.location.message}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
                             <p className="text-sm my-2 text-gray-500">Image</p>
                             <div className="flex items-center gap-4">
                                 {watch("image") && (
                                     <Image
                                         src={watch("image") || ""}
-                                        alt="Item preview"
+                                        alt="Document preview"
                                         className="w-20 h-20 object-cover rounded-md"
                                         width={80}
                                         height={80}
@@ -867,7 +682,9 @@ export default function AdminDashboard() {
 
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
-                                {editingItem ? "Update Item" : "Add Item"}
+                                {editingDocument
+                                    ? "Update Document"
+                                    : "Add Document"}
                             </Button>
                             <DialogClose asChild>
                                 <Button
@@ -900,8 +717,8 @@ export default function AdminDashboard() {
 
                     <div className="p-6">
                         <AlertDialogDescription className="text-center text-base leading-relaxed text-gray-600 dark:text-gray-300">
-                            The item &quot;{deleteRestrictedItemName}&quot;
-                            cannot be deleted because it has associated
+                            The document &quot;{deleteRestrictedDocumentName}
+                            &quot; cannot be deleted because it has associated
                             transactions. This restriction is in place to
                             maintain data integrity and prevent disruption to
                             existing supply transactions.

@@ -17,55 +17,43 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { HiDotsHorizontal } from "react-icons/hi";
 
-interface Item {
+interface Document {
     id: string;
     name: string;
     quantity: number;
-    unit: string;
     reorderPoint: number;
-    status:
-        | "OUT_OF_STOCK"
-        | "FOR_REORDER"
-        | "AVAILABLE"
-        | "PHASED_OUT"
-        | "DISCONTINUED";
-    location: string;
     image: string;
     isArchived: boolean;
 }
 
 interface CardViewComponentProps {
-    items: Item[];
-    handleEdit: (item: Item) => void;
+    documents: Document[];
+    handleEdit: (document: Document) => void;
     handleDelete: (id: string) => void;
     handleArchive: (id: string, currentState: boolean) => void;
     deleteLoading: boolean;
     selectedImage: string | null;
     setSelectedImage: (image: string | null) => void;
-    statusMap: { [key in Item["status"]]: string };
-    statusStyles: { [key in Item["status"]]: string };
 }
 
 const CardView = ({
-    items,
+    documents,
     handleEdit,
     handleDelete,
     handleArchive,
     deleteLoading,
     selectedImage,
     setSelectedImage,
-    statusMap,
-    statusStyles,
 }: CardViewComponentProps) => {
     return (
         <>
             <div className="border bg-white rounded-md h-full">
-                {items.length !== 0 ? (
+                {documents.length !== 0 ? (
                     <div className="h-full overflow-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 min-h-min">
-                            {items.map((item) => (
+                            {documents.map((document) => (
                                 <div
-                                    key={item.id}
+                                    key={document.id}
                                     className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 hover:border-gray-300 group"
                                 >
                                     <div className="aspect-square relative bg-white p-4">
@@ -74,10 +62,12 @@ const CardView = ({
                                         </div>
                                         <div className="absolute top-4 right-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1.5 z-20">
                                             <Button
-                                                title="Edit item"
+                                                title="Edit document"
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => handleEdit(item)}
+                                                onClick={() =>
+                                                    handleEdit(document)
+                                                }
                                                 disabled={deleteLoading}
                                                 className="shadow-md border border-gray-200"
                                             >
@@ -86,7 +76,7 @@ const CardView = ({
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                     <Button
-                                                        title="Delete item"
+                                                        title="Delete document"
                                                         variant="ghost"
                                                         size="icon"
                                                         disabled={deleteLoading}
@@ -104,7 +94,7 @@ const CardView = ({
                                                         <AlertDialogDescription>
                                                             This action cannot
                                                             be undone. Deleting
-                                                            this item will
+                                                            this document will
                                                             permanently remove
                                                             it and its
                                                             associated data.
@@ -117,7 +107,7 @@ const CardView = ({
                                                         <AlertDialogAction
                                                             onClick={() =>
                                                                 handleDelete(
-                                                                    item.id
+                                                                    document.id
                                                                 )
                                                             }
                                                         >
@@ -138,12 +128,12 @@ const CardView = ({
                                                     >
                                                         <Switch
                                                             title={
-                                                                item.isArchived
-                                                                    ? "Unarchive item"
-                                                                    : "Archive item"
+                                                                document.isArchived
+                                                                    ? "Unarchive document"
+                                                                    : "Archive document"
                                                             }
                                                             checked={
-                                                                item.isArchived
+                                                                document.isArchived
                                                             }
                                                             disabled={
                                                                 deleteLoading
@@ -158,10 +148,10 @@ const CardView = ({
                                                             Are you sure you
                                                             want to proceed?
                                                         </AlertDialogTitle>
-                                                        {item.isArchived ? (
+                                                        {document.isArchived ? (
                                                             <AlertDialogDescription>
                                                                 Unarchiving this
-                                                                item will
+                                                                document will
                                                                 restore it to
                                                                 the active list,
                                                                 making it
@@ -172,10 +162,10 @@ const CardView = ({
                                                         ) : (
                                                             <AlertDialogDescription>
                                                                 Archiving this
-                                                                item will remove
-                                                                it from the
-                                                                active list and
-                                                                store it for
+                                                                document will
+                                                                remove it from
+                                                                the active list
+                                                                and store it for
                                                                 future
                                                                 reference.
                                                             </AlertDialogDescription>
@@ -188,12 +178,12 @@ const CardView = ({
                                                         <AlertDialogAction
                                                             onClick={() =>
                                                                 handleArchive(
-                                                                    item.id,
-                                                                    item.isArchived
+                                                                    document.id,
+                                                                    document.isArchived
                                                                 )
                                                             }
                                                         >
-                                                            {item.isArchived
+                                                            {document.isArchived
                                                                 ? "Unarchive"
                                                                 : "Archive"}
                                                         </AlertDialogAction>
@@ -205,32 +195,23 @@ const CardView = ({
                                         <div
                                             className="absolute inset-0 cursor-zoom-in p-4 bg-white"
                                             onClick={() =>
-                                                setSelectedImage(item.image)
+                                                setSelectedImage(document.image)
                                             }
                                         >
                                             <Image
-                                                src={item.image}
-                                                alt={item.name}
+                                                src={document.image}
+                                                alt={document.name}
                                                 fill
                                                 className="object-contain p-14 hover:p-12 transition-all duration-200"
                                             />
-                                        </div>
-                                        <div className="absolute bottom-4 left-4">
-                                            <span
-                                                className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium border ${
-                                                    statusStyles[item.status]
-                                                }`}
-                                            >
-                                                {statusMap[item.status]}
-                                            </span>
                                         </div>
                                     </div>
                                     <div className="p-4 space-y-3 border-t border-gray-100">
                                         <h3
                                             className="font-medium text-gray-900 truncate"
-                                            title={item.name}
+                                            title={document.name}
                                         >
-                                            {item.name}
+                                            {document.name}
                                         </h3>
 
                                         <div className="space-y-2 text-sm">
@@ -238,25 +219,15 @@ const CardView = ({
                                                 <span className="text-gray-500">
                                                     Quantity
                                                 </span>
-                                                <span>{item.quantity}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-500">
-                                                    Unit
-                                                </span>
-                                                <span>{item.unit}</span>
+                                                <span>{document.quantity}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">
                                                     Reorder Point
                                                 </span>
-                                                <span>{item.reorderPoint}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-500">
-                                                    Location
+                                                <span>
+                                                    {document.reorderPoint}
                                                 </span>
-                                                <span>{item.location}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -294,7 +265,7 @@ const CardView = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No items found.
+                        No documents found.
                     </p>
                 )}
             </div>
