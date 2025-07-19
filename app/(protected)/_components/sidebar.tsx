@@ -155,7 +155,7 @@ export default function Sidebar() {
                                         HRDO
                                     </h1>
                                     <p className="font-semibold text-xs text-[#f5d4d4]">
-                                        Supply Hub
+                                        Policy Portal
                                     </p>
                                 </div>
                             )}
@@ -452,7 +452,7 @@ function SidebarContent() {
                 <div className="ml-2">
                     <h1 className="font-bold text-lg text-[#f5d4d4]">HRDO</h1>
                     <p className="font-semibold text-xs text-[#f5d4d4]">
-                        Supply Hub
+                        Policy Portal
                     </p>
                 </div>
             </div>
