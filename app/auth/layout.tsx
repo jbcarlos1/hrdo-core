@@ -1,0 +1,10 @@
+const AuthLayout = ({ children }: { children: React.ReactNode }) => {
+    return (
+        // <div className="h-full flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-200 to-blue-400">
+        <div className="h-full flex items-center justify-center bg-[#1b222b]">
+            {children}
+        </div>
+    );
+};
+
+export default AuthLayout;
