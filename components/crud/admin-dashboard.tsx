@@ -393,15 +393,15 @@ export default function AdminDashboard() {
 
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            const a = memorandum.createElement("a");
+            const a = document.createElement("a");
             a.href = url;
             a.download = `inventory report-${
                 new Date().toISOString().split("T")[0]
             }.csv`;
-            memorandum.body.appendChild(a);
+            document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            memorandum.body.removeChild(a);
+            document.body.removeChild(a);
 
             toast({
                 title: "Success",
