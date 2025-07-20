@@ -35,9 +35,13 @@ export async function PUT(
         const formData = await request.formData();
 
         const MemorandumData = {
-            name: formData.get("name") as string,
-            quantity: parseInt(formData.get("quantity") as string),
-            reorderPoint: parseInt(formData.get("reorderPoint") as string),
+            memoNumber: formData.get("memoNumber") as string,
+            addressee: formData.get("addressee") as string,
+            sender: formData.get("sender") as string,
+            senderOffice: formData.get("senderOffice") as string,
+            subject: formData.get("subject") as string,
+            date: formData.get("date") as string,
+            keywords: formData.get("keywords") as string,
             image: formData.get("image") as string,
         };
 
@@ -70,9 +74,13 @@ export async function PUT(
             }
 
             const updateData = {
-                name: validatedData.name,
-                quantity: validatedData.quantity,
-                reorderPoint: validatedData.reorderPoint,
+                memoNumber: validatedData.memoNumber,
+                addressee: validatedData.addressee,
+                sender: validatedData.sender,
+                senderOffice: validatedData.senderOffice,
+                subject: validatedData.subject,
+                date: validatedData.date,
+                keywords: validatedData.keywords,
                 ...(imageUrl && { image: imageUrl }),
             };
 
@@ -81,9 +89,13 @@ export async function PUT(
                 data: updateData,
                 select: {
                     id: true,
-                    name: true,
-                    quantity: true,
-                    reorderPoint: true,
+                    memoNumber: true,
+                    addressee: true,
+                    sender: true,
+                    senderOffice: true,
+                    subject: true,
+                    date: true,
+                    keywords: true,
                     image: true,
                     isArchived: true,
                 },

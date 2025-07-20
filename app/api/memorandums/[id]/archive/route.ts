@@ -35,8 +35,6 @@ export async function PATCH(
             const currentMemorandum = await tx.memorandum.findUnique({
                 where: { id },
                 select: {
-                    quantity: true,
-                    reorderPoint: true,
                     isArchived: true,
                 },
             });

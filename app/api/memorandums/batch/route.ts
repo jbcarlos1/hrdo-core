@@ -25,8 +25,13 @@ export async function GET(request: NextRequest) {
             },
             select: {
                 id: true,
-                name: true,
-                quantity: true,
+                memoNumber: true,
+                addressee: true,
+                sender: true,
+                senderOffice: true,
+                subject: true,
+                date: true,
+                keywords: true,
                 image: true,
             },
         });

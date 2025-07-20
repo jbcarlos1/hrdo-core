@@ -111,9 +111,13 @@ model TwoFactorConfirmation {
 
 model Memorandum {
     id           String        @id @default(cuid())
-    name         String
-    quantity     Int
-    reorderPoint Int
+    memoNumber   String
+    addressee    String
+    sender       String
+    senderOffice String
+    subject      String
+    date         DateTime
+    keywords     String
     image        String?
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @updatedAt

@@ -26,9 +26,13 @@ import { Switch } from "@/components/ui/switch";
 
 interface Memorandum {
     id: string;
-    name: string;
-    quantity: number;
-    reorderPoint: number;
+    memoNumber: string;
+    addressee: string;
+    sender: string;
+    senderOffice: string;
+    subject: string;
+    date: string;
+    keywords: string;
     image: string;
     isArchived: boolean;
 }
@@ -107,23 +111,20 @@ export const TableComponent = ({
                                                         src={memorandum.image}
                                                         width={40}
                                                         height={40}
-                                                        alt={memorandum.name}
+                                                        alt={
+                                                            memorandum.memoNumber
+                                                        }
                                                         className="rounded-md object-contain h-full max-h-full w-auto"
                                                     />
                                                 </div>
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
-                                                title={memorandum.name}
+                                                title={memorandum.memoNumber}
                                             >
-                                                {memorandum.name}
+                                                {memorandum.memoNumber}
                                             </TableCell>
-                                            <TableCell className="px-4">
-                                                {memorandum.quantity}
-                                            </TableCell>
-                                            <TableCell className="px-4">
-                                                {memorandum.reorderPoint}
-                                            </TableCell>
+
                                             <TableCell className="px-2 text-center">
                                                 <Button
                                                     title="Edit memorandum"

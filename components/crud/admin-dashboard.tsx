@@ -48,9 +48,13 @@ type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 
 interface Memorandum {
     id: string;
-    name: string;
-    quantity: number;
-    reorderPoint: number;
+    memoNumber: string;
+    addressee: string;
+    sender: string;
+    senderOffice: string;
+    subject: string;
+    date: string;
+    keywords: string;
     image: string;
     isArchived: boolean;
 }
@@ -278,25 +282,7 @@ export default function AdminDashboard() {
             });
 
             if (!res.ok) {
-                const errorData = await res.json();
-                if (
-                    errorData.error ===
-                    "Cannot delete memorandum with associated requests"
-                ) {
-                    const memorandumToDelete = memorandums.find(
-                        (memorandum) => memorandum.id === id
-                    );
-                    if (memorandumToDelete) {
-                        setDeleteRestrictedMemorandumName(
-                            memorandumToDelete.name
-                        );
-                        setIsDeleteRestrictedDialogOpen(true);
-                    }
-                    return;
-                }
-                throw new Error(
-                    errorData.error || "Failed to delete memorandum"
-                );
+                throw new Error("Failed to delete memorandum");
             }
 
             await refreshMemorandums();
@@ -617,46 +603,90 @@ export default function AdminDashboard() {
                         className="space-y-4"
                     >
                         <div>
-                            <p className="text-sm my-2 text-gray-500">Name</p>
-                            <Input {...register("name")} className="w-full" />
-                            {errors.name && (
+                            <p className="text-sm my-2 text-gray-500">
+                                Memo Number
+                            </p>
+                            <Input
+                                {...register("memoNumber")}
+                                className="w-full"
+                            />
+                            {errors.memoNumber && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.name.message}
+                                    {errors.memoNumber.message}
                                 </p>
                             )}
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
-                                Quantity
+                                Addressee
                             </p>
                             <Input
-                                type="number"
-                                {...register("quantity", {
-                                    valueAsNumber: true,
-                                })}
+                                {...register("addressee")}
                                 className="w-full"
                             />
-                            {errors.quantity && (
+                            {errors.addressee && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.quantity.message}
+                                    {errors.addressee.message}
                                 </p>
                             )}
                         </div>
-
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">Sender</p>
+                            <Input {...register("sender")} className="w-full" />
+                            {errors.sender && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {errors.sender.message}
+                                </p>
+                            )}
+                        </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
-                                Reorder point
+                                Sender's Office
                             </p>
                             <Input
-                                type="number"
-                                {...register("reorderPoint", {
-                                    valueAsNumber: true,
-                                })}
+                                {...register("senderOffice")}
                                 className="w-full"
                             />
-                            {errors.reorderPoint && (
+                            {errors.senderOffice && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.reorderPoint.message}
+                                    {errors.senderOffice.message}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">
+                                Subject
+                            </p>
+                            <Input
+                                {...register("subject")}
+                                className="w-full"
+                            />
+                            {errors.subject && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {errors.subject.message}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">Date</p>
+                            <Input {...register("date")} className="w-full" />
+                            {errors.date && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {errors.date.message}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">
+                                Keywords
+                            </p>
+                            <Input
+                                {...register("keywords")}
+                                className="w-full"
+                            />
+                            {errors.keywords && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {errors.keywords.message}
                                 </p>
                             )}
                         </div>

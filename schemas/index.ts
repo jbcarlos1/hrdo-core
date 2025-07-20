@@ -66,24 +66,34 @@ export const NewPasswordSchema = z.object({
 });
 
 export const memorandumSchema = z.object({
-    name: z
+    memoNumber: z
         .string()
-        .min(1, "Name is required")
+        .min(1, "Memo number is required")
         .max(100, "Name must be less than 100 characters"),
-    quantity: z
-        .number({
-            invalid_type_error: "Quantity is required",
-        })
-        .min(0, "Quantity cannot be negative")
-        .int("Quantity must be an integer")
-        .max(999999, "Quantity is too large"),
-    reorderPoint: z
-        .number({
-            invalid_type_error: "Reorder point is required",
-        })
-        .min(0, "Reorder point cannot be negative")
-        .int("Reorder point must be an integer")
-        .max(999999, "Reorder point is too large"),
+    addressee: z
+        .string()
+        .min(1, "Addressee is required")
+        .max(100, "Addressee must be less than 100 characters"),
+    sender: z
+        .string()
+        .min(1, "Sender is required")
+        .max(100, "Sender must be less than 100 characters"),
+    senderOffice: z
+        .string()
+        .min(1, "Sender's office is required")
+        .max(100, "Sender's office must be less than 100 characters"),
+    subject: z
+        .string()
+        .min(1, "Subject is required")
+        .max(100, "Subject must be less than 100 characters"),
+    date: z
+        .string()
+        .min(1, "Date is required")
+        .max(100, "Date must be less than 100 characters"),
+    keywords: z
+        .string()
+        .min(1, "Keywords is required")
+        .max(100, "Keywords must be less than 100 characters"),
     image: z.string({
         required_error: "Image is required",
     }),

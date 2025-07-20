@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         const [totalMemorandums, memorandums] = await db.$transaction([
             db.memorandum.count({
                 where: {
-                    name: { contains: search, mode: "insensitive" },
+                    memoNumber: { contains: search, mode: "insensitive" },
 
                     isArchived: memorandumState === "archived",
                 },
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
                 skip: (page - 1) * limit,
                 take: limit,
                 where: {
-                    name: { contains: search, mode: "insensitive" },
+                    memoNumber: { contains: search, mode: "insensitive" },
 
                     isArchived: memorandumState === "archived",
                 },
@@ -42,9 +42,13 @@ export async function GET(request: NextRequest) {
                 },
                 select: {
                     id: true,
-                    name: true,
-                    quantity: true,
-                    reorderPoint: true,
+                    memoNumber: true,
+                    addressee: true,
+                    sender: true,
+                    senderOffice: true,
+                    subject: true,
+                    date: true,
+                    keywords: true,
                     image: true,
                     isArchived: true,
                 },
@@ -85,9 +89,13 @@ export async function POST(request: NextRequest) {
         const formData = await request.formData();
 
         const memorandumData = {
-            name: formData.get("name") as string,
-            quantity: parseInt(formData.get("quantity") as string),
-            reorderPoint: parseInt(formData.get("reorderPoint") as string),
+            memoNumber: formData.get("memoNumber") as string,
+            addressee: formData.get("addressee") as string,
+            sender: formData.get("sender") as string,
+            senderOffice: formData.get("senderOffice") as string,
+            subject: formData.get("subject") as string,
+            date: formData.get("date") as string,
+            keywords: formData.get("keywords") as string,
             image: formData.get("image") as string,
         };
 
@@ -103,16 +111,24 @@ export async function POST(request: NextRequest) {
 
         const memorandum = await db.memorandum.create({
             data: {
-                name: validatedData.name,
-                quantity: validatedData.quantity,
-                reorderPoint: validatedData.reorderPoint,
+                memoNumber: validatedData.memoNumber,
+                addressee: validatedData.addressee,
+                sender: validatedData.sender,
+                senderOffice: validatedData.senderOffice,
+                subject: validatedData.subject,
+                date: validatedData.date,
+                keywords: validatedData.keywords,
                 ...(imageUrl && { image: imageUrl }),
             },
             select: {
                 id: true,
-                name: true,
-                quantity: true,
-                reorderPoint: true,
+                memoNumber: true,
+                addressee: true,
+                sender: true,
+                senderOffice: true,
+                subject: true,
+                date: true,
+                keywords: true,
                 image: true,
                 isArchived: true,
             },

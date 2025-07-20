@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
         const memorandums = await db.memorandum.findMany({
             where: {
-                name: { contains: search, mode: "insensitive" },
+                memoNumber: { contains: search, mode: "insensitive" },
                 isArchived: memorandumState === "archived",
             },
             orderBy: {
@@ -31,24 +31,33 @@ export async function GET(request: NextRequest) {
             },
             select: {
                 id: true,
-                name: true,
-                quantity: true,
-                reorderPoint: true,
+                memoNumber: true,
+                addressee: true,
+                sender: true,
+                senderOffice: true,
+                subject: true,
+                date: true,
             },
         });
 
         headers = [
-            "Memorandum ID",
-            "Memorandum Name",
-            "Available Quantity",
-            "Reorder Point",
+            "Memo ID",
+            "Memo Number",
+            "Addressee",
+            "Sender",
+            "Sender's Office",
+            "Subject",
+            "Date",
         ];
 
         data = memorandums.map((memorandum) => ({
             "Memorandum ID": memorandum.id,
-            "Memorandum Name": memorandum.name,
-            "Available Quantity": memorandum.quantity,
-            "Reorder Point": memorandum.reorderPoint,
+            "Memo Number": memorandum.memoNumber,
+            Addressee: memorandum.addressee,
+            Sender: memorandum.sender,
+            "Sender's Office": memorandum.senderOffice,
+            Subject: memorandum.subject,
+            Date: memorandum.date,
         }));
 
         const csvContent = [

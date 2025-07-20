@@ -19,9 +19,13 @@ import { HiDotsHorizontal } from "react-icons/hi";
 
 interface Memorandum {
     id: string;
-    name: string;
-    quantity: number;
-    reorderPoint: number;
+    memoNumber: string;
+    addressee: string;
+    sender: string;
+    senderOffice: string;
+    subject: string;
+    date: string;
+    keywords: string;
     image: string;
     isArchived: boolean;
 }
@@ -202,7 +206,7 @@ const CardView = ({
                                         >
                                             <Image
                                                 src={memorandum.image}
-                                                alt={memorandum.name}
+                                                alt={memorandum.memoNumber}
                                                 fill
                                                 className="object-contain p-14 hover:p-12 transition-all duration-200"
                                             />
@@ -211,13 +215,13 @@ const CardView = ({
                                     <div className="p-4 space-y-3 border-t border-gray-100">
                                         <h3
                                             className="font-medium text-gray-900 truncate"
-                                            title={memorandum.name}
+                                            title={memorandum.memoNumber}
                                         >
-                                            {memorandum.name}
+                                            {memorandum.memoNumber}
                                         </h3>
 
                                         <div className="space-y-2 text-sm">
-                                            <div className="flex justify-between">
+                                            {/* <div className="flex justify-between">
                                                 <span className="text-gray-500">
                                                     Quantity
                                                 </span>
@@ -232,7 +236,7 @@ const CardView = ({
                                                 <span>
                                                     {memorandum.reorderPoint}
                                                 </span>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
                                 </div>
