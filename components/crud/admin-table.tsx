@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
-interface Document {
+interface Memorandum {
     id: string;
     name: string;
     quantity: number;
@@ -34,8 +34,8 @@ interface Document {
 }
 
 interface TableComponentProps {
-    documents: Document[];
-    handleEdit: (document: Document) => void;
+    memorandums: Memorandum[];
+    handleEdit: (memorandum: Memorandum) => void;
     handleDelete: (id: string) => void;
     handleArchive: (id: string, currentState: boolean) => void;
     deleteLoading: boolean;
@@ -44,7 +44,7 @@ interface TableComponentProps {
 }
 
 export const TableComponent = ({
-    documents,
+    memorandums,
     handleEdit,
     handleDelete,
     handleArchive,
@@ -55,7 +55,7 @@ export const TableComponent = ({
     return (
         <>
             <div className="border bg-white rounded-md h-full overflow-hidden">
-                {documents.length !== 0 ? (
+                {memorandums.length !== 0 ? (
                     <div className="overflow-auto h-full">
                         <div className="min-w-max">
                             <Table>
@@ -65,7 +65,7 @@ export const TableComponent = ({
                                             Image
                                         </TableHead>
                                         <TableHead className="px-4">
-                                            Document name
+                                            Memorandum name
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Qty
@@ -89,49 +89,49 @@ export const TableComponent = ({
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="overflow-auto">
-                                    {documents.map((document, i) => (
+                                    {memorandums.map((memorandum, i) => (
                                         <TableRow
-                                            key={document.id}
+                                            key={memorandum.id}
                                             className="hover:bg-gray-100 border-[#e4e4e7]"
                                         >
                                             <TableCell className="px-4">
                                                 <div
                                                     onClick={() =>
                                                         setSelectedImage(
-                                                            document.image
+                                                            memorandum.image
                                                         )
                                                     }
                                                     className="cursor-pointer hover:opacity-80 transition-opacity h-10 flex items-center justify-center"
                                                 >
                                                     <Image
-                                                        src={document.image}
+                                                        src={memorandum.image}
                                                         width={40}
                                                         height={40}
-                                                        alt={document.name}
+                                                        alt={memorandum.name}
                                                         className="rounded-md object-contain h-full max-h-full w-auto"
                                                     />
                                                 </div>
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
-                                                title={document.name}
+                                                title={memorandum.name}
                                             >
-                                                {document.name}
+                                                {memorandum.name}
                                             </TableCell>
                                             <TableCell className="px-4">
-                                                {document.quantity}
+                                                {memorandum.quantity}
                                             </TableCell>
                                             <TableCell className="px-4">
-                                                {document.reorderPoint}
+                                                {memorandum.reorderPoint}
                                             </TableCell>
                                             <TableCell className="px-2 text-center">
                                                 <Button
-                                                    title="Edit document"
+                                                    title="Edit memorandum"
                                                     className="mx-1"
                                                     variant="outline"
                                                     size="icon"
                                                     onClick={() =>
-                                                        handleEdit(document)
+                                                        handleEdit(memorandum)
                                                     }
                                                     disabled={deleteLoading}
                                                 >
@@ -142,7 +142,7 @@ export const TableComponent = ({
                                                 <AlertDialog>
                                                     <AlertDialogTrigger>
                                                         <Button
-                                                            title="Delete document"
+                                                            title="Delete memorandum"
                                                             className="mx-1"
                                                             variant="outline"
                                                             size="icon"
@@ -163,7 +163,7 @@ export const TableComponent = ({
                                                                 This action
                                                                 cannot be
                                                                 undone. Deleting
-                                                                this document
+                                                                this memorandum
                                                                 will permanently
                                                                 remove it and
                                                                 its associated
@@ -177,7 +177,7 @@ export const TableComponent = ({
                                                             <AlertDialogAction
                                                                 onClick={() =>
                                                                     handleDelete(
-                                                                        document.id
+                                                                        memorandum.id
                                                                     )
                                                                 }
                                                             >
@@ -199,7 +199,7 @@ export const TableComponent = ({
                                                     >
                                                         <Switch
                                                             checked={
-                                                                document.isArchived
+                                                                memorandum.isArchived
                                                             }
                                                             disabled={
                                                                 deleteLoading
@@ -212,11 +212,11 @@ export const TableComponent = ({
                                                                 Are you sure you
                                                                 want to proceed?
                                                             </AlertDialogTitle>
-                                                            {document.isArchived ? (
+                                                            {memorandum.isArchived ? (
                                                                 <AlertDialogDescription>
                                                                     Unarchiving
                                                                     this
-                                                                    document
+                                                                    memorandum
                                                                     will restore
                                                                     it to the
                                                                     active list,
@@ -229,7 +229,7 @@ export const TableComponent = ({
                                                                 <AlertDialogDescription>
                                                                     Archiving
                                                                     this
-                                                                    document
+                                                                    memorandum
                                                                     will remove
                                                                     it from the
                                                                     active list
@@ -246,12 +246,12 @@ export const TableComponent = ({
                                                             <AlertDialogAction
                                                                 onClick={() =>
                                                                     handleArchive(
-                                                                        document.id,
-                                                                        document.isArchived
+                                                                        memorandum.id,
+                                                                        memorandum.isArchived
                                                                     )
                                                                 }
                                                             >
-                                                                {document.isArchived
+                                                                {memorandum.isArchived
                                                                     ? "Unarchive"
                                                                     : "Archive"}
                                                             </AlertDialogAction>
@@ -267,7 +267,7 @@ export const TableComponent = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No documents found.
+                        No memorandums found.
                     </p>
                 )}
             </div>

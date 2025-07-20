@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
 
     if (ids.length === 0) {
         return NextResponse.json(
-            { error: "No document IDs provided" },
+            { error: "No memorandum IDs provided" },
             { status: 400 }
         );
     }
 
     try {
-        const documents = await db.document.findMany({
+        const memorandums = await db.memorandum.findMany({
             where: {
                 id: { in: ids },
             },
@@ -31,11 +31,11 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(documents);
+        return NextResponse.json(memorandums);
     } catch (error) {
-        console.error("Failed to fetch documents:", error);
+        console.error("Failed to fetch memorandums:", error);
         return NextResponse.json(
-            { error: "Failed to fetch documents" },
+            { error: "Failed to fetch memorandums" },
             { status: 500 }
         );
     }

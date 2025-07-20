@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { documentSchema } from "@/schemas";
+import { memorandumSchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
@@ -44,9 +44,9 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-type DocumentFormInputs = z.infer<typeof documentSchema>;
+type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 
-interface Document {
+interface Memorandum {
     id: string;
     name: string;
     quantity: number;
@@ -55,39 +55,39 @@ interface Document {
     isArchived: boolean;
 }
 
-interface PaginatedDocuments {
-    documents: Document[];
-    totalDocuments: number;
+interface PaginatedMemorandums {
+    memorandums: Memorandum[];
+    totalMemorandums: number;
     currentPage: number;
     totalPages: number;
 }
 
-const fetchDocuments = async (
+const fetchMemorandums = async (
     page: number = 1,
     searchInput: string = "",
     sort: string = "createdAt:desc",
-    documentState: string = "active",
+    memorandumState: string = "active",
     signal?: AbortSignal
-): Promise<PaginatedDocuments> => {
+): Promise<PaginatedMemorandums> => {
     try {
         const res = await fetch(
-            `/api/documents?page=${page}&search=${encodeURIComponent(
+            `/api/memorandums?page=${page}&search=${encodeURIComponent(
                 searchInput
-            )}&documentState=${encodeURIComponent(
-                documentState
+            )}&memorandumState=${encodeURIComponent(
+                memorandumState
             )}&sort=${encodeURIComponent(sort)}`,
             { signal }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch documents");
+        if (!res.ok) throw new Error("Failed to fetch memorandums");
         return res.json();
     } catch (error: unknown) {
         if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Failed to load documents:", error);
+            console.error("Failed to load memorandums:", error);
         }
         return {
-            documents: [],
-            totalDocuments: 0,
+            memorandums: [],
+            totalMemorandums: 0,
             currentPage: page,
             totalPages: 1,
         };
@@ -95,22 +95,21 @@ const fetchDocuments = async (
 };
 
 export default function AdminDashboard() {
-    const [documents, setDocuments] = useState<Document[]>([]);
+    const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
-    const [editingDocument, setEditingDocument] = useState<Document | null>(
-        null
-    );
+    const [editingMemorandum, setEditingMemorandum] =
+        useState<Memorandum | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState("");
     const [sortOption, setSortOption] = useState<string>("createdAt:desc");
     const [viewMode, setViewMode] = useState<"table" | "card">("card");
-    const [documentState, setDocumentState] = useState<"active" | "archived">(
-        "active"
-    );
+    const [memorandumState, setMemorandumState] = useState<
+        "active" | "archived"
+    >("active");
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const debouncedSearchInput = useDebounce(searchInput, 250);
     const controllerRef = useRef<AbortController | null>(null);
@@ -118,7 +117,7 @@ export default function AdminDashboard() {
     const [isExporting, setIsExporting] = useState(false);
     const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] =
         useState(false);
-    const [deleteRestrictedDocumentName, setDeleteRestrictedDocumentName] =
+    const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] =
         useState("");
 
     const {
@@ -129,8 +128,8 @@ export default function AdminDashboard() {
         setValue,
         watch,
         trigger,
-    } = useForm<DocumentFormInputs>({
-        resolver: zodResolver(documentSchema),
+    } = useForm<MemorandumFormInputs>({
+        resolver: zodResolver(memorandumSchema),
         mode: "onChange",
     });
 
@@ -144,7 +143,7 @@ export default function AdminDashboard() {
         []
     );
 
-    const loadDocuments = useCallback(
+    const loadMemorandums = useCallback(
         async (page = 1) => {
             setLoading(true);
 
@@ -156,57 +155,57 @@ export default function AdminDashboard() {
             controllerRef.current = controller;
 
             try {
-                const { documents: fetchedDocuments, totalPages } =
-                    await fetchDocuments(
+                const { memorandums: fetchedMemorandums, totalPages } =
+                    await fetchMemorandums(
                         page,
                         debouncedSearchInput,
                         sortOption,
-                        documentState,
+                        memorandumState,
                         controller.signal
                     );
 
-                setDocuments(fetchedDocuments);
+                setMemorandums(fetchedMemorandums);
                 setTotalPages(totalPages);
             } catch (error: unknown) {
                 if (error instanceof Error && error.name !== "AbortError") {
-                    console.error("Failed to load documents:", error);
+                    console.error("Failed to load memorandums:", error);
                 }
             } finally {
                 setLoading(false);
             }
         },
-        [debouncedSearchInput, sortOption, documentState]
+        [debouncedSearchInput, sortOption, memorandumState]
     );
 
     useEffect(() => {
-        loadDocuments(page);
+        loadMemorandums(page);
         return () => {
             controllerRef.current?.abort();
         };
-    }, [page, loadDocuments]);
+    }, [page, loadMemorandums]);
 
-    const refreshDocuments = useCallback(
+    const refreshMemorandums = useCallback(
         async (add = false) => {
-            const updatedDocuments = await fetchDocuments(
+            const updatedMemorandums = await fetchMemorandums(
                 page,
                 debouncedSearchInput,
                 sortOption,
-                documentState,
+                memorandumState,
                 controllerRef.current?.signal
             );
 
-            if (updatedDocuments.documents.length === 0 && page > 1) {
+            if (updatedMemorandums.memorandums.length === 0 && page > 1) {
                 setPage((prevPage) => prevPage - 1);
             } else {
-                setDocuments(updatedDocuments.documents);
-                setTotalPages(updatedDocuments.totalPages);
+                setMemorandums(updatedMemorandums.memorandums);
+                setTotalPages(updatedMemorandums.totalPages);
                 if (add) setPage(1);
             }
         },
-        [page, debouncedSearchInput, sortOption, documentState]
+        [page, debouncedSearchInput, sortOption, memorandumState]
     );
 
-    const onSubmit = async (data: DocumentFormInputs) => {
+    const onSubmit = async (data: MemorandumFormInputs) => {
         setSubmitLoading(true);
         try {
             const formData = new FormData();
@@ -224,10 +223,10 @@ export default function AdminDashboard() {
                 formData.append("image", imageValue);
             }
 
-            const method = editingDocument ? "PUT" : "POST";
-            const url = editingDocument
-                ? `/api/documents/${editingDocument.id}`
-                : `/api/documents`;
+            const method = editingMemorandum ? "PUT" : "POST";
+            const url = editingMemorandum
+                ? `/api/memorandums/${editingMemorandum.id}`
+                : `/api/memorandums`;
 
             const res = await fetch(url, {
                 method,
@@ -238,18 +237,18 @@ export default function AdminDashboard() {
                 const errorData = await res.json();
                 throw new Error(
                     errorData.error ||
-                        (editingDocument
-                            ? "Failed to update document"
-                            : "Failed to add document")
+                        (editingMemorandum
+                            ? "Failed to update memorandum"
+                            : "Failed to add memorandum")
                 );
             }
 
             reset();
             setIsDialogOpen(false);
-            await refreshDocuments(method === "POST");
+            await refreshMemorandums(method === "POST");
             toast({
-                title: `Document ${method === "POST" ? "Added" : "Updated"}`,
-                description: `The document has been successfully ${
+                title: `Memorandum ${method === "POST" ? "Added" : "Updated"}`,
+                description: `The memorandum has been successfully ${
                     method === "POST" ? "added" : "updated"
                 }.`,
             });
@@ -271,7 +270,7 @@ export default function AdminDashboard() {
     const handleDelete = async (id: string) => {
         setDeleteLoading(true);
         try {
-            const res = await fetch(`/api/documents/${id}`, {
+            const res = await fetch(`/api/memorandums/${id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -282,24 +281,28 @@ export default function AdminDashboard() {
                 const errorData = await res.json();
                 if (
                     errorData.error ===
-                    "Cannot delete document with associated requests"
+                    "Cannot delete memorandum with associated requests"
                 ) {
-                    const documentToDelete = documents.find(
-                        (document) => document.id === id
+                    const memorandumToDelete = memorandums.find(
+                        (memorandum) => memorandum.id === id
                     );
-                    if (documentToDelete) {
-                        setDeleteRestrictedDocumentName(documentToDelete.name);
+                    if (memorandumToDelete) {
+                        setDeleteRestrictedMemorandumName(
+                            memorandumToDelete.name
+                        );
                         setIsDeleteRestrictedDialogOpen(true);
                     }
                     return;
                 }
-                throw new Error(errorData.error || "Failed to delete document");
+                throw new Error(
+                    errorData.error || "Failed to delete memorandum"
+                );
             }
 
-            await refreshDocuments();
+            await refreshMemorandums();
             toast({
-                title: "Document Deleted",
-                description: "The document has been successfully removed.",
+                title: "Memorandum Deleted",
+                description: "The memorandum has been successfully removed.",
             });
         } catch (error) {
             console.error("Delete failed", error);
@@ -308,7 +311,7 @@ export default function AdminDashboard() {
                 description:
                     error instanceof Error
                         ? error.message
-                        : "Failed to delete document",
+                        : "Failed to delete memorandum",
                 variant: "destructive",
             });
         } finally {
@@ -319,19 +322,19 @@ export default function AdminDashboard() {
     const handleArchive = async (id: string, currentState: boolean) => {
         setDeleteLoading(true);
         try {
-            const res = await fetch(`/api/documents/${id}/archive`, {
+            const res = await fetch(`/api/memorandums/${id}/archive`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
             if (!res.ok) throw new Error("Failed to update archive status");
-            await refreshDocuments();
+            await refreshMemorandums();
             toast({
                 title: currentState
-                    ? "Document Unarchived"
-                    : "Document Archived",
-                description: `The document has been successfully ${
+                    ? "Memorandum Unarchived"
+                    : "Memorandum Archived",
+                description: `The memorandum has been successfully ${
                     currentState ? "unarchived" : "archived"
                 }.`,
             });
@@ -349,16 +352,16 @@ export default function AdminDashboard() {
     };
 
     const handleEdit = useCallback(
-        (document: Document) => {
-            setEditingDocument(document);
-            reset(document);
+        (memorandum: Memorandum) => {
+            setEditingMemorandum(memorandum);
+            reset(memorandum);
             setIsDialogOpen(true);
         },
         [reset]
     );
 
     const openAddModal = useCallback(() => {
-        setEditingDocument(null);
+        setEditingMemorandum(null);
         setIsDialogOpen(true);
     }, [reset]);
 
@@ -379,10 +382,10 @@ export default function AdminDashboard() {
             setIsExporting(true);
 
             const response = await fetch(
-                `/api/documents/export?search=${encodeURIComponent(
+                `/api/memorandums/export?search=${encodeURIComponent(
                     debouncedSearchInput
-                )}&documentState=${encodeURIComponent(
-                    documentState
+                )}&memorandumState=${encodeURIComponent(
+                    memorandumState
                 )}&sort=${encodeURIComponent(sortOption)}`
             );
 
@@ -390,15 +393,15 @@ export default function AdminDashboard() {
 
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
+            const a = memorandum.createElement("a");
             a.href = url;
             a.download = `inventory report-${
                 new Date().toISOString().split("T")[0]
             }.csv`;
-            document.body.appendChild(a);
+            memorandum.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            memorandum.body.removeChild(a);
 
             toast({
                 title: "Success",
@@ -426,15 +429,15 @@ export default function AdminDashboard() {
                     <div className="flex gap-2">
                         <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
-                                title="Active Documents"
+                                title="Active Memorandums"
                                 variant={
-                                    documentState === "active"
+                                    memorandumState === "active"
                                         ? "default"
                                         : "ghost"
                                 }
                                 size="sm"
                                 onClick={() => {
-                                    setDocumentState("active");
+                                    setMemorandumState("active");
                                     setPage(1);
                                     setSearchInput("");
 
@@ -445,15 +448,15 @@ export default function AdminDashboard() {
                                 <Package className="h-5 w-5" />
                             </Button>
                             <Button
-                                title="Archived Documents"
+                                title="Archived Memorandums"
                                 variant={
-                                    documentState === "archived"
+                                    memorandumState === "archived"
                                         ? "default"
                                         : "ghost"
                                 }
                                 size="sm"
                                 onClick={() => {
-                                    setDocumentState("archived");
+                                    setMemorandumState("archived");
                                     setPage(1);
                                     setSearchInput("");
                                     setSortOption("createdAt:desc");
@@ -501,7 +504,7 @@ export default function AdminDashboard() {
                             disabled={loading}
                             className={loading ? "opacity-50" : ""}
                         >
-                            Add New Document
+                            Add New Memorandum
                         </Button>
                     </div>
                 </div>
@@ -509,7 +512,7 @@ export default function AdminDashboard() {
                 <div className="flex pb-2">
                     <div className="flex-none w-1/2 pe-1">
                         <Input
-                            placeholder="Search documents..."
+                            placeholder="Search memorandums..."
                             value={searchInput}
                             onChange={(e) => {
                                 setSearchInput(e.target.value);
@@ -566,7 +569,7 @@ export default function AdminDashboard() {
                         </div>
                     ) : viewMode === "table" ? (
                         <TableComponent
-                            documents={documents}
+                            memorandums={memorandums}
                             handleEdit={handleEdit}
                             deleteLoading={deleteLoading}
                             handleDelete={handleDelete}
@@ -576,7 +579,7 @@ export default function AdminDashboard() {
                         />
                     ) : (
                         <CardView
-                            documents={documents}
+                            memorandums={memorandums}
                             handleEdit={handleEdit}
                             deleteLoading={deleteLoading}
                             handleDelete={handleDelete}
@@ -603,7 +606,9 @@ export default function AdminDashboard() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {editingDocument ? "Edit Document" : "Add Document"}
+                            {editingMemorandum
+                                ? "Edit Memorandum"
+                                : "Add Memorandum"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -662,7 +667,7 @@ export default function AdminDashboard() {
                                 {watch("image") && (
                                     <Image
                                         src={watch("image") || ""}
-                                        alt="Document preview"
+                                        alt="Memorandum preview"
                                         className="w-20 h-20 object-cover rounded-md"
                                         width={80}
                                         height={80}
@@ -682,9 +687,9 @@ export default function AdminDashboard() {
 
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
-                                {editingDocument
-                                    ? "Update Document"
-                                    : "Add Document"}
+                                {editingMemorandum
+                                    ? "Update Memorandum"
+                                    : "Add Memorandum"}
                             </Button>
                             <DialogClose asChild>
                                 <Button
@@ -717,7 +722,8 @@ export default function AdminDashboard() {
 
                     <div className="p-6">
                         <AlertDialogDescription className="text-center text-base leading-relaxed text-gray-600 dark:text-gray-300">
-                            The document &quot;{deleteRestrictedDocumentName}
+                            The memorandum &quot;
+                            {deleteRestrictedMemorandumName}
                             &quot; cannot be deleted because it has associated
                             transactions. This restriction is in place to
                             maintain data integrity and prevent disruption to

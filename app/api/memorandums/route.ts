@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { uploadImage } from "@/lib/cloudinary";
 import { auth } from "@/auth";
-import { documentSchema } from "@/schemas";
+import { memorandumSchema } from "@/schemas";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -17,25 +17,25 @@ export async function GET(request: NextRequest) {
     const [sortField, sortOrder] = (
         searchParams.get("sort") || "createdAt:desc"
     ).split(":");
-    const documentState = searchParams.get("documentState");
+    const memorandumState = searchParams.get("memorandumState");
     const limit = 12;
 
     try {
-        const [totalDocuments, documents] = await db.$transaction([
-            db.document.count({
+        const [totalMemorandums, memorandums] = await db.$transaction([
+            db.memorandum.count({
                 where: {
                     name: { contains: search, mode: "insensitive" },
 
-                    isArchived: documentState === "archived",
+                    isArchived: memorandumState === "archived",
                 },
             }),
-            db.document.findMany({
+            db.memorandum.findMany({
                 skip: (page - 1) * limit,
                 take: limit,
                 where: {
                     name: { contains: search, mode: "insensitive" },
 
-                    isArchived: documentState === "archived",
+                    isArchived: memorandumState === "archived",
                 },
                 orderBy: {
                     [sortField]: sortOrder.toLowerCase() as Prisma.SortOrder,
@@ -52,15 +52,15 @@ export async function GET(request: NextRequest) {
         ]);
 
         return NextResponse.json({
-            documents,
-            totalPages: Math.ceil(totalDocuments / limit),
+            memorandums,
+            totalPages: Math.ceil(totalMemorandums / limit),
             currentPage: page,
-            totalDocuments,
+            totalMemorandums,
         });
     } catch (error) {
-        console.error("Error fetching documents:", error);
+        console.error("Error fetching memorandums:", error);
         return NextResponse.json(
-            { error: "Failed to fetch documents" },
+            { error: "Failed to fetch memorandums" },
             { status: 500 }
         );
     }
@@ -84,14 +84,14 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
 
-        const documentData = {
+        const memorandumData = {
             name: formData.get("name") as string,
             quantity: parseInt(formData.get("quantity") as string),
             reorderPoint: parseInt(formData.get("reorderPoint") as string),
             image: formData.get("image") as string,
         };
 
-        const validatedData = documentSchema.parse(documentData);
+        const validatedData = memorandumSchema.parse(memorandumData);
 
         let imageUrl: string | undefined;
         const image = formData.get("image") as string;
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
             imageUrl = uploadResponse.secure_url;
         }
 
-        const document = await db.document.create({
+        const memorandum = await db.memorandum.create({
             data: {
                 name: validatedData.name,
                 quantity: validatedData.quantity,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(document, { status: 201 });
+        return NextResponse.json(memorandum, { status: 201 });
     } catch (error) {
         if (error instanceof Error && error.name === "ZodError") {
             return NextResponse.json(
@@ -127,9 +127,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.error("Error creating document:", error);
+        console.error("Error creating memorandum:", error);
         return NextResponse.json(
-            { error: "Failed to create document" },
+            { error: "Failed to create memorandum" },
             { status: 500 }
         );
     }

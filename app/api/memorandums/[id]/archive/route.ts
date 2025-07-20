@@ -24,15 +24,15 @@ export async function PATCH(
 
     if (!id) {
         return NextResponse.json(
-            { error: "Document ID is required" },
+            { error: "Memorandum ID is required" },
             { status: 400 }
         );
     }
 
     try {
         // Using Prisma transaction for atomic operation
-        const document = await db.$transaction(async (tx) => {
-            const currentDocument = await tx.document.findUnique({
+        const memorandum = await db.$transaction(async (tx) => {
+            const currentMemorandum = await tx.memorandum.findUnique({
                 where: { id },
                 select: {
                     quantity: true,
@@ -41,14 +41,14 @@ export async function PATCH(
                 },
             });
 
-            if (!currentDocument) {
-                throw new Error("Document not found");
+            if (!currentMemorandum) {
+                throw new Error("Memorandum not found");
             }
 
-            return tx.document.update({
+            return tx.memorandum.update({
                 where: { id },
                 data: {
-                    isArchived: !currentDocument.isArchived,
+                    isArchived: !currentMemorandum.isArchived,
                 },
                 select: {
                     id: true,
@@ -57,7 +57,7 @@ export async function PATCH(
             });
         });
 
-        return NextResponse.json(document);
+        return NextResponse.json(memorandum);
     } catch (error) {
         console.error("Failed to toggle archive status:", error);
         return NextResponse.json(

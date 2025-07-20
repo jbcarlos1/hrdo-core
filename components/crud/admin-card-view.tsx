@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { HiDotsHorizontal } from "react-icons/hi";
 
-interface Document {
+interface Memorandum {
     id: string;
     name: string;
     quantity: number;
@@ -27,8 +27,8 @@ interface Document {
 }
 
 interface CardViewComponentProps {
-    documents: Document[];
-    handleEdit: (document: Document) => void;
+    memorandums: Memorandum[];
+    handleEdit: (memorandum: Memorandum) => void;
     handleDelete: (id: string) => void;
     handleArchive: (id: string, currentState: boolean) => void;
     deleteLoading: boolean;
@@ -37,7 +37,7 @@ interface CardViewComponentProps {
 }
 
 const CardView = ({
-    documents,
+    memorandums,
     handleEdit,
     handleDelete,
     handleArchive,
@@ -48,12 +48,12 @@ const CardView = ({
     return (
         <>
             <div className="border bg-white rounded-md h-full">
-                {documents.length !== 0 ? (
+                {memorandums.length !== 0 ? (
                     <div className="h-full overflow-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4 min-h-min">
-                            {documents.map((document) => (
+                            {memorandums.map((memorandum) => (
                                 <div
-                                    key={document.id}
+                                    key={memorandum.id}
                                     className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 hover:border-gray-300 group"
                                 >
                                     <div className="aspect-square relative bg-white p-4">
@@ -62,11 +62,11 @@ const CardView = ({
                                         </div>
                                         <div className="absolute top-4 right-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1.5 z-20">
                                             <Button
-                                                title="Edit document"
+                                                title="Edit memorandum"
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() =>
-                                                    handleEdit(document)
+                                                    handleEdit(memorandum)
                                                 }
                                                 disabled={deleteLoading}
                                                 className="shadow-md border border-gray-200"
@@ -76,7 +76,7 @@ const CardView = ({
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                     <Button
-                                                        title="Delete document"
+                                                        title="Delete memorandum"
                                                         variant="ghost"
                                                         size="icon"
                                                         disabled={deleteLoading}
@@ -94,7 +94,7 @@ const CardView = ({
                                                         <AlertDialogDescription>
                                                             This action cannot
                                                             be undone. Deleting
-                                                            this document will
+                                                            this memorandum will
                                                             permanently remove
                                                             it and its
                                                             associated data.
@@ -107,7 +107,7 @@ const CardView = ({
                                                         <AlertDialogAction
                                                             onClick={() =>
                                                                 handleDelete(
-                                                                    document.id
+                                                                    memorandum.id
                                                                 )
                                                             }
                                                         >
@@ -128,12 +128,12 @@ const CardView = ({
                                                     >
                                                         <Switch
                                                             title={
-                                                                document.isArchived
-                                                                    ? "Unarchive document"
-                                                                    : "Archive document"
+                                                                memorandum.isArchived
+                                                                    ? "Unarchive memorandum"
+                                                                    : "Archive memorandum"
                                                             }
                                                             checked={
-                                                                document.isArchived
+                                                                memorandum.isArchived
                                                             }
                                                             disabled={
                                                                 deleteLoading
@@ -148,10 +148,10 @@ const CardView = ({
                                                             Are you sure you
                                                             want to proceed?
                                                         </AlertDialogTitle>
-                                                        {document.isArchived ? (
+                                                        {memorandum.isArchived ? (
                                                             <AlertDialogDescription>
                                                                 Unarchiving this
-                                                                document will
+                                                                memorandum will
                                                                 restore it to
                                                                 the active list,
                                                                 making it
@@ -162,7 +162,7 @@ const CardView = ({
                                                         ) : (
                                                             <AlertDialogDescription>
                                                                 Archiving this
-                                                                document will
+                                                                memorandum will
                                                                 remove it from
                                                                 the active list
                                                                 and store it for
@@ -178,12 +178,12 @@ const CardView = ({
                                                         <AlertDialogAction
                                                             onClick={() =>
                                                                 handleArchive(
-                                                                    document.id,
-                                                                    document.isArchived
+                                                                    memorandum.id,
+                                                                    memorandum.isArchived
                                                                 )
                                                             }
                                                         >
-                                                            {document.isArchived
+                                                            {memorandum.isArchived
                                                                 ? "Unarchive"
                                                                 : "Archive"}
                                                         </AlertDialogAction>
@@ -195,12 +195,14 @@ const CardView = ({
                                         <div
                                             className="absolute inset-0 cursor-zoom-in p-4 bg-white"
                                             onClick={() =>
-                                                setSelectedImage(document.image)
+                                                setSelectedImage(
+                                                    memorandum.image
+                                                )
                                             }
                                         >
                                             <Image
-                                                src={document.image}
-                                                alt={document.name}
+                                                src={memorandum.image}
+                                                alt={memorandum.name}
                                                 fill
                                                 className="object-contain p-14 hover:p-12 transition-all duration-200"
                                             />
@@ -209,9 +211,9 @@ const CardView = ({
                                     <div className="p-4 space-y-3 border-t border-gray-100">
                                         <h3
                                             className="font-medium text-gray-900 truncate"
-                                            title={document.name}
+                                            title={memorandum.name}
                                         >
-                                            {document.name}
+                                            {memorandum.name}
                                         </h3>
 
                                         <div className="space-y-2 text-sm">
@@ -219,14 +221,16 @@ const CardView = ({
                                                 <span className="text-gray-500">
                                                     Quantity
                                                 </span>
-                                                <span>{document.quantity}</span>
+                                                <span>
+                                                    {memorandum.quantity}
+                                                </span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">
                                                     Reorder Point
                                                 </span>
                                                 <span>
-                                                    {document.reorderPoint}
+                                                    {memorandum.reorderPoint}
                                                 </span>
                                             </div>
                                         </div>
@@ -265,7 +269,7 @@ const CardView = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No documents found.
+                        No memorandums found.
                     </p>
                 )}
             </div>

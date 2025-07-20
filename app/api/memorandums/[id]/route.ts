@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { uploadImage, deleteImage } from "@/lib/cloudinary";
 import { auth } from "@/auth";
-import { documentSchema } from "@/schemas";
+import { memorandumSchema } from "@/schemas";
 
 export async function PUT(
     request: NextRequest,
@@ -26,7 +26,7 @@ export async function PUT(
 
     if (!id) {
         return NextResponse.json(
-            { error: "Document ID is required" },
+            { error: "Memorandum ID is required" },
             { status: 400 }
         );
     }
@@ -34,18 +34,18 @@ export async function PUT(
     try {
         const formData = await request.formData();
 
-        const DocumentData = {
+        const MemorandumData = {
             name: formData.get("name") as string,
             quantity: parseInt(formData.get("quantity") as string),
             reorderPoint: parseInt(formData.get("reorderPoint") as string),
             image: formData.get("image") as string,
         };
 
-        const validatedData = documentSchema.parse(DocumentData);
+        const validatedData = memorandumSchema.parse(MemorandumData);
 
         // Using transaction for atomic operations
-        const updatedDocument = await db.$transaction(async (tx) => {
-            const currentDocument = await tx.document.findUnique({
+        const updatedMemorandum = await db.$transaction(async (tx) => {
+            const currentMemorandum = await tx.memorandum.findUnique({
                 where: { id },
                 select: {
                     image: true,
@@ -53,8 +53,8 @@ export async function PUT(
                 },
             });
 
-            if (!currentDocument) {
-                throw new Error("Document not found");
+            if (!currentMemorandum) {
+                throw new Error("Memorandum not found");
             }
 
             let imageUrl: string | undefined;
@@ -62,8 +62,8 @@ export async function PUT(
 
             // Only process image if it's a new data URL
             if (newImage?.startsWith("data:")) {
-                if (currentDocument.image) {
-                    await deleteImage(currentDocument.image);
+                if (currentMemorandum.image) {
+                    await deleteImage(currentMemorandum.image);
                 }
                 const uploadResponse = await uploadImage(newImage);
                 imageUrl = uploadResponse.secure_url;
@@ -76,7 +76,7 @@ export async function PUT(
                 ...(imageUrl && { image: imageUrl }),
             };
 
-            return tx.document.update({
+            return tx.memorandum.update({
                 where: { id },
                 data: updateData,
                 select: {
@@ -90,7 +90,7 @@ export async function PUT(
             });
         });
 
-        return NextResponse.json(updatedDocument);
+        return NextResponse.json(updatedMemorandum);
     } catch (error) {
         if (error instanceof Error && error.name === "ZodError") {
             return NextResponse.json(
@@ -99,9 +99,9 @@ export async function PUT(
             );
         }
 
-        console.error("Failed to update document:", error);
+        console.error("Failed to update memorandum:", error);
         return NextResponse.json(
-            { error: "Failed to update document" },
+            { error: "Failed to update memorandum" },
             { status: 500 }
         );
     }
@@ -129,32 +129,34 @@ export async function DELETE(
 
     if (!id) {
         return NextResponse.json(
-            { error: "Document ID is required" },
+            { error: "Memorandum ID is required" },
             { status: 400 }
         );
     }
 
     try {
         await db.$transaction(async (tx) => {
-            const document = await tx.document.findUnique({
+            const memorandum = await tx.memorandum.findUnique({
                 where: { id },
                 select: { image: true },
             });
 
-            if (document?.image) {
-                await deleteImage(document.image);
+            if (memorandum?.image) {
+                await deleteImage(memorandum.image);
             }
 
-            await tx.document.delete({
+            await tx.memorandum.delete({
                 where: { id },
             });
         });
 
-        return NextResponse.json({ message: "Document deleted successfully" });
+        return NextResponse.json({
+            message: "Memorandum deleted successfully",
+        });
     } catch (error) {
-        console.error("Failed to delete document:", error);
+        console.error("Failed to delete memorandum:", error);
         return NextResponse.json(
-            { error: "Failed to delete document" },
+            { error: "Failed to delete memorandum" },
             { status: 500 }
         );
     }

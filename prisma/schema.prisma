@@ -109,7 +109,7 @@ model TwoFactorConfirmation {
     @@unique([userId])
 }
 
-model Document {
+model Memorandum {
     id           String        @id @default(cuid())
     name         String
     quantity     Int

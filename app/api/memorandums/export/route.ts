@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = new URL(request.url).searchParams;
     const search = searchParams.get("search") || "";
-    const documentState = searchParams.get("documentState");
+    const memorandumState = searchParams.get("memorandumState");
     const [sortField, sortOrder] = (
         searchParams.get("sort") || "createdAt:desc"
     ).split(":");
@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
         let data: any[] = [];
         let headers: string[] = [];
 
-        const documents = await db.document.findMany({
+        const memorandums = await db.memorandum.findMany({
             where: {
                 name: { contains: search, mode: "insensitive" },
-                isArchived: documentState === "archived",
+                isArchived: memorandumState === "archived",
             },
             orderBy: {
                 [sortField]: sortOrder.toLowerCase() as Prisma.SortOrder,
@@ -38,17 +38,17 @@ export async function GET(request: NextRequest) {
         });
 
         headers = [
-            "Document ID",
-            "Document Name",
+            "Memorandum ID",
+            "Memorandum Name",
             "Available Quantity",
             "Reorder Point",
         ];
 
-        data = documents.map((document) => ({
-            "Document ID": document.id,
-            "Document Name": document.name,
-            "Available Quantity": document.quantity,
-            "Reorder Point": document.reorderPoint,
+        data = memorandums.map((memorandum) => ({
+            "Memorandum ID": memorandum.id,
+            "Memorandum Name": memorandum.name,
+            "Available Quantity": memorandum.quantity,
+            "Reorder Point": memorandum.reorderPoint,
         }));
 
         const csvContent = [

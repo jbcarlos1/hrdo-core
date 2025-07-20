@@ -65,7 +65,7 @@ export const NewPasswordSchema = z.object({
     }),
 });
 
-export const documentSchema = z.object({
+export const memorandumSchema = z.object({
     name: z
         .string()
         .min(1, "Name is required")
