@@ -43,6 +43,7 @@ import {
     AlertDialogFooter,
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { DatePicker } from "@/components/ui/date-picker";
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 
@@ -99,6 +100,7 @@ const fetchMemorandums = async (
 };
 
 export default function AdminDashboard() {
+    const [date, setDate] = useState<Date | null>(null);
     const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -641,7 +643,7 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
-                                Sender's Office
+                                Sender&apos;s Office
                             </p>
                             <Input
                                 {...register("senderOffice")}
@@ -669,7 +671,12 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">Date</p>
-                            <Input {...register("date")} className="w-full" />
+                            <DatePicker
+                                {...register("date")}
+                                date={date}
+                                setDate={setDate}
+                                content="Test"
+                            />
                             {errors.date && (
                                 <p className="text-red-500 text-sm my-1">
                                     {errors.date.message}
