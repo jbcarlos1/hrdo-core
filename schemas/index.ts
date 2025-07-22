@@ -87,8 +87,8 @@ export const memorandumSchema = z.object({
         .min(1, "Subject is required")
         .max(100, "Subject must be less than 100 characters"),
     date: z
-        .string()
-        .min(1, "Date is required")
+        .string({ required_error: "Date is required" })
+        .nonempty("Date is required")
         .max(100, "Date must be less than 100 characters"),
     keywords: z
         .string()

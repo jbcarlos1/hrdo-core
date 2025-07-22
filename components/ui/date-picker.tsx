@@ -24,7 +24,7 @@ interface DatePickerProps {
     startYear?: number;
     endYear?: number;
     date: Date | null;
-    setDate: (date: Date) => void;
+    setDate: (date: Date | null) => void;
     content: string;
 }
 export function DatePicker({
@@ -55,14 +55,23 @@ export function DatePicker({
     );
 
     const handleMonthChange = (month: string) => {
-        const newDate = date
-            ? setMonth(date, months.indexOf(month))
-            : new Date();
+        let newDate;
+        if (date) {
+            newDate = setMonth(date, months.indexOf(month));
+        } else {
+            const now = new Date();
+            newDate = new Date(now.getFullYear(), months.indexOf(month), 1);
+        }
         setDate(newDate);
     };
 
     const handleYearChange = (year: string) => {
-        const newDate = date ? setYear(date, parseInt(year)) : new Date();
+        let newDate;
+        if (date) {
+            newDate = setYear(date, parseInt(year));
+        } else {
+            newDate = new Date(parseInt(year), 0, 1);
+        }
         setDate(newDate);
     };
 
