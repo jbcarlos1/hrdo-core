@@ -607,45 +607,49 @@ export default function AdminDashboard() {
                         onSubmit={handleSubmit(onSubmit)}
                         className="space-y-4"
                     >
-                        <div>
-                            <p className="text-sm my-2 text-gray-500">Date</p>
-                            <DatePicker
-                                date={date}
-                                setDate={(d: Date | null) => {
-                                    setDate(d);
-                                    setValue(
-                                        "date",
-                                        d
-                                            ? `${d.getFullYear()}-${String(
-                                                  d.getMonth() + 1
-                                              ).padStart(2, "0")}-${String(
-                                                  d.getDate()
-                                              ).padStart(2, "0")}`
-                                            : ""
-                                    );
-                                    trigger("date");
-                                }}
-                                content="Test"
-                            />
-                            {errors.date && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {errors.date.message}
+                        <div className="flex gap-2">
+                            <div>
+                                <p className="text-sm my-2 text-gray-500">
+                                    Memo Number
                                 </p>
-                            )}
-                        </div>
-                        <div>
-                            <p className="text-sm my-2 text-gray-500">
-                                Memo Number
-                            </p>
-                            <Input
-                                {...register("memoNumber")}
-                                className="w-full"
-                            />
-                            {errors.memoNumber && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {errors.memoNumber.message}
+                                <Input
+                                    {...register("memoNumber")}
+                                    className="w-full"
+                                />
+                                {errors.memoNumber && (
+                                    <p className="text-red-500 text-sm my-1">
+                                        {errors.memoNumber.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <p className="text-sm my-2 text-gray-500">
+                                    Date
                                 </p>
-                            )}
+                                <DatePicker
+                                    date={date}
+                                    setDate={(d: Date | null) => {
+                                        setDate(d);
+                                        setValue(
+                                            "date",
+                                            d
+                                                ? `${d.getFullYear()}-${String(
+                                                      d.getMonth() + 1
+                                                  ).padStart(2, "0")}-${String(
+                                                      d.getDate()
+                                                  ).padStart(2, "0")}`
+                                                : ""
+                                        );
+                                        trigger("date");
+                                    }}
+                                    content="Date"
+                                />
+                                {errors.date && (
+                                    <p className="text-red-500 text-sm my-1">
+                                        {errors.date.message}
+                                    </p>
+                                )}
+                            </div>
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
