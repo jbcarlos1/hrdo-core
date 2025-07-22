@@ -73,13 +73,18 @@ export async function PUT(
                 imageUrl = uploadResponse.secure_url;
             }
 
+            if (!validatedData.date) {
+                throw new Error("Date is required");
+            }
+            const dateObj = new Date(validatedData.date);
+
             const updateData = {
                 memoNumber: validatedData.memoNumber,
                 addressee: validatedData.addressee,
                 sender: validatedData.sender,
                 senderOffice: validatedData.senderOffice,
                 subject: validatedData.subject,
-                date: validatedData.date,
+                date: dateObj,
                 keywords: validatedData.keywords,
                 ...(imageUrl && { image: imageUrl }),
             };

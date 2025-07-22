@@ -109,6 +109,14 @@ export async function POST(request: NextRequest) {
             imageUrl = uploadResponse.secure_url;
         }
 
+        if (!validatedData.date) {
+            return NextResponse.json(
+                { error: "Date is required" },
+                { status: 400 }
+            );
+        }
+        const dateObj = new Date(validatedData.date);
+
         const memorandum = await db.memorandum.create({
             data: {
                 memoNumber: validatedData.memoNumber,
@@ -116,7 +124,7 @@ export async function POST(request: NextRequest) {
                 sender: validatedData.sender,
                 senderOffice: validatedData.senderOffice,
                 subject: validatedData.subject,
-                date: validatedData.date,
+                date: dateObj,
                 keywords: validatedData.keywords,
                 ...(imageUrl && { image: imageUrl }),
             },

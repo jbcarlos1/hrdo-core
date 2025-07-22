@@ -342,6 +342,7 @@ export default function AdminDashboard() {
     const handleEdit = useCallback(
         (memorandum: Memorandum) => {
             setEditingMemorandum(memorandum);
+            setDate(memorandum.date ? new Date(memorandum.date) : null);
             reset(memorandum);
             setIsDialogOpen(true);
         },
@@ -350,6 +351,8 @@ export default function AdminDashboard() {
 
     const openAddModal = useCallback(() => {
         setEditingMemorandum(null);
+        setDate(null);
+        reset();
         setIsDialogOpen(true);
     }, [reset]);
 
@@ -605,6 +608,32 @@ export default function AdminDashboard() {
                         className="space-y-4"
                     >
                         <div>
+                            <p className="text-sm my-2 text-gray-500">Date</p>
+                            <DatePicker
+                                date={date}
+                                setDate={(d: Date | null) => {
+                                    setDate(d);
+                                    setValue(
+                                        "date",
+                                        d
+                                            ? `${d.getFullYear()}-${String(
+                                                  d.getMonth() + 1
+                                              ).padStart(2, "0")}-${String(
+                                                  d.getDate()
+                                              ).padStart(2, "0")}`
+                                            : ""
+                                    );
+                                    trigger("date");
+                                }}
+                                content="Test"
+                            />
+                            {errors.date && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {errors.date.message}
+                                </p>
+                            )}
+                        </div>
+                        <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Memo Number
                             </p>
@@ -669,20 +698,7 @@ export default function AdminDashboard() {
                                 </p>
                             )}
                         </div>
-                        <div>
-                            <p className="text-sm my-2 text-gray-500">Date</p>
-                            <DatePicker
-                                {...register("date")}
-                                date={date}
-                                setDate={setDate}
-                                content="Test"
-                            />
-                            {errors.date && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {errors.date.message}
-                                </p>
-                            )}
-                        </div>
+
                         <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Keywords
