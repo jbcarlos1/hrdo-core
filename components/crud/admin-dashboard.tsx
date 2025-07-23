@@ -52,12 +52,18 @@ interface Memorandum {
     memoNumber: string;
     addressee: string;
     sender: string;
-    senderOffice: string;
+    senderUnit: string;
     subject: string;
     date: string;
     keywords: string;
     image: string;
     isArchived: boolean;
+}
+
+interface SenderUnit {
+    id: string;
+    unitCode: string;
+    unit: string;
 }
 
 interface PaginatedMemorandums {
@@ -102,6 +108,7 @@ const fetchMemorandums = async (
 export default function AdminDashboard() {
     const [date, setDate] = useState<Date | null>(null);
     const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
+    const [units, setUnits] = useState<SenderUnit[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
@@ -184,6 +191,23 @@ export default function AdminDashboard() {
     );
 
     useEffect(() => {
+        const fetchUnits = async () => {
+            try {
+                const res = await fetch("/api/sender-units");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch units");
+                }
+                const data = await res.json();
+                setUnits(data.senderUnits);
+            } catch (error) {
+                console.error("Error fetching units:", error);
+            }
+        };
+
+        fetchUnits();
+    }, []);
+
+    useEffect(() => {
         loadMemorandums(page);
         return () => {
             controllerRef.current?.abort();
@@ -244,8 +268,8 @@ export default function AdminDashboard() {
                 throw new Error(
                     errorData.error ||
                         (editingMemorandum
-                            ? "Failed to update memorandum"
-                            : "Failed to add memorandum")
+                            ? "Failed to update memo"
+                            : "Failed to add memo")
                 );
             }
 
@@ -386,9 +410,7 @@ export default function AdminDashboard() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `inventory report-${
-                new Date().toISOString().split("T")[0]
-            }.csv`;
+            a.download = `report-${new Date().toISOString().split("T")[0]}.csv`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -415,8 +437,15 @@ export default function AdminDashboard() {
             <div className="mx-auto mb-2 border bg-white rounded-md px-8 pt-8 pb-3 flex flex-col w-full shadow-md h-[calc(100vh-2rem)]">
                 <div className="flex justify-between items-center mb-2">
                     <h1 className="text-2xl font-semibold text-[#7b1113]">
-                        Inventory Management
+                        Memo Dashboard
                     </h1>
+
+                    <div>
+                        {units.map((unit) => (
+                            <div>{unit.unit}</div>
+                        ))}
+                        test
+                    </div>
                     <div className="flex gap-2">
                         <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
@@ -495,7 +524,7 @@ export default function AdminDashboard() {
                             disabled={loading}
                             className={loading ? "opacity-50" : ""}
                         >
-                            Add New Memorandum
+                            Add New Memo
                         </Button>
                     </div>
                 </div>
@@ -597,9 +626,7 @@ export default function AdminDashboard() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            {editingMemorandum
-                                ? "Edit Memorandum"
-                                : "Add Memorandum"}
+                            {editingMemorandum ? "Edit Memo" : "Add Memo"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -676,15 +703,15 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
-                                Sender&apos;s Office
+                                Sender&apos;s Unit
                             </p>
                             <Input
-                                {...register("senderOffice")}
+                                {...register("senderUnit")}
                                 className="w-full"
                             />
-                            {errors.senderOffice && (
+                            {errors.senderUnit && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.senderOffice.message}
+                                    {errors.senderUnit.message}
                                 </p>
                             )}
                         </div>
@@ -744,9 +771,7 @@ export default function AdminDashboard() {
 
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
-                                {editingMemorandum
-                                    ? "Update Memorandum"
-                                    : "Add Memorandum"}
+                                {editingMemorandum ? "Update Memo" : "Add Memo"}
                             </Button>
                             <DialogClose asChild>
                                 <Button
@@ -779,12 +804,10 @@ export default function AdminDashboard() {
 
                     <div className="p-6">
                         <AlertDialogDescription className="text-center text-base leading-relaxed text-gray-600 dark:text-gray-300">
-                            The memorandum &quot;
+                            The memo &quot;
                             {deleteRestrictedMemorandumName}
                             &quot; cannot be deleted because it has associated
-                            transactions. This restriction is in place to
-                            maintain data integrity and prevent disruption to
-                            existing supply transactions.
+                            transactions.
                         </AlertDialogDescription>
                     </div>
 

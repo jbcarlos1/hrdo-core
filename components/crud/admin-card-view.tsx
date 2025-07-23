@@ -22,7 +22,7 @@ interface Memorandum {
     memoNumber: string;
     addressee: string;
     sender: string;
-    senderOffice: string;
+    senderUnit: string;
     subject: string;
     date: string;
     keywords: string;
@@ -273,7 +273,7 @@ const CardView = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No memorandums found.
+                        No memos found.
                     </p>
                 )}
             </div>

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
                 memoNumber: true,
                 addressee: true,
                 sender: true,
-                senderOffice: true,
+                senderUnit: true,
                 subject: true,
                 date: true,
                 keywords: true,

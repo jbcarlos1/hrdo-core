@@ -111,10 +111,10 @@ model TwoFactorConfirmation {
 
 model Memorandum {
     id           String        @id @default(cuid())
-    memoNumber   String
+    memoNumber   String @unique
     addressee    String
     sender       String
-    senderOffice String
+    senderUnit String
     subject      String
     date         DateTime
     keywords     String
@@ -124,6 +124,11 @@ model Memorandum {
     isArchived   Boolean       @default(false)
 }
 
+model SenderUnit {
+    id          String @id @default(cuid())
+    unitCode    String @unique
+    unit        String @unique
+}
 
 
 

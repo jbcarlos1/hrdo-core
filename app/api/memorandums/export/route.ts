@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
                 memoNumber: true,
                 addressee: true,
                 sender: true,
-                senderOffice: true,
+                senderUnit: true,
                 subject: true,
                 date: true,
             },
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
             "Memo Number",
             "Addressee",
             "Sender",
-            "Sender's Office",
+            "Sender's Unit",
             "Subject",
             "Date",
         ];
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
             "Memo Number": memorandum.memoNumber,
             Addressee: memorandum.addressee,
             Sender: memorandum.sender,
-            "Sender's Office": memorandum.senderOffice,
+            "Sender's Unit": memorandum.senderUnit,
             Subject: memorandum.subject,
             Date: memorandum.date,
         }));

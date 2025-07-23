@@ -78,10 +78,10 @@ export const memorandumSchema = z.object({
         .string()
         .min(1, "Sender is required")
         .max(100, "Sender must be less than 100 characters"),
-    senderOffice: z
+    senderUnit: z
         .string()
-        .min(1, "Sender's office is required")
-        .max(100, "Sender's office must be less than 100 characters"),
+        .min(1, "Sender's unit is required")
+        .max(100, "Sender's unit must be less than 100 characters"),
     subject: z
         .string()
         .min(1, "Subject is required")

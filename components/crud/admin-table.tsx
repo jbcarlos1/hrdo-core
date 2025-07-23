@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { RiEditLine, RiDeleteBin6Line } from "react-icons/ri";
+import { format } from "date-fns";
 import {
     Table,
     TableBody,
@@ -29,7 +30,7 @@ interface Memorandum {
     memoNumber: string;
     addressee: string;
     sender: string;
-    senderOffice: string;
+    senderUnit: string;
     subject: string;
     date: string;
     keywords: string;
@@ -69,17 +70,19 @@ export const TableComponent = ({
                                             Image
                                         </TableHead>
                                         <TableHead className="px-4">
-                                            Memorandum name
+                                            Memo Number
                                         </TableHead>
                                         <TableHead className="px-4">
-                                            Qty
+                                            Addressee
                                         </TableHead>
-
-                                        <TableHead
-                                            className="px-4"
-                                            title="Reorder Point"
-                                        >
-                                            Reorder Point
+                                        <TableHead className="px-4">
+                                            Sender
+                                        </TableHead>
+                                        <TableHead className="px-4">
+                                            Sender&apos;s Unit
+                                        </TableHead>
+                                        <TableHead className="px-4">
+                                            Date
                                         </TableHead>
                                         <TableHead className="px-2 text-center">
                                             Edit
@@ -124,7 +127,33 @@ export const TableComponent = ({
                                             >
                                                 {memorandum.memoNumber}
                                             </TableCell>
-
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.addressee}
+                                            >
+                                                {memorandum.addressee}
+                                            </TableCell>
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.sender}
+                                            >
+                                                {memorandum.sender}
+                                            </TableCell>
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.senderUnit}
+                                            >
+                                                {memorandum.senderUnit}
+                                            </TableCell>
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.date}
+                                            >
+                                                {format(
+                                                    new Date(memorandum.date),
+                                                    "PP"
+                                                )}
+                                            </TableCell>
                                             <TableCell className="px-2 text-center">
                                                 <Button
                                                     title="Edit memorandum"
@@ -268,7 +297,7 @@ export const TableComponent = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No memorandums found.
+                        No memos found.
                     </p>
                 )}
             </div>
