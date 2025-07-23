@@ -10,6 +10,7 @@ import { memorandumSchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
+import { Plus } from "lucide-react";
 import {
     Select,
     SelectTrigger,
@@ -105,11 +106,11 @@ const fetchMemorandums = async (
             { signal }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch memorandums");
+        if (!res.ok) throw new Error("Failed to fetch memos");
         return res.json();
     } catch (error: unknown) {
         if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Failed to load memorandums:", error);
+            console.error("Failed to load memos:", error);
         }
         return {
             memorandums: [],
@@ -198,7 +199,7 @@ export default function AdminDashboard() {
                 setTotalPages(totalPages);
             } catch (error: unknown) {
                 if (error instanceof Error && error.name !== "AbortError") {
-                    console.error("Failed to load memorandums:", error);
+                    console.error("Failed to load memos:", error);
                 }
             } finally {
                 setLoading(false);
@@ -294,8 +295,8 @@ export default function AdminDashboard() {
             setIsDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
-                title: `Memorandum ${method === "POST" ? "Added" : "Updated"}`,
-                description: `The memorandum has been successfully ${
+                title: `Memo ${method === "POST" ? "Added" : "Updated"}`,
+                description: `The memo has been successfully ${
                     method === "POST" ? "added" : "updated"
                 }.`,
             });
@@ -325,13 +326,13 @@ export default function AdminDashboard() {
             });
 
             if (!res.ok) {
-                throw new Error("Failed to delete memorandum");
+                throw new Error("Failed to delete memo");
             }
 
             await refreshMemorandums();
             toast({
-                title: "Memorandum Deleted",
-                description: "The memorandum has been successfully removed.",
+                title: "Memo Deleted",
+                description: "The memo has been successfully removed.",
             });
         } catch (error) {
             console.error("Delete failed", error);
@@ -340,7 +341,7 @@ export default function AdminDashboard() {
                 description:
                     error instanceof Error
                         ? error.message
-                        : "Failed to delete memorandum",
+                        : "Failed to delete memo",
                 variant: "destructive",
             });
         } finally {
@@ -360,10 +361,8 @@ export default function AdminDashboard() {
             if (!res.ok) throw new Error("Failed to update archive status");
             await refreshMemorandums();
             toast({
-                title: currentState
-                    ? "Memorandum Unarchived"
-                    : "Memorandum Archived",
-                description: `The memorandum has been successfully ${
+                title: currentState ? "Memo Unarchived" : "Memo Archived",
+                description: `The memo has been successfully ${
                     currentState ? "unarchived" : "archived"
                 }.`,
             });
@@ -460,7 +459,7 @@ export default function AdminDashboard() {
                     <div className="flex gap-2">
                         <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
-                                title="Active Memorandums"
+                                title="Active Memos"
                                 variant={
                                     memorandumState === "active"
                                         ? "default"
@@ -479,7 +478,7 @@ export default function AdminDashboard() {
                                 <Package className="h-5 w-5" />
                             </Button>
                             <Button
-                                title="Archived Memorandums"
+                                title="Archived Memos"
                                 variant={
                                     memorandumState === "archived"
                                         ? "default"
@@ -543,7 +542,7 @@ export default function AdminDashboard() {
                 <div className="flex pb-2">
                     <div className="flex-none w-1/2 pe-1">
                         <Input
-                            placeholder="Search memorandums..."
+                            placeholder="Search memos..."
                             value={searchInput}
                             onChange={(e) => {
                                 setSearchInput(e.target.value);
@@ -724,95 +723,100 @@ export default function AdminDashboard() {
                             )}
                         </div>
                         <div>
-                            {/* <p className="text-sm my-2 text-gray-500">
-                                Sender&apos;s Unit
-                            </p>
-                            <Input
-                                {...register("senderUnit")}
-                                className="w-full"
-                            />
-                            {errors.senderUnit && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {errors.senderUnit.message}
-                                </p>
-                            )} */}
                             <p className="text-sm my-2 text-gray-500">
                                 Sender&apos;s Unit
                             </p>
-                            <Popover open={unitOpen} onOpenChange={setUnitOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={unitOpen}
-                                        className="w-full justify-between"
-                                    >
-                                        {unitValue
-                                            ? `${
-                                                  units.find(
-                                                      (unit) =>
-                                                          `${unit.unitCode}-${unit.unit}` ===
-                                                          unitValue
-                                                  )?.unitCode
-                                              }-${
-                                                  units.find(
-                                                      (unit) =>
-                                                          `${unit.unitCode}-${unit.unit}` ===
-                                                          unitValue
-                                                  )?.unit
-                                              }`
-                                            : "Select unit..."}
-                                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                    forceMount
-                                    className="w-full p-0 pointer-events-auto"
+                            <div className="flex">
+                                <Popover
+                                    open={unitOpen}
+                                    onOpenChange={setUnitOpen}
                                 >
-                                    <Command>
-                                        <CommandInput placeholder="Search unit..." />
-                                        <CommandList>
-                                            <CommandEmpty>
-                                                No unit found.
-                                            </CommandEmpty>
-                                            <CommandGroup>
-                                                {units.map((unit) => (
-                                                    <CommandItem
-                                                        key={`${unit.unitCode}-${unit.unit}`}
-                                                        value={`${unit.unitCode}-${unit.unit}`}
-                                                        onSelect={(
-                                                            currentValue
-                                                        ) => {
-                                                            setUnitValue(
-                                                                currentValue ===
-                                                                    unitValue
-                                                                    ? ""
-                                                                    : currentValue
-                                                            );
-                                                            setValue(
-                                                                "senderUnit",
-                                                                `${unit.unitCode}-${unit.unit}`
-                                                            );
-                                                            setUnitOpen(false);
-                                                        }}
-                                                    >
-                                                        <CheckIcon
-                                                            className={cn(
-                                                                "mr-2 h-4 w-4",
-                                                                unitValue ===
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={unitOpen}
+                                            className="w-full justify-between"
+                                        >
+                                            {unitValue
+                                                ? `${
+                                                      units.find(
+                                                          (unit) =>
+                                                              `${unit.unitCode}-${unit.unit}` ===
+                                                              unitValue
+                                                      )?.unitCode
+                                                  }-${
+                                                      units.find(
+                                                          (unit) =>
+                                                              `${unit.unitCode}-${unit.unit}` ===
+                                                              unitValue
+                                                      )?.unit
+                                                  }`
+                                                : "Select unit..."}
+                                            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        forceMount
+                                        className="w-full p-0 pointer-events-auto"
+                                    >
+                                        <Command>
+                                            <CommandInput placeholder="Search unit..." />
+                                            <CommandList>
+                                                <CommandEmpty>
+                                                    No unit found.
+                                                </CommandEmpty>
+                                                <CommandGroup>
+                                                    {units.map((unit) => (
+                                                        <CommandItem
+                                                            key={`${unit.unitCode}-${unit.unit}`}
+                                                            value={`${unit.unitCode}-${unit.unit}`}
+                                                            onSelect={(
+                                                                currentValue
+                                                            ) => {
+                                                                setUnitValue(
+                                                                    currentValue ===
+                                                                        unitValue
+                                                                        ? ""
+                                                                        : currentValue
+                                                                );
+                                                                setValue(
+                                                                    "senderUnit",
                                                                     `${unit.unitCode}-${unit.unit}`
-                                                                    ? "opacity-100"
-                                                                    : "opacity-0"
-                                                            )}
-                                                        />
-                                                        {`${unit.unitCode}-${unit.unit}`}
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
+                                                                );
+                                                                setUnitOpen(
+                                                                    false
+                                                                );
+                                                            }}
+                                                        >
+                                                            <CheckIcon
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    unitValue ===
+                                                                        `${unit.unitCode}-${unit.unit}`
+                                                                        ? "opacity-100"
+                                                                        : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {`${unit.unitCode}-${unit.unit}`}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <Button
+                                    className={`ms-1 p-0 w-[38px] h-9 ${
+                                        submitLoading ? "opacity-50" : ""
+                                    }`}
+                                    title="Add unit"
+                                    onClick={() => {}}
+                                    disabled={submitLoading}
+                                >
+                                    <Plus size={22} />
+                                </Button>
+                            </div>
                             {errors.senderUnit && (
                                 <p className="text-red-500 text-sm my-1">
                                     {errors.senderUnit.message}
@@ -855,7 +859,7 @@ export default function AdminDashboard() {
                                 {watch("image") && (
                                     <Image
                                         src={watch("image") || ""}
-                                        alt="Memorandum preview"
+                                        alt="Memo preview"
                                         className="w-20 h-20 object-cover rounded-md"
                                         width={80}
                                         height={80}
