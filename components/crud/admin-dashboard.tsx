@@ -44,6 +44,21 @@ import {
     AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 import { DatePicker } from "@/components/ui/date-picker";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 
@@ -106,6 +121,8 @@ const fetchMemorandums = async (
 };
 
 export default function AdminDashboard() {
+    const [unitOpen, setUnitOpen] = useState(false);
+    const [unitValue, setUnitValue] = useState("");
     const [date, setDate] = useState<Date | null>(null);
     const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
     const [units, setUnits] = useState<SenderUnit[]>([]);
@@ -440,12 +457,6 @@ export default function AdminDashboard() {
                         Memo Dashboard
                     </h1>
 
-                    <div>
-                        {units.map((unit) => (
-                            <div>{unit.unit}</div>
-                        ))}
-                        test
-                    </div>
                     <div className="flex gap-2">
                         <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
@@ -702,7 +713,7 @@ export default function AdminDashboard() {
                             )}
                         </div>
                         <div>
-                            <p className="text-sm my-2 text-gray-500">
+                            {/* <p className="text-sm my-2 text-gray-500">
                                 Sender&apos;s Unit
                             </p>
                             <Input
@@ -713,7 +724,77 @@ export default function AdminDashboard() {
                                 <p className="text-red-500 text-sm my-1">
                                     {errors.senderUnit.message}
                                 </p>
-                            )}
+                            )} */}
+                            <p className="text-sm my-2 text-gray-500">
+                                Sender&apos;s Unit
+                            </p>
+                            <Popover open={unitOpen} onOpenChange={setUnitOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={unitOpen}
+                                        className="w-full justify-between"
+                                    >
+                                        {unitValue
+                                            ? `${
+                                                  units.find(
+                                                      (unit) =>
+                                                          `${unit.unitCode}-${unit.unit}` ===
+                                                          unitValue
+                                                  )?.unitCode
+                                              }-${
+                                                  units.find(
+                                                      (unit) =>
+                                                          `${unit.unitCode}-${unit.unit}` ===
+                                                          unitValue
+                                                  )?.unit
+                                              }`
+                                            : "Select unit..."}
+                                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0 pointer-events-auto">
+                                    <Command>
+                                        <CommandInput placeholder="Search unit..." />
+                                        <CommandList>
+                                            <CommandEmpty>
+                                                No unit found.
+                                            </CommandEmpty>
+                                            <CommandGroup>
+                                                {units.map((unit) => (
+                                                    <CommandItem
+                                                        key={`${unit.unitCode}-${unit.unit}`}
+                                                        value={`${unit.unitCode}-${unit.unit}`}
+                                                        onSelect={(
+                                                            currentValue
+                                                        ) => {
+                                                            setUnitValue(
+                                                                currentValue ===
+                                                                    unitValue
+                                                                    ? ""
+                                                                    : currentValue
+                                                            );
+                                                            setUnitOpen(false);
+                                                        }}
+                                                    >
+                                                        <CheckIcon
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                unitValue ===
+                                                                    `${unit.unitCode}-${unit.unit}`
+                                                                    ? "opacity-100"
+                                                                    : "opacity-0"
+                                                            )}
+                                                        />
+                                                        {`${unit.unitCode}-${unit.unit}`}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
