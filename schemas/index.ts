@@ -79,7 +79,7 @@ export const memorandumSchema = z.object({
         .min(1, "Sender is required")
         .max(100, "Sender must be less than 100 characters"),
     senderUnit: z
-        .string()
+        .string({ required_error: "Sender's unit is required" })
         .min(1, "Sender's unit is required")
         .max(100, "Sender's unit must be less than 100 characters"),
     subject: z
@@ -88,7 +88,7 @@ export const memorandumSchema = z.object({
         .max(100, "Subject must be less than 100 characters"),
     date: z
         .string({ required_error: "Date is required" })
-        .nonempty("Date is required")
+        .min(1, "Date is required")
         .max(100, "Date must be less than 100 characters"),
     keywords: z
         .string()

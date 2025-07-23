@@ -789,6 +789,10 @@ export default function AdminDashboard() {
                                                                     ? ""
                                                                     : currentValue
                                                             );
+                                                            setValue(
+                                                                "senderUnit",
+                                                                `${unit.unitCode}-${unit.unit}`
+                                                            );
                                                             setUnitOpen(false);
                                                         }}
                                                     >
@@ -809,6 +813,11 @@ export default function AdminDashboard() {
                                     </Command>
                                 </PopoverContent>
                             </Popover>
+                            {errors.senderUnit && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {errors.senderUnit.message}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">
