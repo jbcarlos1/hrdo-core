@@ -633,7 +633,18 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            {isDialogOpen && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 transition-opacity"
+                    aria-hidden="true"
+                />
+            )}
+
+            <Dialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                modal={false}
+            >
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
@@ -754,7 +765,10 @@ export default function AdminDashboard() {
                                         <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-full p-0 pointer-events-auto">
+                                <PopoverContent
+                                    forceMount
+                                    className="w-full p-0 pointer-events-auto"
+                                >
                                     <Command>
                                         <CommandInput placeholder="Search unit..." />
                                         <CommandList>
