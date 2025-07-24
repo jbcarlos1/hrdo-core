@@ -133,6 +133,7 @@ export default function AdminDashboard() {
     const [editingMemorandum, setEditingMemorandum] =
         useState<Memorandum | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState("");
@@ -383,6 +384,7 @@ export default function AdminDashboard() {
         (memorandum: Memorandum) => {
             setEditingMemorandum(memorandum);
             setDate(memorandum.date ? new Date(memorandum.date) : null);
+            setUnitValue(memorandum.senderUnit ? memorandum.senderUnit : "");
             reset(memorandum);
             setIsDialogOpen(true);
         },
@@ -392,6 +394,7 @@ export default function AdminDashboard() {
     const openAddModal = useCallback(() => {
         setEditingMemorandum(null);
         setDate(null);
+        setUnitValue("");
         reset();
         setIsDialogOpen(true);
     }, [reset]);
