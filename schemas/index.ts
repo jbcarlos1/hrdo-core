@@ -98,3 +98,14 @@ export const memorandumSchema = z.object({
         .string({ required_error: "Image is required" })
         .min(1, "Date is required"),
 });
+
+export const senderUnitSchema = z.object({
+    unitCode: z
+        .string()
+        .min(1, "Unit code is required")
+        .max(20, "Unit code must be less than 20 characters"),
+    unit: z
+        .string()
+        .min(1, "Unit is required")
+        .max(100, "Unit must be less than 100 characters"),
+});

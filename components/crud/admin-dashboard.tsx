@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { memorandumSchema } from "@/schemas";
+import { memorandumSchema, senderUnitSchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/popover";
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
+type SenderUnitFormInputs = z.infer<typeof senderUnitSchema>;
 
 interface Memorandum {
     id: string;
@@ -87,6 +88,10 @@ interface PaginatedMemorandums {
     totalMemorandums: number;
     currentPage: number;
     totalPages: number;
+}
+
+interface PaginatedSenderUnits {
+    senderUnits: SenderUnit[];
 }
 
 const fetchMemorandums = async (
@@ -121,19 +126,35 @@ const fetchMemorandums = async (
     }
 };
 
+const fetchSenderUnits = async (): Promise<PaginatedSenderUnits> => {
+    try {
+        const res = await fetch("/api/sender-units");
+
+        if (!res.ok) throw new Error("Failed to fetch units");
+        return res.json();
+    } catch (error: unknown) {
+        if (error instanceof Error && error.name !== "AbortError") {
+            console.error("Failed to load units:", error);
+        }
+        return {
+            senderUnits: [],
+        };
+    }
+};
+
 export default function AdminDashboard() {
-    const [unitOpen, setUnitOpen] = useState(false);
-    const [unitValue, setUnitValue] = useState("");
+    const [senderUnitOpen, setSenderUnitOpen] = useState(false);
+    const [_senderUnitValue, _setSenderUnitValue] = useState("");
     const [date, setDate] = useState<Date | null>(null);
     const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
-    const [units, setUnits] = useState<SenderUnit[]>([]);
+    const [senderUnits, setSenderUnits] = useState<SenderUnit[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [editingMemorandum, setEditingMemorandum] =
         useState<Memorandum | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
+    const [isSenderUnitDialogOpen, setIsSenderUnitDialogOpen] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState("");
@@ -153,15 +174,28 @@ export default function AdminDashboard() {
         useState("");
 
     const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-        setValue,
-        watch,
-        trigger,
+        register: registerMemo,
+        handleSubmit: handleSubmitMemo,
+        formState: { errors: memoErrors },
+        reset: resetMemo,
+        setValue: setMemoValue,
+        watch: watchMemo,
+        trigger: triggerMemo,
     } = useForm<MemorandumFormInputs>({
         resolver: zodResolver(memorandumSchema),
+        mode: "onChange",
+    });
+
+    const {
+        register: registerSenderUnit,
+        handleSubmit: handleSubmitSenderUnit,
+        formState: { errors: senderUnitErrors },
+        reset: resetSenderUnit,
+        setValue: setSenderUnitValue,
+        watch: watchSenderUnit,
+        trigger: triggerSenderUnit,
+    } = useForm<SenderUnitFormInputs>({
+        resolver: zodResolver(senderUnitSchema),
         mode: "onChange",
     });
 
@@ -210,20 +244,20 @@ export default function AdminDashboard() {
     );
 
     useEffect(() => {
-        const fetchUnits = async () => {
+        const fetchSenderUnits = async () => {
             try {
                 const res = await fetch("/api/sender-units");
                 if (!res.ok) {
                     throw new Error("Failed to fetch units");
                 }
                 const data = await res.json();
-                setUnits(data.senderUnits);
+                setSenderUnits(data.senderUnits);
             } catch (error) {
                 console.error("Error fetching units:", error);
             }
         };
 
-        fetchUnits();
+        fetchSenderUnits();
     }, []);
 
     useEffect(() => {
@@ -254,7 +288,13 @@ export default function AdminDashboard() {
         [page, debouncedSearchInput, sortOption, memorandumState]
     );
 
-    const onSubmit = async (data: MemorandumFormInputs) => {
+    const refreshSenderUnits = useCallback(async () => {
+        const updatedSenderUnits = await fetchSenderUnits();
+
+        setSenderUnits(updatedSenderUnits.senderUnits);
+    }, []);
+
+    const onMemoSubmit = async (data: MemorandumFormInputs) => {
         setSubmitLoading(true);
         try {
             const formData = new FormData();
@@ -265,7 +305,7 @@ export default function AdminDashboard() {
                 }
             });
 
-            const imageValue = watch("image");
+            const imageValue = watchMemo("image");
             if (imageValue && imageValue.startsWith("data:")) {
                 formData.append("image", imageValue);
             } else if (imageValue) {
@@ -292,9 +332,9 @@ export default function AdminDashboard() {
                 );
             }
 
-            reset();
+            resetMemo();
             setIsDialogOpen(false);
-            setIsUnitDialogOpen(false);
+            setIsSenderUnitDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
                 title: `Memo ${method === "POST" ? "Added" : "Updated"}`,
@@ -314,6 +354,47 @@ export default function AdminDashboard() {
             });
         } finally {
             setSubmitLoading(false);
+        }
+    };
+
+    const onSenderUnitSubmit = async (data: SenderUnitFormInputs) => {
+        // setSubmitLoading(true);
+        try {
+            const formData = new FormData();
+            const { ...restData } = data;
+            Object.entries(restData).forEach(([key, value]) => {
+                formData.append(key, String(value));
+            });
+
+            const res = await fetch("/api/sender-units", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to add unit");
+            }
+
+            resetSenderUnit();
+            setIsSenderUnitDialogOpen(false);
+            await refreshSenderUnits();
+            toast({
+                title: "Unit Added",
+                description: "The memo has been successfully added",
+            });
+        } catch (error) {
+            console.error("Submit failed", error);
+            toast({
+                title: "Error",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred",
+                variant: "destructive",
+            });
+        } finally {
+            // setSubmitLoading(false);
         }
     };
 
@@ -385,18 +466,20 @@ export default function AdminDashboard() {
         (memorandum: Memorandum) => {
             setEditingMemorandum(memorandum);
             setDate(memorandum.date ? new Date(memorandum.date) : null);
-            setUnitValue(memorandum.senderUnit ? memorandum.senderUnit : "");
-            reset(memorandum);
+            _setSenderUnitValue(
+                memorandum.senderUnit ? memorandum.senderUnit : ""
+            );
+            resetMemo(memorandum);
             setIsDialogOpen(true);
         },
-        [reset]
+        [resetMemo]
     );
 
     const openAddModal = useCallback(() => {
         setEditingMemorandum(null);
         setDate(null);
-        setUnitValue("");
-        reset({
+        _setSenderUnitValue("");
+        resetMemo({
             memoNumber: "",
             addressee: "",
             sender: "",
@@ -407,18 +490,18 @@ export default function AdminDashboard() {
             image: "",
         });
         setIsDialogOpen(true);
-    }, [reset]);
+    }, [resetMemo]);
 
     const openAddUnitModal = useCallback(() => {
-        setIsUnitDialogOpen(true);
-    }, [reset]);
+        setIsSenderUnitDialogOpen(true);
+    }, [resetMemo]);
 
     const handleLocalImageSelect = async (file: File) => {
         return new Promise<void>((resolve) => {
             const reader = new FileReader();
             reader.onload = () => {
-                setValue("image", reader.result as string);
-                trigger("image");
+                setMemoValue("image", reader.result as string);
+                triggerMemo("image");
                 resolve();
             };
             reader.readAsDataURL(file);
@@ -662,12 +745,12 @@ export default function AdminDashboard() {
                 modal={false}
             >
                 <DialogContent className="border-black/80 overflow-hidden">
-                    {isUnitDialogOpen && (
+                    {/* {isSenderUnitDialogOpen && (
                         <div
                             className="fixed inset-0 z-50 bg-black/80 transition-opacity"
                             aria-hidden="true"
                         />
-                    )}
+                    )} */}
                     <DialogHeader>
                         <DialogTitle>
                             {editingMemorandum ? "Edit Memo" : "Add Memo"}
@@ -675,7 +758,7 @@ export default function AdminDashboard() {
                     </DialogHeader>
 
                     <form
-                        onSubmit={handleSubmit(onSubmit)}
+                        onSubmit={handleSubmitMemo(onMemoSubmit)}
                         className="space-y-4"
                     >
                         <div className="flex gap-2">
@@ -684,12 +767,12 @@ export default function AdminDashboard() {
                                     Memo Number
                                 </p>
                                 <Input
-                                    {...register("memoNumber")}
+                                    {...registerMemo("memoNumber")}
                                     className="w-full"
                                 />
-                                {errors.memoNumber && (
+                                {memoErrors.memoNumber && (
                                     <p className="text-red-500 text-sm my-1">
-                                        {errors.memoNumber.message}
+                                        {memoErrors.memoNumber.message}
                                     </p>
                                 )}
                             </div>
@@ -701,7 +784,7 @@ export default function AdminDashboard() {
                                     date={date}
                                     setDate={(d: Date | null) => {
                                         setDate(d);
-                                        setValue(
+                                        setMemoValue(
                                             "date",
                                             d
                                                 ? `${d.getFullYear()}-${String(
@@ -711,13 +794,13 @@ export default function AdminDashboard() {
                                                   ).padStart(2, "0")}`
                                                 : ""
                                         );
-                                        trigger("date");
+                                        triggerMemo("date");
                                     }}
                                     content="Date"
                                 />
-                                {errors.date && (
+                                {memoErrors.date && (
                                     <p className="text-red-500 text-sm my-1">
-                                        {errors.date.message}
+                                        {memoErrors.date.message}
                                     </p>
                                 )}
                             </div>
@@ -727,21 +810,24 @@ export default function AdminDashboard() {
                                 Addressee
                             </p>
                             <Input
-                                {...register("addressee")}
+                                {...registerMemo("addressee")}
                                 className="w-full"
                             />
-                            {errors.addressee && (
+                            {memoErrors.addressee && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.addressee.message}
+                                    {memoErrors.addressee.message}
                                 </p>
                             )}
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">Sender</p>
-                            <Input {...register("sender")} className="w-full" />
-                            {errors.sender && (
+                            <Input
+                                {...registerMemo("sender")}
+                                className="w-full"
+                            />
+                            {memoErrors.sender && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.sender.message}
+                                    {memoErrors.sender.message}
                                 </p>
                             )}
                         </div>
@@ -751,28 +837,28 @@ export default function AdminDashboard() {
                             </p>
                             <div className="flex">
                                 <Popover
-                                    open={unitOpen}
-                                    onOpenChange={setUnitOpen}
+                                    open={senderUnitOpen}
+                                    onOpenChange={setSenderUnitOpen}
                                 >
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
                                             role="combobox"
-                                            aria-expanded={unitOpen}
+                                            aria-expanded={senderUnitOpen}
                                             className="w-full justify-between"
                                         >
-                                            {unitValue
+                                            {_senderUnitValue
                                                 ? `${
-                                                      units.find(
-                                                          (unit) =>
-                                                              `${unit.unitCode}-${unit.unit}` ===
-                                                              unitValue
+                                                      senderUnits.find(
+                                                          (senderUnit) =>
+                                                              `${senderUnit.unitCode}-${senderUnit.unit}` ===
+                                                              _senderUnitValue
                                                       )?.unitCode
                                                   }-${
-                                                      units.find(
-                                                          (unit) =>
-                                                              `${unit.unitCode}-${unit.unit}` ===
-                                                              unitValue
+                                                      senderUnits.find(
+                                                          (senderUnit) =>
+                                                              `${senderUnit.unitCode}-${senderUnit.unit}` ===
+                                                              _senderUnitValue
                                                       )?.unit
                                                   }`
                                                 : "Select unit..."}
@@ -790,40 +876,42 @@ export default function AdminDashboard() {
                                                     No unit found.
                                                 </CommandEmpty>
                                                 <CommandGroup>
-                                                    {units.map((unit) => (
-                                                        <CommandItem
-                                                            key={`${unit.unitCode}-${unit.unit}`}
-                                                            value={`${unit.unitCode}-${unit.unit}`}
-                                                            onSelect={(
-                                                                currentValue
-                                                            ) => {
-                                                                setUnitValue(
-                                                                    currentValue ===
-                                                                        unitValue
-                                                                        ? ""
-                                                                        : currentValue
-                                                                );
-                                                                setValue(
-                                                                    "senderUnit",
-                                                                    `${unit.unitCode}-${unit.unit}`
-                                                                );
-                                                                setUnitOpen(
-                                                                    false
-                                                                );
-                                                            }}
-                                                        >
-                                                            <CheckIcon
-                                                                className={cn(
-                                                                    "mr-2 h-4 w-4",
-                                                                    unitValue ===
-                                                                        `${unit.unitCode}-${unit.unit}`
-                                                                        ? "opacity-100"
-                                                                        : "opacity-0"
-                                                                )}
-                                                            />
-                                                            {`${unit.unitCode}-${unit.unit}`}
-                                                        </CommandItem>
-                                                    ))}
+                                                    {senderUnits.map(
+                                                        (senderUnit) => (
+                                                            <CommandItem
+                                                                key={`${senderUnit.unitCode}-${senderUnit.unit}`}
+                                                                value={`${senderUnit.unitCode}-${senderUnit.unit}`}
+                                                                onSelect={(
+                                                                    currentValue
+                                                                ) => {
+                                                                    _setSenderUnitValue(
+                                                                        currentValue ===
+                                                                            _senderUnitValue
+                                                                            ? ""
+                                                                            : currentValue
+                                                                    );
+                                                                    setMemoValue(
+                                                                        "senderUnit",
+                                                                        `${senderUnit.unitCode}-${senderUnit.unit}`
+                                                                    );
+                                                                    setSenderUnitOpen(
+                                                                        false
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <CheckIcon
+                                                                    className={cn(
+                                                                        "mr-2 h-4 w-4",
+                                                                        _senderUnitValue ===
+                                                                            `${senderUnit.unitCode}-${senderUnit.unit}`
+                                                                            ? "opacity-100"
+                                                                            : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                {`${senderUnit.unitCode}-${senderUnit.unit}`}
+                                                            </CommandItem>
+                                                        )
+                                                    )}
                                                 </CommandGroup>
                                             </CommandList>
                                         </Command>
@@ -841,9 +929,9 @@ export default function AdminDashboard() {
                                     <Plus size={22} />
                                 </Button>
                             </div>
-                            {errors.senderUnit && (
+                            {memoErrors.senderUnit && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.senderUnit.message}
+                                    {memoErrors.senderUnit.message}
                                 </p>
                             )}
                         </div>
@@ -852,12 +940,12 @@ export default function AdminDashboard() {
                                 Subject
                             </p>
                             <Input
-                                {...register("subject")}
+                                {...registerMemo("subject")}
                                 className="w-full"
                             />
-                            {errors.subject && (
+                            {memoErrors.subject && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.subject.message}
+                                    {memoErrors.subject.message}
                                 </p>
                             )}
                         </div>
@@ -867,12 +955,12 @@ export default function AdminDashboard() {
                                 Keywords
                             </p>
                             <Input
-                                {...register("keywords")}
+                                {...registerMemo("keywords")}
                                 className="w-full"
                             />
-                            {errors.keywords && (
+                            {memoErrors.keywords && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.keywords.message}
+                                    {memoErrors.keywords.message}
                                 </p>
                             )}
                         </div>
@@ -880,9 +968,9 @@ export default function AdminDashboard() {
                         <div>
                             <p className="text-sm my-2 text-gray-500">Image</p>
                             <div className="flex items-center gap-4">
-                                {watch("image") && (
+                                {watchMemo("image") && (
                                     <Image
-                                        src={watch("image") || ""}
+                                        src={watchMemo("image") || ""}
                                         alt="Memo preview"
                                         className="w-20 h-20 object-cover rounded-md"
                                         width={80}
@@ -894,15 +982,15 @@ export default function AdminDashboard() {
                                     loading={submitLoading}
                                 />
                             </div>
-                            {errors.image && (
+                            {memoErrors.image && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {errors.image.message}
+                                    {memoErrors.image.message}
                                 </p>
                             )}
                             <Dialog
-                                open={isUnitDialogOpen}
-                                onOpenChange={setIsUnitDialogOpen}
-                                modal={false}
+                                open={isSenderUnitDialogOpen}
+                                onOpenChange={setIsSenderUnitDialogOpen}
+                                // modal={false}
                             >
                                 <DialogContent>
                                     <DialogHeader>
@@ -910,7 +998,9 @@ export default function AdminDashboard() {
                                     </DialogHeader>
 
                                     <form
-                                        onSubmit={handleSubmit(onSubmit)}
+                                        onSubmit={handleSubmitSenderUnit(
+                                            onSenderUnitSubmit
+                                        )}
                                         className="space-y-4"
                                     >
                                         <div>
@@ -918,12 +1008,34 @@ export default function AdminDashboard() {
                                                 Unit Code
                                             </p>
                                             <Input
-                                                {...register("memoNumber")}
+                                                {...registerSenderUnit(
+                                                    "unitCode"
+                                                )}
                                                 className="w-full"
                                             />
-                                            {errors.memoNumber && (
+                                            {senderUnitErrors.unitCode && (
                                                 <p className="text-red-500 text-sm my-1">
-                                                    {errors.memoNumber.message}
+                                                    {
+                                                        senderUnitErrors
+                                                            .unitCode.message
+                                                    }
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm my-2 text-gray-500">
+                                                Unit
+                                            </p>
+                                            <Input
+                                                {...registerSenderUnit("unit")}
+                                                className="w-full"
+                                            />
+                                            {senderUnitErrors.unit && (
+                                                <p className="text-red-500 text-sm my-1">
+                                                    {
+                                                        senderUnitErrors.unit
+                                                            .message
+                                                    }
                                                 </p>
                                             )}
                                         </div>
