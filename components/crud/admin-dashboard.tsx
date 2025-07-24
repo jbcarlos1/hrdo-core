@@ -294,6 +294,7 @@ export default function AdminDashboard() {
 
             reset();
             setIsDialogOpen(false);
+            setIsUnitDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
                 title: `Memo ${method === "POST" ? "Added" : "Updated"}`,
@@ -406,6 +407,10 @@ export default function AdminDashboard() {
             image: "",
         });
         setIsDialogOpen(true);
+    }, [reset]);
+
+    const openAddUnitModal = useCallback(() => {
+        setIsUnitDialogOpen(true);
     }, [reset]);
 
     const handleLocalImageSelect = async (file: File) => {
@@ -656,7 +661,13 @@ export default function AdminDashboard() {
                 onOpenChange={setIsDialogOpen}
                 modal={false}
             >
-                <DialogContent>
+                <DialogContent className="border-black/80 overflow-hidden">
+                    {isUnitDialogOpen && (
+                        <div
+                            className="fixed inset-0 z-50 bg-black/80 transition-opacity"
+                            aria-hidden="true"
+                        />
+                    )}
                     <DialogHeader>
                         <DialogTitle>
                             {editingMemorandum ? "Edit Memo" : "Add Memo"}
@@ -819,11 +830,12 @@ export default function AdminDashboard() {
                                     </PopoverContent>
                                 </Popover>
                                 <Button
+                                    type="button"
                                     className={`ms-1 p-0 w-[38px] h-9 ${
                                         submitLoading ? "opacity-50" : ""
                                     }`}
                                     title="Add unit"
-                                    onClick={() => {}}
+                                    onClick={openAddUnitModal}
                                     disabled={submitLoading}
                                 >
                                     <Plus size={22} />
@@ -887,6 +899,54 @@ export default function AdminDashboard() {
                                     {errors.image.message}
                                 </p>
                             )}
+                            <Dialog
+                                open={isUnitDialogOpen}
+                                onOpenChange={setIsUnitDialogOpen}
+                                modal={false}
+                            >
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Add Unit</DialogTitle>
+                                    </DialogHeader>
+
+                                    <form
+                                        onSubmit={handleSubmit(onSubmit)}
+                                        className="space-y-4"
+                                    >
+                                        <div>
+                                            <p className="text-sm my-2 text-gray-500">
+                                                Unit Code
+                                            </p>
+                                            <Input
+                                                {...register("memoNumber")}
+                                                className="w-full"
+                                            />
+                                            {errors.memoNumber && (
+                                                <p className="text-red-500 text-sm my-1">
+                                                    {errors.memoNumber.message}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <DialogFooter>
+                                            <Button
+                                                type="submit"
+                                                disabled={submitLoading}
+                                            >
+                                                Add Unit
+                                            </Button>
+                                            <DialogClose asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    disabled={submitLoading}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </DialogClose>
+                                        </DialogFooter>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
                         </div>
 
                         <DialogFooter>
