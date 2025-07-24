@@ -395,7 +395,16 @@ export default function AdminDashboard() {
         setEditingMemorandum(null);
         setDate(null);
         setUnitValue("");
-        reset();
+        reset({
+            memoNumber: "",
+            addressee: "",
+            sender: "",
+            senderUnit: "",
+            subject: "",
+            date: "",
+            keywords: "",
+            image: "",
+        });
         setIsDialogOpen(true);
     }, [reset]);
 
