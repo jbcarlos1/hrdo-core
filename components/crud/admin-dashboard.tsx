@@ -90,7 +90,7 @@ interface PaginatedMemorandums {
     totalPages: number;
 }
 
-interface PaginatedSenderUnits {
+interface FetchedSenderUnits {
     senderUnits: SenderUnit[];
 }
 
@@ -126,7 +126,7 @@ const fetchMemorandums = async (
     }
 };
 
-const fetchSenderUnits = async (): Promise<PaginatedSenderUnits> => {
+const fetchSenderUnits = async (): Promise<FetchedSenderUnits> => {
     try {
         const res = await fetch("/api/sender-units");
 
@@ -191,9 +191,6 @@ export default function AdminDashboard() {
         handleSubmit: handleSubmitSenderUnit,
         formState: { errors: senderUnitErrors },
         reset: resetSenderUnit,
-        setValue: setSenderUnitValue,
-        watch: watchSenderUnit,
-        trigger: triggerSenderUnit,
     } = useForm<SenderUnitFormInputs>({
         resolver: zodResolver(senderUnitSchema),
         mode: "onChange",
@@ -203,8 +200,8 @@ export default function AdminDashboard() {
         () => [
             { value: "createdAt:desc", label: "Newest First" },
             { value: "createdAt:asc", label: "Oldest First" },
-            { value: "name:asc", label: "Name (A-Z)" },
-            { value: "name:desc", label: "Name (Z-A)" },
+            { value: "memoNumber:asc", label: "Name (A-Z)" },
+            { value: "memoNumber:desc", label: "Name (Z-A)" },
         ],
         []
     );
@@ -358,7 +355,7 @@ export default function AdminDashboard() {
     };
 
     const onSenderUnitSubmit = async (data: SenderUnitFormInputs) => {
-        // setSubmitLoading(true);
+        setSubmitLoading(true);
         try {
             const formData = new FormData();
             const { ...restData } = data;
@@ -381,7 +378,7 @@ export default function AdminDashboard() {
             await refreshSenderUnits();
             toast({
                 title: "Unit Added",
-                description: "The memo has been successfully added",
+                description: "The unit has been successfully added",
             });
         } catch (error) {
             console.error("Submit failed", error);
@@ -394,7 +391,7 @@ export default function AdminDashboard() {
                 variant: "destructive",
             });
         } finally {
-            // setSubmitLoading(false);
+            setSubmitLoading(false);
         }
     };
 
@@ -493,7 +490,10 @@ export default function AdminDashboard() {
     }, [resetMemo]);
 
     const openAddUnitModal = useCallback(() => {
-        resetSenderUnit();
+        resetSenderUnit({
+            unitCode: "",
+            unit: "",
+        });
         setIsSenderUnitDialogOpen(true);
     }, [resetSenderUnit]);
 
@@ -733,25 +733,8 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            {/* {isDialogOpen && (
-                <div
-                    className="fixed inset-0 z-50 bg-black/80 transition-opacity"
-                    aria-hidden="true"
-                />
-            )} */}
-
-            <Dialog
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                // modal={false}
-            >
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="border-black/80 overflow-hidden">
-                    {/* {isSenderUnitDialogOpen && (
-                        <div
-                            className="fixed inset-0 z-50 bg-black/80 transition-opacity"
-                            aria-hidden="true"
-                        />
-                    )} */}
                     <DialogHeader>
                         <DialogTitle>
                             {editingMemorandum ? "Edit Memo" : "Add Memo"}
@@ -1017,7 +1000,6 @@ export default function AdminDashboard() {
             <Dialog
                 open={isSenderUnitDialogOpen}
                 onOpenChange={setIsSenderUnitDialogOpen}
-                // modal={false}
             >
                 <DialogContent>
                     <DialogHeader>
