@@ -6,7 +6,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { memorandumSchema, senderUnitSchema } from "@/schemas";
+import {
+    memorandumSchema,
+    senderUnitSchema,
+    senderSchema,
+    addresseeSchema,
+} from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
@@ -63,6 +68,8 @@ import {
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 type SenderUnitFormInputs = z.infer<typeof senderUnitSchema>;
+type SenderFormInputs = z.infer<typeof senderSchema>;
+type AddresseeFormInputs = z.infer<typeof addresseeSchema>;
 
 interface Memorandum {
     id: string;
@@ -83,6 +90,16 @@ interface SenderUnit {
     unit: string;
 }
 
+interface Sender {
+    id: string;
+    fullName: string;
+}
+
+interface Addressee {
+    id: string;
+    recipient: string;
+}
+
 interface PaginatedMemorandums {
     memorandums: Memorandum[];
     totalMemorandums: number;
@@ -92,6 +109,14 @@ interface PaginatedMemorandums {
 
 interface FetchedSenderUnits {
     senderUnits: SenderUnit[];
+}
+
+interface FetchedSenders {
+    senders: Sender[];
+}
+
+interface FetchedAddressees {
+    addressees: Addressee[];
 }
 
 const fetchMemorandums = async (
@@ -142,19 +167,62 @@ const fetchSenderUnits = async (): Promise<FetchedSenderUnits> => {
     }
 };
 
+const fetchSenders = async (): Promise<FetchedSenders> => {
+    try {
+        const res = await fetch("/api/senders");
+
+        if (!res.ok) throw new Error("Failed to fetch senders");
+        return res.json();
+    } catch (error: unknown) {
+        if (error instanceof Error && error.name !== "AbortError") {
+            console.error("Failed to load senders:", error);
+        }
+        return {
+            senders: [],
+        };
+    }
+};
+
+const fetchAddressees = async (): Promise<FetchedAddressees> => {
+    try {
+        const res = await fetch("/api/addressees");
+
+        if (!res.ok) throw new Error("Failed to fetch addressees");
+        return res.json();
+    } catch (error: unknown) {
+        if (error instanceof Error && error.name !== "AbortError") {
+            console.error("Failed to load addressees:", error);
+        }
+        return {
+            addressees: [],
+        };
+    }
+};
+
 export default function AdminDashboard() {
     const [senderUnitOpen, setSenderUnitOpen] = useState(false);
     const [_senderUnitValue, _setSenderUnitValue] = useState("");
+    const [senderUnits, setSenderUnits] = useState<SenderUnit[]>([]);
+    const [isSenderUnitDialogOpen, setIsSenderUnitDialogOpen] = useState(false);
+
+    const [senderOpen, setSenderOpen] = useState(false);
+    const [_senderValue, _setSenderValue] = useState("");
+    const [senders, setSenders] = useState<Sender[]>([]);
+    const [isSenderDialogOpen, setIsSenderDialogOpen] = useState(false);
+
+    const [addresseeOpen, setAddresseeOpen] = useState(false);
+    const [_addresseeValue, _setAddresseeValue] = useState("");
+    const [addressees, setAddressees] = useState<Addressee[]>([]);
+    const [isAddresseeDialogOpen, setIsAddresseeDialogOpen] = useState(false);
+
     const [date, setDate] = useState<Date | null>(null);
     const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
-    const [senderUnits, setSenderUnits] = useState<SenderUnit[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [editingMemorandum, setEditingMemorandum] =
         useState<Memorandum | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isSenderUnitDialogOpen, setIsSenderUnitDialogOpen] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState("");
@@ -193,6 +261,26 @@ export default function AdminDashboard() {
         reset: resetSenderUnit,
     } = useForm<SenderUnitFormInputs>({
         resolver: zodResolver(senderUnitSchema),
+        mode: "onChange",
+    });
+
+    const {
+        register: registerSender,
+        handleSubmit: handleSubmitSender,
+        formState: { errors: senderErrors },
+        reset: resetSender,
+    } = useForm<SenderFormInputs>({
+        resolver: zodResolver(senderSchema),
+        mode: "onChange",
+    });
+
+    const {
+        register: registerAddressee,
+        handleSubmit: handleSubmitAddressee,
+        formState: { errors: addresseeErrors },
+        reset: resetAddressee,
+    } = useForm<AddresseeFormInputs>({
+        resolver: zodResolver(addresseeSchema),
         mode: "onChange",
     });
 
@@ -254,7 +342,35 @@ export default function AdminDashboard() {
             }
         };
 
+        const fetchSenders = async () => {
+            try {
+                const res = await fetch("/api/senders");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch senders");
+                }
+                const data = await res.json();
+                setSenders(data.senders);
+            } catch (error) {
+                console.error("Error fetching senders:", error);
+            }
+        };
+
+        const fetchAddressees = async () => {
+            try {
+                const res = await fetch("/api/addressees");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch addressees");
+                }
+                const data = await res.json();
+                setAddressees(data.addressees);
+            } catch (error) {
+                console.error("Error fetching addressees:", error);
+            }
+        };
+
         fetchSenderUnits();
+        fetchSenders();
+        fetchAddressees();
     }, []);
 
     useEffect(() => {
@@ -289,6 +405,18 @@ export default function AdminDashboard() {
         const updatedSenderUnits = await fetchSenderUnits();
 
         setSenderUnits(updatedSenderUnits.senderUnits);
+    }, []);
+
+    const refreshSenders = useCallback(async () => {
+        const updatedSenders = await fetchSenders();
+
+        setSenders(updatedSenders.senders);
+    }, []);
+
+    const refreshAddressees = useCallback(async () => {
+        const updatedAddressees = await fetchAddressees();
+
+        setAddressees(updatedAddressees.addressees);
     }, []);
 
     const onMemoSubmit = async (data: MemorandumFormInputs) => {
@@ -332,6 +460,8 @@ export default function AdminDashboard() {
             resetMemo();
             setIsDialogOpen(false);
             setIsSenderUnitDialogOpen(false);
+            setIsSenderDialogOpen(false);
+            setIsAddresseeDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
                 title: `Memo ${method === "POST" ? "Added" : "Updated"}`,
@@ -379,6 +509,88 @@ export default function AdminDashboard() {
             toast({
                 title: "Unit Added",
                 description: "The unit has been successfully added",
+            });
+        } catch (error) {
+            console.error("Submit failed", error);
+            toast({
+                title: "Error",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred",
+                variant: "destructive",
+            });
+        } finally {
+            setSubmitLoading(false);
+        }
+    };
+
+    const onSenderSubmit = async (data: SenderFormInputs) => {
+        setSubmitLoading(true);
+        try {
+            const formData = new FormData();
+            const { ...restData } = data;
+            Object.entries(restData).forEach(([key, value]) => {
+                formData.append(key, String(value));
+            });
+
+            const res = await fetch("/api/senders", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to add sender");
+            }
+
+            resetSender();
+            setIsSenderDialogOpen(false);
+            await refreshSenders();
+            toast({
+                title: "Sender Added",
+                description: "The sender has been successfully added",
+            });
+        } catch (error) {
+            console.error("Submit failed", error);
+            toast({
+                title: "Error",
+                description:
+                    error instanceof Error
+                        ? error.message
+                        : "An error occurred",
+                variant: "destructive",
+            });
+        } finally {
+            setSubmitLoading(false);
+        }
+    };
+
+    const onAddresseeSubmit = async (data: AddresseeFormInputs) => {
+        setSubmitLoading(true);
+        try {
+            const formData = new FormData();
+            const { ...restData } = data;
+            Object.entries(restData).forEach(([key, value]) => {
+                formData.append(key, String(value));
+            });
+
+            const res = await fetch("/api/addressees", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to add addressee");
+            }
+
+            resetAddressee();
+            setIsAddresseeDialogOpen(false);
+            await refreshAddressees();
+            toast({
+                title: "Addressee Added",
+                description: "The addressee has been successfully added",
             });
         } catch (error) {
             console.error("Submit failed", error);
@@ -466,6 +678,10 @@ export default function AdminDashboard() {
             _setSenderUnitValue(
                 memorandum.senderUnit ? memorandum.senderUnit : ""
             );
+            _setSenderValue(memorandum.sender ? memorandum.sender : "");
+            _setAddresseeValue(
+                memorandum.addressee ? memorandum.addressee : ""
+            );
             resetMemo(memorandum);
             setIsDialogOpen(true);
         },
@@ -476,6 +692,8 @@ export default function AdminDashboard() {
         setEditingMemorandum(null);
         setDate(null);
         _setSenderUnitValue("");
+        _setSenderValue("");
+        _setAddresseeValue("");
         resetMemo({
             memoNumber: "",
             addressee: "",
@@ -489,13 +707,27 @@ export default function AdminDashboard() {
         setIsDialogOpen(true);
     }, [resetMemo]);
 
-    const openAddUnitModal = useCallback(() => {
+    const openAddSenderUnitModal = useCallback(() => {
         resetSenderUnit({
             unitCode: "",
             unit: "",
         });
         setIsSenderUnitDialogOpen(true);
     }, [resetSenderUnit]);
+
+    const openAddSenderModal = useCallback(() => {
+        resetSender({
+            fullName: "",
+        });
+        setIsSenderDialogOpen(true);
+    }, [resetSender]);
+
+    const openAddAddresseeModal = useCallback(() => {
+        resetAddressee({
+            recipient: "",
+        });
+        setIsAddresseeDialogOpen(true);
+    }, [resetAddressee]);
 
     const handleLocalImageSelect = async (file: File) => {
         return new Promise<void>((resolve) => {
@@ -789,7 +1021,7 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                         </div>
-                        <div>
+                        {/* <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Addressee
                             </p>
@@ -802,8 +1034,118 @@ export default function AdminDashboard() {
                                     {memoErrors.addressee.message}
                                 </p>
                             )}
-                        </div>
+                        </div> */}
                         <div>
+                            <p className="text-sm my-2 text-gray-500">
+                                Addressee
+                            </p>
+                            <div className="flex">
+                                <Popover
+                                    open={addresseeOpen}
+                                    onOpenChange={setAddresseeOpen}
+                                >
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={addresseeOpen}
+                                            className={`w-full justify-between  ${
+                                                addressees.find(
+                                                    (addressee) =>
+                                                        addressee.recipient ===
+                                                        _addresseeValue
+                                                )
+                                                    ? ""
+                                                    : "text-gray-500"
+                                            }`}
+                                        >
+                                            {_addresseeValue
+                                                ? addressees.find(
+                                                      (addressee) =>
+                                                          addressee.recipient ===
+                                                          _addresseeValue
+                                                  )?.recipient
+                                                : "Select addressee..."}
+                                            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        disablePortal
+                                        className="w-full p-0"
+                                    >
+                                        <Command>
+                                            <CommandInput placeholder="Search addressee..." />
+                                            <CommandList>
+                                                <CommandEmpty>
+                                                    No addressee found.
+                                                </CommandEmpty>
+                                                <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
+                                                    {addressees.map(
+                                                        (addressee) => (
+                                                            <CommandItem
+                                                                key={
+                                                                    addressee.recipient
+                                                                }
+                                                                value={
+                                                                    addressee.recipient
+                                                                }
+                                                                onSelect={(
+                                                                    currentValue
+                                                                ) => {
+                                                                    _setAddresseeValue(
+                                                                        currentValue ===
+                                                                            _addresseeValue
+                                                                            ? ""
+                                                                            : currentValue
+                                                                    );
+                                                                    setMemoValue(
+                                                                        "addressee",
+                                                                        addressee.recipient
+                                                                    );
+                                                                    setAddresseeOpen(
+                                                                        false
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <CheckIcon
+                                                                    className={cn(
+                                                                        "h-4 w-4",
+                                                                        _addresseeValue ===
+                                                                            addressee.recipient
+                                                                            ? "opacity-100"
+                                                                            : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                {
+                                                                    addressee.recipient
+                                                                }
+                                                            </CommandItem>
+                                                        )
+                                                    )}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <Button
+                                    type="button"
+                                    className={`ms-1 p-0 w-[38px] h-9 ${
+                                        submitLoading ? "opacity-50" : ""
+                                    }`}
+                                    title="Add addressee"
+                                    onClick={openAddAddresseeModal}
+                                    disabled={submitLoading}
+                                >
+                                    <Plus size={22} />
+                                </Button>
+                            </div>
+                            {memoErrors.addressee && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {memoErrors.addressee.message}
+                                </p>
+                            )}
+                        </div>
+                        {/* <div>
                             <p className="text-sm my-2 text-gray-500">Sender</p>
                             <Input
                                 {...registerMemo("sender")}
@@ -814,7 +1156,120 @@ export default function AdminDashboard() {
                                     {memoErrors.sender.message}
                                 </p>
                             )}
+                        </div> */}
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">Sender</p>
+                            <div className="flex">
+                                <Popover
+                                    open={senderOpen}
+                                    onOpenChange={setSenderOpen}
+                                >
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={senderOpen}
+                                            className={`w-full justify-between  ${
+                                                senders.find(
+                                                    (sender) =>
+                                                        sender.fullName ===
+                                                        _senderValue
+                                                )
+                                                    ? ""
+                                                    : "text-gray-500"
+                                            }`}
+                                        >
+                                            {_senderValue
+                                                ? senders.find(
+                                                      (sender) =>
+                                                          sender.fullName ===
+                                                          _senderValue
+                                                  )?.fullName
+                                                : "Select sender..."}
+                                            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        disablePortal
+                                        className="w-full p-0"
+                                    >
+                                        <Command>
+                                            <CommandInput placeholder="Search sender..." />
+                                            <CommandList>
+                                                <CommandEmpty>
+                                                    No sender found.
+                                                </CommandEmpty>
+                                                <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
+                                                    {senders.map((sender) => (
+                                                        <CommandItem
+                                                            key={
+                                                                sender.fullName
+                                                            }
+                                                            value={
+                                                                sender.fullName
+                                                            }
+                                                            onSelect={(
+                                                                currentValue
+                                                            ) => {
+                                                                _setSenderValue(
+                                                                    currentValue ===
+                                                                        _senderValue
+                                                                        ? ""
+                                                                        : currentValue
+                                                                );
+                                                                setMemoValue(
+                                                                    "sender",
+                                                                    sender.fullName
+                                                                );
+                                                                setSenderOpen(
+                                                                    false
+                                                                );
+                                                            }}
+                                                        >
+                                                            <CheckIcon
+                                                                className={cn(
+                                                                    "h-4 w-4",
+                                                                    _senderValue ===
+                                                                        sender.fullName
+                                                                        ? "opacity-100"
+                                                                        : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {sender.fullName}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                                <Button
+                                    type="button"
+                                    className={`ms-1 p-0 w-[38px] h-9 ${
+                                        submitLoading ? "opacity-50" : ""
+                                    }`}
+                                    title="Add sender"
+                                    onClick={openAddSenderModal}
+                                    disabled={submitLoading}
+                                >
+                                    <Plus size={22} />
+                                </Button>
+                            </div>
+                            {memoErrors.sender && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {memoErrors.sender.message}
+                                </p>
+                            )}
                         </div>
+                        {/* <>dgdf
+                        dfgfd
+                        dfgdfgd
+                        dfgdfgdf
+                        fdgdfgdf
+                        dfgdfgdfgd
+                        dfgdfgdf
+                        gfddf
+                        </> */}
                         <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Sender&apos;s Unit
@@ -915,7 +1370,7 @@ export default function AdminDashboard() {
                                         submitLoading ? "opacity-50" : ""
                                     }`}
                                     title="Add unit"
-                                    onClick={openAddUnitModal}
+                                    onClick={openAddSenderUnitModal}
                                     disabled={submitLoading}
                                 >
                                     <Plus size={22} />
@@ -1040,6 +1495,94 @@ export default function AdminDashboard() {
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
                                 Add Unit
+                            </Button>
+                            <DialogClose asChild>
+                                <Button
+                                    variant="outline"
+                                    disabled={submitLoading}
+                                >
+                                    Cancel
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={isSenderDialogOpen}
+                onOpenChange={setIsSenderDialogOpen}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Sender</DialogTitle>
+                    </DialogHeader>
+
+                    <form
+                        onSubmit={handleSubmitSender(onSenderSubmit)}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">Sender</p>
+                            <Input
+                                {...registerSender("fullName")}
+                                className="w-full"
+                            />
+                            {senderErrors.fullName && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {senderErrors.fullName.message}
+                                </p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="submit" disabled={submitLoading}>
+                                Add Sender
+                            </Button>
+                            <DialogClose asChild>
+                                <Button
+                                    variant="outline"
+                                    disabled={submitLoading}
+                                >
+                                    Cancel
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={isAddresseeDialogOpen}
+                onOpenChange={setIsAddresseeDialogOpen}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Addressee</DialogTitle>
+                    </DialogHeader>
+
+                    <form
+                        onSubmit={handleSubmitAddressee(onAddresseeSubmit)}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">
+                                Addressee
+                            </p>
+                            <Input
+                                {...registerAddressee("recipient")}
+                                className="w-full"
+                            />
+                            {addresseeErrors.recipient && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {addresseeErrors.recipient.message}
+                                </p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="submit" disabled={submitLoading}>
+                                Add Addressee
                             </Button>
                             <DialogClose asChild>
                                 <Button
