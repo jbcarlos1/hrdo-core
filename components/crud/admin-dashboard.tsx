@@ -990,7 +990,7 @@ export default function AdminDashboard() {
                             <Dialog
                                 open={isSenderUnitDialogOpen}
                                 onOpenChange={setIsSenderUnitDialogOpen}
-                                // modal={false}
+                                modal={false}
                             >
                                 <DialogContent>
                                     <DialogHeader>
