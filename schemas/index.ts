@@ -103,9 +103,17 @@ export const senderUnitSchema = z.object({
     unitCode: z
         .string()
         .min(1, "Unit code is required")
-        .max(20, "Unit code must be less than 20 characters"),
+        .max(20, "Unit code must be less than 20 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Unit code can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     unit: z
         .string()
         .min(1, "Unit is required")
-        .max(100, "Unit must be less than 100 characters"),
+        .max(100, "Unit must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Unit can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
 });

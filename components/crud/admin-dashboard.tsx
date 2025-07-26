@@ -845,7 +845,15 @@ export default function AdminDashboard() {
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={senderUnitOpen}
-                                            className="w-full justify-between"
+                                            className={`w-full justify-between  ${
+                                                senderUnits.find(
+                                                    (senderUnit) =>
+                                                        `${senderUnit.unitCode}-${senderUnit.unit}` ===
+                                                        _senderUnitValue
+                                                )
+                                                    ? ""
+                                                    : "text-gray-500"
+                                            }`}
                                         >
                                             {_senderUnitValue
                                                 ? `${
@@ -875,7 +883,7 @@ export default function AdminDashboard() {
                                                 <CommandEmpty>
                                                     No unit found.
                                                 </CommandEmpty>
-                                                <CommandGroup>
+                                                <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
                                                     {senderUnits.map(
                                                         (senderUnit) => (
                                                             <CommandItem
@@ -901,7 +909,7 @@ export default function AdminDashboard() {
                                                             >
                                                                 <CheckIcon
                                                                     className={cn(
-                                                                        "mr-2 h-4 w-4",
+                                                                        "h-4 w-4",
                                                                         _senderUnitValue ===
                                                                             `${senderUnit.unitCode}-${senderUnit.unit}`
                                                                             ? "opacity-100"
