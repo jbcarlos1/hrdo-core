@@ -100,7 +100,7 @@ export function DatePicker({
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto z-50">
+            <PopoverContent className="w-auto p-0 pointer-events-auto z-[200]">
                 <div className="flex justify-between p-2">
                     <Select
                         onValueChange={handleMonthChange}
@@ -109,9 +109,13 @@ export function DatePicker({
                         <SelectTrigger className="w-[110px]">
                             <SelectValue placeholder="Month" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[300] pointer-events-auto">
                             {months.map((month) => (
-                                <SelectItem key={month} value={month}>
+                                <SelectItem
+                                    key={month}
+                                    value={month}
+                                    className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                                >
                                     {month}
                                 </SelectItem>
                             ))}
@@ -124,9 +128,13 @@ export function DatePicker({
                         <SelectTrigger className="w-[110px]">
                             <SelectValue placeholder="Year" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[300] pointer-events-auto">
                             {years.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
+                                <SelectItem
+                                    key={year}
+                                    value={year.toString()}
+                                    className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                                >
                                     {year}
                                 </SelectItem>
                             ))}

@@ -732,17 +732,17 @@ export default function AdminDashboard() {
                 )}
             </div>
 
-            {isDialogOpen && (
+            {/* {isDialogOpen && (
                 <div
                     className="fixed inset-0 z-50 bg-black/80 transition-opacity"
                     aria-hidden="true"
                 />
-            )}
+            )} */}
 
             <Dialog
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
-                modal={false}
+                // modal={false}
             >
                 <DialogContent className="border-black/80 overflow-hidden">
                     {/* {isSenderUnitDialogOpen && (
@@ -987,83 +987,68 @@ export default function AdminDashboard() {
                                     {memoErrors.image.message}
                                 </p>
                             )}
-                            <Dialog
-                                open={isSenderUnitDialogOpen}
-                                onOpenChange={setIsSenderUnitDialogOpen}
-                                modal={false}
-                            >
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Add Unit</DialogTitle>
-                                    </DialogHeader>
-
-                                    <form
-                                        onSubmit={handleSubmitSenderUnit(
-                                            onSenderUnitSubmit
-                                        )}
-                                        className="space-y-4"
-                                    >
-                                        <div>
-                                            <p className="text-sm my-2 text-gray-500">
-                                                Unit Code
-                                            </p>
-                                            <Input
-                                                {...registerSenderUnit(
-                                                    "unitCode"
-                                                )}
-                                                className="w-full"
-                                            />
-                                            {senderUnitErrors.unitCode && (
-                                                <p className="text-red-500 text-sm my-1">
-                                                    {
-                                                        senderUnitErrors
-                                                            .unitCode.message
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm my-2 text-gray-500">
-                                                Unit
-                                            </p>
-                                            <Input
-                                                {...registerSenderUnit("unit")}
-                                                className="w-full"
-                                            />
-                                            {senderUnitErrors.unit && (
-                                                <p className="text-red-500 text-sm my-1">
-                                                    {
-                                                        senderUnitErrors.unit
-                                                            .message
-                                                    }
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <DialogFooter>
-                                            <Button
-                                                type="submit"
-                                                disabled={submitLoading}
-                                            >
-                                                Add Unit
-                                            </Button>
-                                            <DialogClose asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    disabled={submitLoading}
-                                                >
-                                                    Cancel
-                                                </Button>
-                                            </DialogClose>
-                                        </DialogFooter>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
                         </div>
 
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
                                 {editingMemorandum ? "Update Memo" : "Add Memo"}
+                            </Button>
+                            <DialogClose asChild>
+                                <Button
+                                    variant="outline"
+                                    disabled={submitLoading}
+                                >
+                                    Cancel
+                                </Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                open={isSenderUnitDialogOpen}
+                onOpenChange={setIsSenderUnitDialogOpen}
+                // modal={false}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Unit</DialogTitle>
+                    </DialogHeader>
+
+                    <form
+                        onSubmit={handleSubmitSenderUnit(onSenderUnitSubmit)}
+                        className="space-y-4"
+                    >
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">
+                                Unit Code
+                            </p>
+                            <Input
+                                {...registerSenderUnit("unitCode")}
+                                className="w-full"
+                            />
+                            {senderUnitErrors.unitCode && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {senderUnitErrors.unitCode.message}
+                                </p>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-sm my-2 text-gray-500">Unit</p>
+                            <Input
+                                {...registerSenderUnit("unit")}
+                                className="w-full"
+                            />
+                            {senderUnitErrors.unit && (
+                                <p className="text-red-500 text-sm my-1">
+                                    {senderUnitErrors.unit.message}
+                                </p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="submit" disabled={submitLoading}>
+                                Add Unit
                             </Button>
                             <DialogClose asChild>
                                 <Button
