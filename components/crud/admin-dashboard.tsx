@@ -866,8 +866,8 @@ export default function AdminDashboard() {
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent
-                                        forceMount
-                                        className="w-full p-0 pointer-events-auto"
+                                        disablePortal
+                                        className="w-full p-0"
                                     >
                                         <Command>
                                             <CommandInput placeholder="Search unit..." />
