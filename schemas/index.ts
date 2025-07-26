@@ -142,7 +142,7 @@ export const senderUnitSchema = z.object({
         ),
 });
 
-export const addressee = z.object({
+export const addresseeSchema = z.object({
     recipient: z
         .string()
         .min(1, "Recipient is required")
@@ -153,7 +153,7 @@ export const addressee = z.object({
         ),
 });
 
-export const sender = z.object({
+export const senderSchema = z.object({
     fullName: z
         .string()
         .min(1, "Full name is required")
