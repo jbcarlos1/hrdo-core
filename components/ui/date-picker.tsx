@@ -100,7 +100,10 @@ export function DatePicker({
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto z-[200]">
+            <PopoverContent
+                className="w-auto p-0 pointer-events-auto z-[200]"
+                disablePortal
+            >
                 <div className="flex justify-between p-2">
                     <Select
                         onValueChange={handleMonthChange}
@@ -123,7 +126,11 @@ export function DatePicker({
                     </Select>
                     <Select
                         onValueChange={handleYearChange}
-                        value={date ? getYear(date).toString() : ""}
+                        value={
+                            date
+                                ? getYear(date).toString()
+                                : getYear(new Date()).toString()
+                        }
                     >
                         <SelectTrigger className="w-[110px]">
                             <SelectValue placeholder="Year" />

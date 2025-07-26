@@ -1021,20 +1021,7 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                         </div>
-                        {/* <div>
-                            <p className="text-sm my-2 text-gray-500">
-                                Addressee
-                            </p>
-                            <Input
-                                {...registerMemo("addressee")}
-                                className="w-full"
-                            />
-                            {memoErrors.addressee && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {memoErrors.addressee.message}
-                                </p>
-                            )}
-                        </div> */}
+
                         <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Addressee
@@ -1049,7 +1036,7 @@ export default function AdminDashboard() {
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={addresseeOpen}
-                                            className={`w-full justify-between  ${
+                                            className={`w-full justify-between font-normal ${
                                                 addressees.find(
                                                     (addressee) =>
                                                         addressee.recipient ===
@@ -1145,18 +1132,7 @@ export default function AdminDashboard() {
                                 </p>
                             )}
                         </div>
-                        {/* <div>
-                            <p className="text-sm my-2 text-gray-500">Sender</p>
-                            <Input
-                                {...registerMemo("sender")}
-                                className="w-full"
-                            />
-                            {memoErrors.sender && (
-                                <p className="text-red-500 text-sm my-1">
-                                    {memoErrors.sender.message}
-                                </p>
-                            )}
-                        </div> */}
+
                         <div>
                             <p className="text-sm my-2 text-gray-500">Sender</p>
                             <div className="flex">
@@ -1169,7 +1145,7 @@ export default function AdminDashboard() {
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={senderOpen}
-                                            className={`w-full justify-between  ${
+                                            className={`w-full justify-between font-normal ${
                                                 senders.find(
                                                     (sender) =>
                                                         sender.fullName ===
@@ -1261,15 +1237,7 @@ export default function AdminDashboard() {
                                 </p>
                             )}
                         </div>
-                        {/* <>dgdf
-                        dfgfd
-                        dfgdfgd
-                        dfgdfgdf
-                        fdgdfgdf
-                        dfgdfgdfgd
-                        dfgdfgdf
-                        gfddf
-                        </> */}
+
                         <div>
                             <p className="text-sm my-2 text-gray-500">
                                 Sender&apos;s Unit
@@ -1284,7 +1252,7 @@ export default function AdminDashboard() {
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={senderUnitOpen}
-                                            className={`w-full justify-between  ${
+                                            className={`w-full justify-between font-normal ${
                                                 senderUnits.find(
                                                     (senderUnit) =>
                                                         `${senderUnit.unitCode}-${senderUnit.unit}` ===
