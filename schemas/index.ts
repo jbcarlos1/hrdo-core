@@ -69,27 +69,51 @@ export const memorandumSchema = z.object({
     memoNumber: z
         .string()
         .min(1, "Memo number is required")
-        .max(100, "Name must be less than 100 characters"),
+        .max(100, "Name must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Memo number can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     addressee: z
         .string()
         .min(1, "Addressee is required")
-        .max(100, "Addressee must be less than 100 characters"),
+        .max(100, "Addressee must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Addressee can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     sender: z
         .string()
         .min(1, "Sender is required")
-        .max(100, "Sender must be less than 100 characters"),
+        .max(100, "Sender must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Sender can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     senderUnit: z
         .string({ required_error: "Sender's unit is required" })
         .min(1, "Sender's unit is required")
-        .max(100, "Sender's unit must be less than 100 characters"),
+        .max(100, "Sender's unit must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Sender's unit can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     subject: z
         .string()
         .min(1, "Subject is required")
-        .max(100, "Subject must be less than 100 characters"),
+        .max(100, "Subject must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Subject can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     date: z
         .string({ required_error: "Date is required" })
         .min(1, "Date is required")
-        .max(100, "Date must be less than 100 characters"),
+        .max(100, "Date must be less than 100 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Date can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
     keywords: z
         .string()
         .min(1, "Keywords is required")
@@ -103,7 +127,7 @@ export const senderUnitSchema = z.object({
     unitCode: z
         .string()
         .min(1, "Unit code is required")
-        .max(20, "Unit code must be less than 20 characters")
+        .max(50, "Unit code must be less than 50 characters")
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
             "Unit code can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
@@ -111,9 +135,31 @@ export const senderUnitSchema = z.object({
     unit: z
         .string()
         .min(1, "Unit is required")
-        .max(100, "Unit must be less than 100 characters")
+        .max(200, "Unit must be less than 200 characters")
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
             "Unit can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
+});
+
+export const addressee = z.object({
+    recipient: z
+        .string()
+        .min(1, "Recipient is required")
+        .max(200, "Recipient must be less than 200 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Recipient can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+        ),
+});
+
+export const sender = z.object({
+    fullName: z
+        .string()
+        .min(1, "Full name is required")
+        .max(200, "Full name must be less than 200 characters")
+        .regex(
+            /^[a-zA-Z0-9 ,./()&'\-]+$/,
+            "Full name can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
 });

@@ -130,6 +130,17 @@ model SenderUnit {
     unit        String @unique
 }
 
+model Addressee {
+    id          String @id @default(cuid())
+    recipient   String @unique
+}
+
+model Sender {
+    id          String @id @default(cuid())
+    fullName    String @unique
+}
+
+
 
 
 
