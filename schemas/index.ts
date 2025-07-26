@@ -111,8 +111,8 @@ export const memorandumSchema = z.object({
         .min(1, "Date is required")
         .max(100, "Date must be less than 100 characters")
         .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Date can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+            /^[a-zA-Z0-9 ,./()&'\-:]+$/,
+            "Date can only contain letters, numbers, spaces, commas, periods, slashes, colons, parentheses, ampersands, apostrophes, and dashes"
         ),
     keywords: z
         .string()
