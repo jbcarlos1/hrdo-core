@@ -493,8 +493,9 @@ export default function AdminDashboard() {
     }, [resetMemo]);
 
     const openAddUnitModal = useCallback(() => {
+        resetSenderUnit();
         setIsSenderUnitDialogOpen(true);
-    }, [resetMemo]);
+    }, [resetSenderUnit]);
 
     const handleLocalImageSelect = async (file: File) => {
         return new Promise<void>((resolve) => {
