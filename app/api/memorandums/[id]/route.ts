@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { uploadImage, deleteImage } from "@/lib/cloudinary";
 import { auth } from "@/auth";
 import { memorandumSchema } from "@/schemas";
 
@@ -42,69 +41,42 @@ export async function PUT(
             subject: formData.get("subject") as string,
             date: formData.get("date") as string,
             keywords: formData.get("keywords") as string,
-            image: formData.get("image") as string,
+            pdfUrl: formData.get("pdfUrl") as string,
         };
 
         const validatedData = memorandumSchema.parse(MemorandumData);
 
-        // Using transaction for atomic operations
-        const updatedMemorandum = await db.$transaction(async (tx) => {
-            const currentMemorandum = await tx.memorandum.findUnique({
-                where: { id },
-                select: {
-                    image: true,
-                    isArchived: true,
-                },
-            });
+        if (!validatedData.date) {
+            throw new Error("Date is required");
+        }
+        const dateObj = new Date(validatedData.date);
 
-            if (!currentMemorandum) {
-                throw new Error("Memorandum not found");
-            }
+        const updateData = {
+            memoNumber: validatedData.memoNumber,
+            addressee: validatedData.addressee,
+            sender: validatedData.sender,
+            senderUnit: validatedData.senderUnit,
+            subject: validatedData.subject,
+            date: dateObj,
+            keywords: validatedData.keywords,
+            pdfUrl: validatedData.pdfUrl,
+        };
 
-            let imageUrl: string | undefined;
-            const newImage = formData.get("image") as string;
-
-            // Only process image if it's a new data URL
-            if (newImage?.startsWith("data:")) {
-                if (currentMemorandum.image) {
-                    await deleteImage(currentMemorandum.image);
-                }
-                const uploadResponse = await uploadImage(newImage);
-                imageUrl = uploadResponse.secure_url;
-            }
-
-            if (!validatedData.date) {
-                throw new Error("Date is required");
-            }
-            const dateObj = new Date(validatedData.date);
-
-            const updateData = {
-                memoNumber: validatedData.memoNumber,
-                addressee: validatedData.addressee,
-                sender: validatedData.sender,
-                senderUnit: validatedData.senderUnit,
-                subject: validatedData.subject,
-                date: dateObj,
-                keywords: validatedData.keywords,
-                ...(imageUrl && { image: imageUrl }),
-            };
-
-            return tx.memorandum.update({
-                where: { id },
-                data: updateData,
-                select: {
-                    id: true,
-                    memoNumber: true,
-                    addressee: true,
-                    sender: true,
-                    senderUnit: true,
-                    subject: true,
-                    date: true,
-                    keywords: true,
-                    image: true,
-                    isArchived: true,
-                },
-            });
+        const updatedMemorandum = await db.memorandum.update({
+            where: { id },
+            data: updateData,
+            select: {
+                id: true,
+                memoNumber: true,
+                addressee: true,
+                sender: true,
+                senderUnit: true,
+                subject: true,
+                date: true,
+                keywords: true,
+                pdfUrl: true,
+                isArchived: true,
+            },
         });
 
         return NextResponse.json(updatedMemorandum);
@@ -152,19 +124,8 @@ export async function DELETE(
     }
 
     try {
-        await db.$transaction(async (tx) => {
-            const memorandum = await tx.memorandum.findUnique({
-                where: { id },
-                select: { image: true },
-            });
-
-            if (memorandum?.image) {
-                await deleteImage(memorandum.image);
-            }
-
-            await tx.memorandum.delete({
-                where: { id },
-            });
+        await db.memorandum.delete({
+            where: { id },
         });
 
         return NextResponse.json({
