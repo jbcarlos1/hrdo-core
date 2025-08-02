@@ -118,9 +118,7 @@ export const memorandumSchema = z.object({
         .string()
         .min(1, "Keywords is required")
         .max(100, "Keywords must be less than 100 characters"),
-    image: z
-        .string({ required_error: "Image is required" })
-        .min(1, "Date is required"),
+    pdfUrl: z.string().url({ message: "PDF URL is required" }),
 });
 
 export const senderUnitSchema = z.object({

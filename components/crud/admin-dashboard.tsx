@@ -35,8 +35,6 @@ import { PaginationComponent } from "@/components/crud/pagination";
 import { TableComponent } from "./admin-table";
 import useDebounce from "@/hooks/useDebounce";
 import { useToast } from "@/hooks/use-toast";
-import { ImageUpload } from "@/components/image-upload";
-import Image from "next/image";
 import { LuLayoutGrid, LuTable2 } from "react-icons/lu";
 import CardView from "@/components/crud/admin-card-view";
 import { AlertCircle, Archive, Package } from "lucide-react";
@@ -80,7 +78,7 @@ interface Memorandum {
     subject: string;
     date: string;
     keywords: string;
-    image: string;
+    pdfUrl: string;
     isArchived: boolean;
 }
 
@@ -231,7 +229,8 @@ export default function AdminDashboard() {
     const [memorandumState, setMemorandumState] = useState<
         "active" | "archived"
     >("active");
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [pdfUploading, setPdfUploading] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const debouncedSearchInput = useDebounce(searchInput, 250);
     const controllerRef = useRef<AbortController | null>(null);
     const { toast } = useToast();
@@ -419,34 +418,40 @@ export default function AdminDashboard() {
         setAddressees(updatedAddressees.addressees);
     }, []);
 
+    const handlePdfUpload = async (file: File) => {
+        setPdfUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+        });
+        const data = await res.json();
+        setPdfUrl(data.url);
+        setMemoValue("pdfUrl", data.url);
+        setPdfUploading(false);
+    };
+
     const onMemoSubmit = async (data: MemorandumFormInputs) => {
         setSubmitLoading(true);
         try {
             const formData = new FormData();
-            const { ...restData } = data;
-            Object.entries(restData).forEach(([key, value]) => {
-                if (key !== "image") {
-                    formData.append(key, String(value));
-                }
+            Object.entries(data).forEach(([key, value]) => {
+                formData.append(key, String(value));
             });
 
-            const imageValue = watchMemo("image");
-            if (imageValue && imageValue.startsWith("data:")) {
-                formData.append("image", imageValue);
-            } else if (imageValue) {
-                formData.append("image", imageValue);
+            if (pdfUrl && pdfUrl !== "undefined") {
+                formData.set("pdfUrl", pdfUrl);
             }
 
             const method = editingMemorandum ? "PUT" : "POST";
             const url = editingMemorandum
                 ? `/api/memorandums/${editingMemorandum.id}`
                 : `/api/memorandums`;
-
             const res = await fetch(url, {
                 method,
                 body: formData,
             });
-
             if (!res.ok) {
                 const errorData = await res.json();
                 throw new Error(
@@ -456,7 +461,6 @@ export default function AdminDashboard() {
                             : "Failed to add memo")
                 );
             }
-
             resetMemo();
             setIsDialogOpen(false);
             setIsSenderUnitDialogOpen(false);
@@ -702,7 +706,7 @@ export default function AdminDashboard() {
             subject: "",
             date: "",
             keywords: "",
-            image: "",
+            pdfUrl: "",
         });
         setIsDialogOpen(true);
     }, [resetMemo]);
@@ -728,18 +732,6 @@ export default function AdminDashboard() {
         });
         setIsAddresseeDialogOpen(true);
     }, [resetAddressee]);
-
-    const handleLocalImageSelect = async (file: File) => {
-        return new Promise<void>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                setMemoValue("image", reader.result as string);
-                triggerMemo("image");
-                resolve();
-            };
-            reader.readAsDataURL(file);
-        });
-    };
 
     const handleExport = async () => {
         try {
@@ -937,8 +929,6 @@ export default function AdminDashboard() {
                             deleteLoading={deleteLoading}
                             handleDelete={handleDelete}
                             handleArchive={handleArchive}
-                            selectedImage={selectedImage}
-                            setSelectedImage={setSelectedImage}
                         />
                     ) : (
                         <CardView
@@ -947,8 +937,6 @@ export default function AdminDashboard() {
                             deleteLoading={deleteLoading}
                             handleDelete={handleDelete}
                             handleArchive={handleArchive}
-                            selectedImage={selectedImage}
-                            setSelectedImage={setSelectedImage}
                         />
                     )}
                 </div>
@@ -1381,31 +1369,42 @@ export default function AdminDashboard() {
                         </div>
 
                         <div>
-                            <p className="text-sm my-2 text-gray-500">Image</p>
-                            <div className="flex items-center gap-4">
-                                {watchMemo("image") && (
-                                    <Image
-                                        src={watchMemo("image") || ""}
-                                        alt="Memo preview"
-                                        className="w-20 h-20 object-cover rounded-md"
-                                        width={80}
-                                        height={80}
-                                    />
-                                )}
-                                <ImageUpload
-                                    onUpload={handleLocalImageSelect}
-                                    loading={submitLoading}
-                                />
-                            </div>
-                            {memoErrors.image && (
+                            <p className="text-sm my-2 text-gray-500">
+                                PDF Document
+                            </p>
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handlePdfUpload(file);
+                                }}
+                                disabled={pdfUploading}
+                            />
+                            {pdfUploading && <span>Uploading PDF...</span>}
+                            {pdfUrl && (
+                                <a
+                                    href={pdfUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    View PDF
+                                </a>
+                            )}
+                            {memoErrors.pdfUrl && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {memoErrors.image.message}
+                                    {memoErrors.pdfUrl.message}
                                 </p>
                             )}
                         </div>
 
                         <DialogFooter>
-                            <Button type="submit" disabled={submitLoading}>
+                            <Button
+                                type="submit"
+                                disabled={
+                                    submitLoading || pdfUploading || !pdfUrl
+                                }
+                            >
                                 {editingMemorandum ? "Update Memo" : "Add Memo"}
                             </Button>
                             <DialogClose asChild>

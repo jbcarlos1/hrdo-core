@@ -1,9 +1,8 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { uploadImage } from "@/lib/cloudinary";
-import { auth } from "@/auth";
 import { memorandumSchema } from "@/schemas";
+import { auth } from "@/auth";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -25,7 +24,6 @@ export async function GET(request: NextRequest) {
             db.memorandum.count({
                 where: {
                     memoNumber: { contains: search, mode: "insensitive" },
-
                     isArchived: memorandumState === "archived",
                 },
             }),
@@ -34,7 +32,6 @@ export async function GET(request: NextRequest) {
                 take: limit,
                 where: {
                     memoNumber: { contains: search, mode: "insensitive" },
-
                     isArchived: memorandumState === "archived",
                 },
                 orderBy: {
@@ -49,7 +46,7 @@ export async function GET(request: NextRequest) {
                     subject: true,
                     date: true,
                     keywords: true,
-                    image: true,
+                    pdfUrl: true,
                     isArchived: true,
                 },
             }),
@@ -96,18 +93,10 @@ export async function POST(request: NextRequest) {
             subject: formData.get("subject") as string,
             date: formData.get("date") as string,
             keywords: formData.get("keywords") as string,
-            image: formData.get("image") as string,
+            pdfUrl: formData.get("pdfUrl") as string,
         };
 
         const validatedData = memorandumSchema.parse(memorandumData);
-
-        let imageUrl: string | undefined;
-        const image = formData.get("image") as string;
-
-        if (image?.startsWith("data:")) {
-            const uploadResponse = await uploadImage(image);
-            imageUrl = uploadResponse.secure_url;
-        }
 
         if (!validatedData.date) {
             return NextResponse.json(
@@ -126,7 +115,7 @@ export async function POST(request: NextRequest) {
                 subject: validatedData.subject,
                 date: dateObj,
                 keywords: validatedData.keywords,
-                ...(imageUrl && { image: imageUrl }),
+                pdfUrl: validatedData.pdfUrl,
             },
             select: {
                 id: true,
@@ -137,7 +126,7 @@ export async function POST(request: NextRequest) {
                 subject: true,
                 date: true,
                 keywords: true,
-                image: true,
+                pdfUrl: true,
                 isArchived: true,
             },
         });

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { RiEditLine, RiDeleteBin6Line } from "react-icons/ri";
 import {
     AlertDialog,
@@ -11,8 +10,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { HiDotsHorizontal } from "react-icons/hi";
@@ -26,7 +24,7 @@ interface Memorandum {
     subject: string;
     date: string;
     keywords: string;
-    image: string;
+    pdfUrl: string;
     isArchived: boolean;
 }
 
@@ -36,8 +34,6 @@ interface CardViewComponentProps {
     handleDelete: (id: string) => void;
     handleArchive: (id: string, currentState: boolean) => void;
     deleteLoading: boolean;
-    selectedImage: string | null;
-    setSelectedImage: (image: string | null) => void;
 }
 
 const CardView = ({
@@ -46,8 +42,6 @@ const CardView = ({
     handleDelete,
     handleArchive,
     deleteLoading,
-    selectedImage,
-    setSelectedImage,
 }: CardViewComponentProps) => {
     return (
         <>
@@ -60,7 +54,7 @@ const CardView = ({
                                     key={memorandum.id}
                                     className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden border border-gray-200 hover:border-gray-300 group"
                                 >
-                                    <div className="aspect-square relative bg-white p-4">
+                                    <div className="aspect-square relative bg-white p-4 flex flex-col items-center justify-center">
                                         <div className="absolute top-4 right-4 opacity-80 group-hover:opacity-0 transition-opacity duration-200 z-10">
                                             <HiDotsHorizontal className="w-5 h-5 text-gray-500" />
                                         </div>
@@ -195,21 +189,15 @@ const CardView = ({
                                                 </AlertDialogContent>
                                             </AlertDialog>
                                         </div>
-
-                                        <div
-                                            className="absolute inset-0 cursor-zoom-in p-4 bg-white"
-                                            onClick={() =>
-                                                setSelectedImage(
-                                                    memorandum.image
-                                                )
-                                            }
-                                        >
-                                            <Image
-                                                src={memorandum.image}
-                                                alt={memorandum.memoNumber}
-                                                fill
-                                                className="object-contain p-14 hover:p-12 transition-all duration-200"
-                                            />
+                                        <div className="flex flex-col items-center justify-center h-full w-full">
+                                            <a
+                                                href={memorandum.pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 underline"
+                                            >
+                                                View PDF
+                                            </a>
                                         </div>
                                     </div>
                                     <div className="p-4 space-y-3 border-t border-gray-100">
@@ -219,57 +207,10 @@ const CardView = ({
                                         >
                                             {memorandum.memoNumber}
                                         </h3>
-
-                                        <div className="space-y-2 text-sm">
-                                            {/* <div className="flex justify-between">
-                                                <span className="text-gray-500">
-                                                    Quantity
-                                                </span>
-                                                <span>
-                                                    {memorandum.quantity}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-500">
-                                                    Reorder Point
-                                                </span>
-                                                <span>
-                                                    {memorandum.reorderPoint}
-                                                </span>
-                                            </div> */}
-                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <Dialog
-                            open={!!selectedImage}
-                            onOpenChange={() => setSelectedImage(null)}
-                        >
-                            <DialogContent className="max-w-[90vw] md:max-w-[60vw] lg:max-w-[30vw] h-[80vh] p-0 overflow-hidden">
-                                <DialogClose className="absolute right-3 top-3 z-10">
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="bg-none"
-                                    >
-                                        <X className="h-4 w-4 text-red-500" />
-                                    </Button>
-                                </DialogClose>
-                                {selectedImage && (
-                                    <div className="relative w-full h-full">
-                                        <Image
-                                            src={selectedImage}
-                                            alt="Enlarged view"
-                                            className="object-contain"
-                                            fill
-                                            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 80vw, 70vw"
-                                            priority
-                                        />
-                                    </div>
-                                )}
-                            </DialogContent>
-                        </Dialog>
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">

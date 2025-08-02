@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { RiEditLine, RiDeleteBin6Line } from "react-icons/ri";
 import { format } from "date-fns";
 import {
@@ -20,9 +19,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface Memorandum {
@@ -34,7 +31,7 @@ interface Memorandum {
     subject: string;
     date: string;
     keywords: string;
-    image: string;
+    pdfUrl: string;
     isArchived: boolean;
 }
 
@@ -44,8 +41,6 @@ interface TableComponentProps {
     handleDelete: (id: string) => void;
     handleArchive: (id: string, currentState: boolean) => void;
     deleteLoading: boolean;
-    selectedImage: string | null;
-    setSelectedImage: (image: string | null) => void;
 }
 
 export const TableComponent = ({
@@ -54,8 +49,6 @@ export const TableComponent = ({
     handleDelete,
     handleArchive,
     deleteLoading,
-    selectedImage,
-    setSelectedImage,
 }: TableComponentProps) => {
     return (
         <>
@@ -67,7 +60,7 @@ export const TableComponent = ({
                                 <TableHeader>
                                     <TableRow className="border-[#e4e4e7] bg-gray-100">
                                         <TableHead className="px-4 text-center">
-                                            Image
+                                            PDF
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Memo Number
@@ -102,24 +95,13 @@ export const TableComponent = ({
                                             className="hover:bg-gray-100 border-[#e4e4e7]"
                                         >
                                             <TableCell className="px-4">
-                                                <div
-                                                    onClick={() =>
-                                                        setSelectedImage(
-                                                            memorandum.image
-                                                        )
-                                                    }
-                                                    className="cursor-pointer hover:opacity-80 transition-opacity h-10 flex items-center justify-center"
+                                                <a
+                                                    href={memorandum.pdfUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
                                                 >
-                                                    <Image
-                                                        src={memorandum.image}
-                                                        width={40}
-                                                        height={40}
-                                                        alt={
-                                                            memorandum.memoNumber
-                                                        }
-                                                        className="rounded-md object-contain h-full max-h-full w-auto"
-                                                    />
-                                                </div>
+                                                    View PDF
+                                                </a>
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
@@ -301,35 +283,6 @@ export const TableComponent = ({
                     </p>
                 )}
             </div>
-
-            <Dialog
-                open={!!selectedImage}
-                onOpenChange={() => setSelectedImage(null)}
-            >
-                <DialogContent className="max-w-[90vw] md:max-w-[60vw] lg:max-w-[30vw] h-[80vh] p-0 overflow-hidden">
-                    <DialogClose className="absolute right-3 top-3 z-10">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="bg-none"
-                        >
-                            <X className="h-4 w-4 text-red-500" />
-                        </Button>
-                    </DialogClose>
-                    {selectedImage && (
-                        <div className="relative w-full h-full">
-                            <Image
-                                src={selectedImage}
-                                alt="Enlarged view"
-                                className="object-contain"
-                                fill
-                                sizes="(max-width: 768px) 90vw, (max-width: 1200px) 80vw, 70vw"
-                                priority
-                            />
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
         </>
     );
 };
