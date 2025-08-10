@@ -91,6 +91,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!currentUser.name || !currentUser.division || !currentUser.section) {
+        return NextResponse.json(
+            { error: "Incomplete user profile" },
+            { status: 400 }
+        );
+    }
+
     try {
         const formData = await request.formData();
 
@@ -125,6 +132,9 @@ export async function POST(request: NextRequest) {
                 date: dateObj,
                 keywords: validatedData.keywords,
                 pdfUrl: validatedData.pdfUrl,
+                encoder: currentUser.name,
+                division: currentUser.division,
+                section: currentUser.section,
             },
             select: {
                 id: true,
@@ -136,6 +146,9 @@ export async function POST(request: NextRequest) {
                 date: true,
                 keywords: true,
                 pdfUrl: true,
+                encoder: true,
+                division: true,
+                section: true,
                 isArchived: true,
             },
         });
