@@ -10,6 +10,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const currentUser = await db.user.findUnique({
+        where: { id: session.user.id },
+    });
+
+    if (!currentUser || !currentUser.isApproved) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const senderUnits = await db.senderUnit.findMany({
             orderBy: {

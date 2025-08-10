@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs/promises";
+import { db } from "@/lib/db";
+import { auth } from "@/auth";
 import path from "path";
 import os from "os";
 
@@ -13,6 +15,20 @@ cloudinary.config({
 export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
+
+    const session = await auth();
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const currentUser = await db.user.findUnique({
+        where: { id: session.user.id },
+    });
+
+    if (!currentUser || !currentUser.isApproved) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (!file || !file.name.endsWith(".pdf")) {
         return NextResponse.json(

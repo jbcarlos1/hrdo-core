@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { FileText } from "lucide-react";
 
 interface Memorandum {
     id: string;
@@ -94,13 +95,18 @@ export const TableComponent = ({
                                             key={memorandum.id}
                                             className="hover:bg-gray-100 border-[#e4e4e7]"
                                         >
-                                            <TableCell className="px-4">
+                                            <TableCell>
                                                 <a
                                                     href={memorandum.pdfUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    title="View PDF"
+                                                    className="flex justify-center items-center"
                                                 >
-                                                    View PDF
+                                                    <FileText
+                                                        size={22}
+                                                        className="text-[#D63F17]"
+                                                    />
                                                 </a>
                                             </TableCell>
                                             <TableCell

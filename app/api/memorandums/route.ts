@@ -10,6 +10,15 @@ export async function GET(request: NextRequest) {
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const currentUser = await db.user.findUnique({
+        where: { id: session.user.id },
+    });
+
+    if (!currentUser || !currentUser.isApproved) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const searchParams = new URL(request.url).searchParams;
     const page = Math.max(1, Number(searchParams.get("page")) || 1);
     const search = searchParams.get("search") || "";
