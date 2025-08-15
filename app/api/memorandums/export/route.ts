@@ -40,7 +40,6 @@ export async function GET(request: NextRequest) {
             select: {
                 id: true,
                 memoNumber: true,
-                addressee: true,
                 sender: true,
                 senderUnit: true,
                 subject: true,
@@ -51,7 +50,6 @@ export async function GET(request: NextRequest) {
         headers = [
             "Memo ID",
             "Memo Number",
-            "Addressee",
             "Sender",
             "Sender's Unit",
             "Subject",
@@ -61,7 +59,6 @@ export async function GET(request: NextRequest) {
         data = memorandums.map((memorandum) => ({
             "Memorandum ID": memorandum.id,
             "Memo Number": memorandum.memoNumber,
-            Addressee: memorandum.addressee,
             Sender: memorandum.sender,
             "Sender's Unit": memorandum.senderUnit,
             Subject: memorandum.subject,

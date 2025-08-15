@@ -74,14 +74,6 @@ export const memorandumSchema = z.object({
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
             "Memo number can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
-    addressee: z
-        .string()
-        .min(1, "Addressee is required")
-        .max(100, "Addressee must be less than 100 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Addressee can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
     sender: z
         .string()
         .min(1, "Sender is required")
@@ -137,17 +129,6 @@ export const senderUnitSchema = z.object({
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
             "Unit can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
-});
-
-export const addresseeSchema = z.object({
-    recipient: z
-        .string()
-        .min(1, "Recipient is required")
-        .max(200, "Recipient must be less than 200 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Recipient can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
 });
 

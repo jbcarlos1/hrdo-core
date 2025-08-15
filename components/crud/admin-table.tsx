@@ -26,7 +26,6 @@ import { FileText } from "lucide-react";
 interface Memorandum {
     id: string;
     memoNumber: string;
-    addressee: string;
     sender: string;
     senderUnit: string;
     subject: string;
@@ -65,9 +64,6 @@ export const TableComponent = ({
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Memo Number
-                                        </TableHead>
-                                        <TableHead className="px-4">
-                                            Addressee
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Sender
@@ -114,12 +110,6 @@ export const TableComponent = ({
                                                 title={memorandum.memoNumber}
                                             >
                                                 {memorandum.memoNumber}
-                                            </TableCell>
-                                            <TableCell
-                                                className="px-4 truncate max-w-[200px]"
-                                                title={memorandum.addressee}
-                                            >
-                                                {memorandum.addressee}
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"

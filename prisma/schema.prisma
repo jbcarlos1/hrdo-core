@@ -112,7 +112,6 @@ model TwoFactorConfirmation {
 model Memorandum {
     id           String        @id @default(cuid())
     memoNumber   String @unique
-    addressee    String
     sender       String
     senderUnit   String
     subject      String
@@ -131,11 +130,6 @@ model SenderUnit {
     id          String @id @default(cuid())
     unitCode    String @unique
     unit        String @unique
-}
-
-model Addressee {
-    id          String @id @default(cuid())
-    recipient   String @unique
 }
 
 model Sender {
