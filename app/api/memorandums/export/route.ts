@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
                 id: true,
                 memoNumber: true,
                 sender: true,
-                senderUnit: true,
+                issuingOffice: true,
                 subject: true,
                 date: true,
             },
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
             "Memorandum ID": memorandum.id,
             "Memo Number": memorandum.memoNumber,
             Sender: memorandum.sender,
-            "Sender's Unit": memorandum.senderUnit,
+            "Sender's Unit": memorandum.issuingOffice,
             Subject: memorandum.subject,
             Date: memorandum.date,
         }));

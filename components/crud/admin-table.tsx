@@ -27,7 +27,7 @@ interface Memorandum {
     id: string;
     memoNumber: string;
     sender: string;
-    senderUnit: string;
+    issuingOffice: string;
     subject: string;
     date: string;
     keywords: string;
@@ -69,7 +69,7 @@ export const TableComponent = ({
                                             Sender
                                         </TableHead>
                                         <TableHead className="px-4">
-                                            Sender&apos;s Unit
+                                            Issuing Office/Agency
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Date
@@ -119,9 +119,9 @@ export const TableComponent = ({
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
-                                                title={memorandum.senderUnit}
+                                                title={memorandum.issuingOffice}
                                             >
-                                                {memorandum.senderUnit}
+                                                {memorandum.issuingOffice}
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"

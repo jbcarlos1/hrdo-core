@@ -6,7 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { memorandumSchema, senderUnitSchema, senderSchema } from "@/schemas";
+import { memorandumSchema, issuingOfficeSchema, senderSchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
@@ -60,14 +60,14 @@ import {
 } from "@/components/ui/popover";
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
-type SenderUnitFormInputs = z.infer<typeof senderUnitSchema>;
+type IssuingOfficeFormInputs = z.infer<typeof issuingOfficeSchema>;
 type SenderFormInputs = z.infer<typeof senderSchema>;
 
 interface Memorandum {
     id: string;
     memoNumber: string;
     sender: string;
-    senderUnit: string;
+    issuingOffice: string;
     subject: string;
     date: string;
     keywords: string;
@@ -75,7 +75,7 @@ interface Memorandum {
     isArchived: boolean;
 }
 
-interface SenderUnit {
+interface IssuingOffice {
     id: string;
     unitCode: string;
     unit: string;
@@ -93,8 +93,8 @@ interface PaginatedMemorandums {
     totalPages: number;
 }
 
-interface FetchedSenderUnits {
-    senderUnits: SenderUnit[];
+interface FetchedIssuingOffices {
+    issuingOffices: IssuingOffice[];
 }
 
 interface FetchedSenders {
@@ -133,9 +133,9 @@ const fetchMemorandums = async (
     }
 };
 
-const fetchSenderUnits = async (): Promise<FetchedSenderUnits> => {
+const fetchIssuingOffices = async (): Promise<FetchedIssuingOffices> => {
     try {
-        const res = await fetch("/api/sender-units");
+        const res = await fetch("/api/issuing-offices");
 
         if (!res.ok) throw new Error("Failed to fetch units");
         return res.json();
@@ -144,7 +144,7 @@ const fetchSenderUnits = async (): Promise<FetchedSenderUnits> => {
             console.error("Failed to load units:", error);
         }
         return {
-            senderUnits: [],
+            issuingOffices: [],
         };
     }
 };
@@ -166,10 +166,11 @@ const fetchSenders = async (): Promise<FetchedSenders> => {
 };
 
 export default function AdminDashboard() {
-    const [senderUnitOpen, setSenderUnitOpen] = useState(false);
-    const [_senderUnitValue, _setSenderUnitValue] = useState("");
-    const [senderUnits, setSenderUnits] = useState<SenderUnit[]>([]);
-    const [isSenderUnitDialogOpen, setIsSenderUnitDialogOpen] = useState(false);
+    const [issuingOfficeOpen, setIssuingOfficeOpen] = useState(false);
+    const [_issuingOfficeValue, _setIssuingOfficeValue] = useState("");
+    const [issuingOffices, setIssuingOffices] = useState<IssuingOffice[]>([]);
+    const [isIssuingOfficeDialogOpen, setIsIssuingOfficeDialogOpen] =
+        useState(false);
 
     const [senderOpen, setSenderOpen] = useState(false);
     const [_senderValue, _setSenderValue] = useState("");
@@ -217,12 +218,12 @@ export default function AdminDashboard() {
     });
 
     const {
-        register: registerSenderUnit,
-        handleSubmit: handleSubmitSenderUnit,
-        formState: { errors: senderUnitErrors },
-        reset: resetSenderUnit,
-    } = useForm<SenderUnitFormInputs>({
-        resolver: zodResolver(senderUnitSchema),
+        register: registerIssuingOffice,
+        handleSubmit: handleSubmitIssuingOffice,
+        formState: { errors: issuingOfficeErrors },
+        reset: resetIssuingOffice,
+    } = useForm<IssuingOfficeFormInputs>({
+        resolver: zodResolver(issuingOfficeSchema),
         mode: "onChange",
     });
 
@@ -281,14 +282,14 @@ export default function AdminDashboard() {
     );
 
     useEffect(() => {
-        const fetchSenderUnits = async () => {
+        const fetchIssuingOffices = async () => {
             try {
-                const res = await fetch("/api/sender-units");
+                const res = await fetch("/api/issuing-offices");
                 if (!res.ok) {
                     throw new Error("Failed to fetch units");
                 }
                 const data = await res.json();
-                setSenderUnits(data.senderUnits);
+                setIssuingOffices(data.issuingOffices);
             } catch (error) {
                 console.error("Error fetching units:", error);
             }
@@ -307,7 +308,7 @@ export default function AdminDashboard() {
             }
         };
 
-        fetchSenderUnits();
+        fetchIssuingOffices();
         fetchSenders();
     }, []);
 
@@ -339,10 +340,10 @@ export default function AdminDashboard() {
         [page, debouncedSearchInput, sortOption, memorandumState]
     );
 
-    const refreshSenderUnits = useCallback(async () => {
-        const updatedSenderUnits = await fetchSenderUnits();
+    const refreshIssuingOffices = useCallback(async () => {
+        const updatedIssuingOffices = await fetchIssuingOffices();
 
-        setSenderUnits(updatedSenderUnits.senderUnits);
+        setIssuingOffices(updatedIssuingOffices.issuingOffices);
     }, []);
 
     const refreshSenders = useCallback(async () => {
@@ -396,7 +397,7 @@ export default function AdminDashboard() {
             }
             resetMemo();
             setIsDialogOpen(false);
-            setIsSenderUnitDialogOpen(false);
+            setIsIssuingOfficeDialogOpen(false);
             setIsSenderDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
@@ -420,7 +421,7 @@ export default function AdminDashboard() {
         }
     };
 
-    const onSenderUnitSubmit = async (data: SenderUnitFormInputs) => {
+    const onIssuingOfficeSubmit = async (data: IssuingOfficeFormInputs) => {
         setSubmitLoading(true);
         try {
             const formData = new FormData();
@@ -429,7 +430,7 @@ export default function AdminDashboard() {
                 formData.append(key, String(value));
             });
 
-            const res = await fetch("/api/sender-units", {
+            const res = await fetch("/api/issuing-offices", {
                 method: "POST",
                 body: formData,
             });
@@ -439,9 +440,9 @@ export default function AdminDashboard() {
                 throw new Error(errorData.error || "Failed to add unit");
             }
 
-            resetSenderUnit();
-            setIsSenderUnitDialogOpen(false);
-            await refreshSenderUnits();
+            resetIssuingOffice();
+            setIsIssuingOfficeDialogOpen(false);
+            await refreshIssuingOffices();
             toast({
                 title: "Unit Added",
                 description: "The unit has been successfully added",
@@ -570,8 +571,8 @@ export default function AdminDashboard() {
         (memorandum: Memorandum) => {
             setEditingMemorandum(memorandum);
             setDate(memorandum.date ? new Date(memorandum.date) : null);
-            _setSenderUnitValue(
-                memorandum.senderUnit ? memorandum.senderUnit : ""
+            _setIssuingOfficeValue(
+                memorandum.issuingOffice ? memorandum.issuingOffice : ""
             );
             _setSenderValue(memorandum.sender ? memorandum.sender : "");
             resetMemo(memorandum);
@@ -583,12 +584,12 @@ export default function AdminDashboard() {
     const openAddModal = useCallback(() => {
         setEditingMemorandum(null);
         setDate(null);
-        _setSenderUnitValue("");
+        _setIssuingOfficeValue("");
         _setSenderValue("");
         resetMemo({
             memoNumber: "",
             sender: "",
-            senderUnit: "",
+            issuingOffice: "",
             subject: "",
             date: "",
             keywords: "",
@@ -597,13 +598,13 @@ export default function AdminDashboard() {
         setIsDialogOpen(true);
     }, [resetMemo]);
 
-    const openAddSenderUnitModal = useCallback(() => {
-        resetSenderUnit({
+    const openAddIssuingOfficeModal = useCallback(() => {
+        resetIssuingOffice({
             unitCode: "",
             unit: "",
         });
-        setIsSenderUnitDialogOpen(true);
-    }, [resetSenderUnit]);
+        setIsIssuingOfficeDialogOpen(true);
+    }, [resetIssuingOffice]);
 
     const openAddSenderModal = useCallback(() => {
         resetSender({
@@ -996,40 +997,40 @@ export default function AdminDashboard() {
 
                         <div>
                             <p className="text-sm my-2 text-gray-500">
-                                Sender&apos;s Unit
+                                Issuing Office/Agency
                             </p>
                             <div className="flex">
                                 <Popover
-                                    open={senderUnitOpen}
-                                    onOpenChange={setSenderUnitOpen}
+                                    open={issuingOfficeOpen}
+                                    onOpenChange={setIssuingOfficeOpen}
                                 >
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
                                             role="combobox"
-                                            aria-expanded={senderUnitOpen}
+                                            aria-expanded={issuingOfficeOpen}
                                             className={`w-full justify-between font-normal ${
-                                                senderUnits.find(
-                                                    (senderUnit) =>
-                                                        `${senderUnit.unitCode}-${senderUnit.unit}` ===
-                                                        _senderUnitValue
+                                                issuingOffices.find(
+                                                    (issuingOffice) =>
+                                                        `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                                        _issuingOfficeValue
                                                 )
                                                     ? ""
                                                     : "text-gray-500"
                                             }`}
                                         >
-                                            {_senderUnitValue
+                                            {_issuingOfficeValue
                                                 ? `${
-                                                      senderUnits.find(
-                                                          (senderUnit) =>
-                                                              `${senderUnit.unitCode}-${senderUnit.unit}` ===
-                                                              _senderUnitValue
+                                                      issuingOffices.find(
+                                                          (issuingOffice) =>
+                                                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                                              _issuingOfficeValue
                                                       )?.unitCode
                                                   }-${
-                                                      senderUnits.find(
-                                                          (senderUnit) =>
-                                                              `${senderUnit.unitCode}-${senderUnit.unit}` ===
-                                                              _senderUnitValue
+                                                      issuingOffices.find(
+                                                          (issuingOffice) =>
+                                                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                                              _issuingOfficeValue
                                                       )?.unit
                                                   }`
                                                 : "Select unit..."}
@@ -1047,25 +1048,25 @@ export default function AdminDashboard() {
                                                     No unit found.
                                                 </CommandEmpty>
                                                 <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
-                                                    {senderUnits.map(
-                                                        (senderUnit) => (
+                                                    {issuingOffices.map(
+                                                        (issuingOffice) => (
                                                             <CommandItem
-                                                                key={`${senderUnit.unitCode}-${senderUnit.unit}`}
-                                                                value={`${senderUnit.unitCode}-${senderUnit.unit}`}
+                                                                key={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                                                                value={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
                                                                 onSelect={(
                                                                     currentValue
                                                                 ) => {
-                                                                    _setSenderUnitValue(
+                                                                    _setIssuingOfficeValue(
                                                                         currentValue ===
-                                                                            _senderUnitValue
+                                                                            _issuingOfficeValue
                                                                             ? ""
                                                                             : currentValue
                                                                     );
                                                                     setMemoValue(
-                                                                        "senderUnit",
-                                                                        `${senderUnit.unitCode}-${senderUnit.unit}`
+                                                                        "issuingOffice",
+                                                                        `${issuingOffice.unitCode}-${issuingOffice.unit}`
                                                                     );
-                                                                    setSenderUnitOpen(
+                                                                    setIssuingOfficeOpen(
                                                                         false
                                                                     );
                                                                 }}
@@ -1073,13 +1074,13 @@ export default function AdminDashboard() {
                                                                 <CheckIcon
                                                                     className={cn(
                                                                         "h-4 w-4",
-                                                                        _senderUnitValue ===
-                                                                            `${senderUnit.unitCode}-${senderUnit.unit}`
+                                                                        _issuingOfficeValue ===
+                                                                            `${issuingOffice.unitCode}-${issuingOffice.unit}`
                                                                             ? "opacity-100"
                                                                             : "opacity-0"
                                                                     )}
                                                                 />
-                                                                {`${senderUnit.unitCode}-${senderUnit.unit}`}
+                                                                {`${issuingOffice.unitCode}-${issuingOffice.unit}`}
                                                             </CommandItem>
                                                         )
                                                     )}
@@ -1094,15 +1095,15 @@ export default function AdminDashboard() {
                                         submitLoading ? "opacity-50" : ""
                                     }`}
                                     title="Add unit"
-                                    onClick={openAddSenderUnitModal}
+                                    onClick={openAddIssuingOfficeModal}
                                     disabled={submitLoading}
                                 >
                                     <Plus size={22} />
                                 </Button>
                             </div>
-                            {memoErrors.senderUnit && (
+                            {memoErrors.issuingOffice && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {memoErrors.senderUnit.message}
+                                    {memoErrors.issuingOffice.message}
                                 </p>
                             )}
                         </div>
@@ -1188,8 +1189,8 @@ export default function AdminDashboard() {
                 </DialogContent>
             </Dialog>
             <Dialog
-                open={isSenderUnitDialogOpen}
-                onOpenChange={setIsSenderUnitDialogOpen}
+                open={isIssuingOfficeDialogOpen}
+                onOpenChange={setIsIssuingOfficeDialogOpen}
             >
                 <DialogContent>
                     <DialogHeader>
@@ -1197,7 +1198,9 @@ export default function AdminDashboard() {
                     </DialogHeader>
 
                     <form
-                        onSubmit={handleSubmitSenderUnit(onSenderUnitSubmit)}
+                        onSubmit={handleSubmitIssuingOffice(
+                            onIssuingOfficeSubmit
+                        )}
                         className="space-y-4"
                     >
                         <div>
@@ -1205,24 +1208,24 @@ export default function AdminDashboard() {
                                 Unit Code
                             </p>
                             <Input
-                                {...registerSenderUnit("unitCode")}
+                                {...registerIssuingOffice("unitCode")}
                                 className="w-full"
                             />
-                            {senderUnitErrors.unitCode && (
+                            {issuingOfficeErrors.unitCode && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {senderUnitErrors.unitCode.message}
+                                    {issuingOfficeErrors.unitCode.message}
                                 </p>
                             )}
                         </div>
                         <div>
                             <p className="text-sm my-2 text-gray-500">Unit</p>
                             <Input
-                                {...registerSenderUnit("unit")}
+                                {...registerIssuingOffice("unit")}
                                 className="w-full"
                             />
-                            {senderUnitErrors.unit && (
+                            {issuingOfficeErrors.unit && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {senderUnitErrors.unit.message}
+                                    {issuingOfficeErrors.unit.message}
                                 </p>
                             )}
                         </div>

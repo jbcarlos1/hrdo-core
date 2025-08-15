@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
-import { senderUnitSchema } from "@/schemas";
+import { issuingOfficeSchema } from "@/schemas";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -19,13 +19,13 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const senderUnits = await db.senderUnit.findMany({
+        const issuingOffices = await db.issuingOffice.findMany({
             orderBy: {
                 unitCode: "asc",
             },
         });
 
-        return NextResponse.json({ senderUnits });
+        return NextResponse.json({ issuingOffices });
     } catch (error) {
         console.error("Error fetching units:", error);
         return NextResponse.json(
@@ -53,13 +53,13 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
 
-        const senderUnitData = {
+        const issuingOfficeData = {
             unitCode: formData.get("unitCode") as string,
             unit: formData.get("unit") as string,
         };
 
-        const validatedData = senderUnitSchema.parse(senderUnitData);
-        const senderUnit = await db.senderUnit.create({
+        const validatedData = issuingOfficeSchema.parse(issuingOfficeData);
+        const issuingOffice = await db.issuingOffice.create({
             data: {
                 unitCode: validatedData.unitCode,
                 unit: validatedData.unit,
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(senderUnit, { status: 201 });
+        return NextResponse.json(issuingOffice, { status: 201 });
     } catch (error) {
         if (error instanceof Error && error.name === "ZodError") {
             return NextResponse.json(

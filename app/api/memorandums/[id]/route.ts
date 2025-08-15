@@ -36,7 +36,7 @@ export async function PUT(
         const MemorandumData = {
             memoNumber: formData.get("memoNumber") as string,
             sender: formData.get("sender") as string,
-            senderUnit: formData.get("senderUnit") as string,
+            issuingOffice: formData.get("issuingOffice") as string,
             subject: formData.get("subject") as string,
             date: formData.get("date") as string,
             keywords: formData.get("keywords") as string,
@@ -53,7 +53,7 @@ export async function PUT(
         const updateData = {
             memoNumber: validatedData.memoNumber,
             sender: validatedData.sender,
-            senderUnit: validatedData.senderUnit,
+            issuingOffice: validatedData.issuingOffice,
             subject: validatedData.subject,
             date: dateObj,
             keywords: validatedData.keywords,
@@ -67,7 +67,7 @@ export async function PUT(
                 id: true,
                 memoNumber: true,
                 sender: true,
-                senderUnit: true,
+                issuingOffice: true,
                 subject: true,
                 date: true,
                 keywords: true,

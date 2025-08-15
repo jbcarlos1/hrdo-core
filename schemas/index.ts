@@ -82,7 +82,7 @@ export const memorandumSchema = z.object({
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
             "Sender can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
-    senderUnit: z
+    issuingOffice: z
         .string({ required_error: "Sender's unit is required" })
         .min(1, "Sender's unit is required")
         .max(100, "Sender's unit must be less than 100 characters")
@@ -113,7 +113,7 @@ export const memorandumSchema = z.object({
     pdfUrl: z.string().url({ message: "PDF URL is required" }),
 });
 
-export const senderUnitSchema = z.object({
+export const issuingOfficeSchema = z.object({
     unitCode: z
         .string()
         .min(1, "Unit code is required")

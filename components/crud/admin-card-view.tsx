@@ -19,7 +19,7 @@ interface Memorandum {
     id: string;
     memoNumber: string;
     sender: string;
-    senderUnit: string;
+    issuingOffice: string;
     subject: string;
     date: string;
     keywords: string;
