@@ -46,12 +46,11 @@ export default function Home() {
                                 font.className
                             )}
                         >
-                            HRDO Policy Portal
+                            HRDO CORE
                         </h1>
                     </div>
                     <p className="text-white/90 text-2xl sm:text-3xl md:text-4xl font-extrabold text-center whitespace-nowrap">
-                        A centralized platform for managing and accessing HR
-                        policies and guidelines
+                        Compilation of Official References for HR Employees
                     </p>
 
                     <div className="relative w-full max-w-[850px] h-auto transform hover:scale-[1.02] transition-all duration-500">
@@ -61,7 +60,7 @@ export default function Home() {
                             <div className="bg-[#4a0e0e] h-6 w-[400px] rounded-md text-[#a6adbb] flex items-center px-2 gap-3 shadow-inner">
                                 <SearchIcon className="w-4 h-4" />
                                 <div className="text-sm font-medium">
-                                    https://policy-portal.hrdo.upd.edu.ph
+                                    https://core.hrdo.upd.edu.ph
                                 </div>
                             </div>
                             <div className="w-14 opacity-0" />

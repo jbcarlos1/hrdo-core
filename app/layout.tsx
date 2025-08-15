@@ -6,9 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "HRDO Policy Portal",
-    description:
-        "A centralized platform for managing and accessing HR policies and guidelines",
+    title: "HRDO CORE",
+    description: "Compilation of Official References for HR Employees",
 };
 
 export default function RootLayout({

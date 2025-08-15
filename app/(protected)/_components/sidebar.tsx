@@ -137,7 +137,7 @@ export default function Sidebar() {
                                         HRDO
                                     </h1>
                                     <p className="font-semibold text-xs text-[#f5d4d4]">
-                                        Policy Portal
+                                        CORE
                                     </p>
                                 </div>
                             )}
@@ -433,9 +433,7 @@ function SidebarContent() {
                 />
                 <div className="ml-2">
                     <h1 className="font-bold text-lg text-[#f5d4d4]">HRDO</h1>
-                    <p className="font-semibold text-xs text-[#f5d4d4]">
-                        Policy Portal
-                    </p>
+                    <p className="font-semibold text-xs text-[#f5d4d4]">CORE</p>
                 </div>
             </div>
 

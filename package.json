@@ -1,5 +1,5 @@
 {
-    "name": "hrdo-policy-portal",
+    "name": "hrdo-core",
     "version": "0.1.0",
     "private": true,
     "scripts": {
