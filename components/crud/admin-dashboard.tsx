@@ -1033,7 +1033,7 @@ export default function AdminDashboard() {
                                                               _issuingOfficeValue
                                                       )?.unit
                                                   }`
-                                                : "Select unit..."}
+                                                : "Select office/agency..."}
                                             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
