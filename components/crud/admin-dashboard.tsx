@@ -657,7 +657,7 @@ export default function AdminDashboard() {
             <div className="mx-auto mb-2 border bg-white rounded-md px-8 pt-8 pb-3 flex flex-col w-full shadow-md h-[calc(100vh-2rem)]">
                 <div className="flex justify-between items-center mb-2">
                     <h1 className="text-2xl font-semibold text-[#7b1113]">
-                        Memo Dashboard
+                        CORE Dashboard
                     </h1>
 
                     <div className="flex gap-2">
@@ -738,7 +738,7 @@ export default function AdminDashboard() {
                             disabled={loading}
                             className={loading ? "opacity-50" : ""}
                         >
-                            Add New Memo
+                            Add Official Reference
                         </Button>
                     </div>
                 </div>
