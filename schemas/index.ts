@@ -74,21 +74,21 @@ export const memorandumSchema = z.object({
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
             "Memo number can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
-    sender: z
+    signatory: z
         .string()
-        .min(1, "Sender is required")
-        .max(100, "Sender must be less than 100 characters")
+        .min(1, "Signatory is required")
+        .max(100, "Signatory must be less than 100 characters")
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Sender can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+            "Signatory can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
     issuingOffice: z
-        .string({ required_error: "Sender's unit is required" })
-        .min(1, "Sender's unit is required")
-        .max(100, "Sender's unit must be less than 100 characters")
+        .string({ required_error: "Issuing office/agency is required" })
+        .min(1, "Issuing office/agency is required")
+        .max(100, "Issuing office/agency must be less than 100 characters")
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Sender's unit can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+            "Issuing office/agency can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
     subject: z
         .string()
@@ -116,23 +116,23 @@ export const memorandumSchema = z.object({
 export const issuingOfficeSchema = z.object({
     unitCode: z
         .string()
-        .min(1, "Unit code is required")
-        .max(50, "Unit code must be less than 50 characters")
+        .min(1, "Office/Agency code is required")
+        .max(50, "Office/Agency code must be less than 50 characters")
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Unit code can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+            "Office/Agency code can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
     unit: z
         .string()
-        .min(1, "Unit is required")
-        .max(200, "Unit must be less than 200 characters")
+        .min(1, "Office/Agency is required")
+        .max(200, "Office/Agency must be less than 200 characters")
         .regex(
             /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Unit can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
+            "Office/Agency can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
         ),
 });
 
-export const senderSchema = z.object({
+export const signatorySchema = z.object({
     fullName: z
         .string()
         .min(1, "Full name is required")

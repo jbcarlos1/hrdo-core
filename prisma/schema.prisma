@@ -112,7 +112,7 @@ model TwoFactorConfirmation {
 model Memorandum {
     id              String        @id @default(cuid())
     memoNumber      String @unique
-    sender          String
+    signatory       String
     issuingOffice   String
     subject         String
     date            DateTime
@@ -132,7 +132,7 @@ model IssuingOffice {
     unit        String @unique
 }
 
-model Sender {
+model Signatory {
     id          String @id @default(cuid())
     fullName    String @unique
 }

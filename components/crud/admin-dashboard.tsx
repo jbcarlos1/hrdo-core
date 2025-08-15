@@ -6,7 +6,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { memorandumSchema, issuingOfficeSchema, senderSchema } from "@/schemas";
+import {
+    memorandumSchema,
+    issuingOfficeSchema,
+    signatorySchema,
+} from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { FiDownload } from "react-icons/fi";
@@ -61,12 +65,12 @@ import {
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 type IssuingOfficeFormInputs = z.infer<typeof issuingOfficeSchema>;
-type SenderFormInputs = z.infer<typeof senderSchema>;
+type SignatoryFormInputs = z.infer<typeof signatorySchema>;
 
 interface Memorandum {
     id: string;
     memoNumber: string;
-    sender: string;
+    signatory: string;
     issuingOffice: string;
     subject: string;
     date: string;
@@ -81,7 +85,7 @@ interface IssuingOffice {
     unit: string;
 }
 
-interface Sender {
+interface Signatory {
     id: string;
     fullName: string;
 }
@@ -97,8 +101,8 @@ interface FetchedIssuingOffices {
     issuingOffices: IssuingOffice[];
 }
 
-interface FetchedSenders {
-    senders: Sender[];
+interface FetchedSignatories {
+    signatories: Signatory[];
 }
 
 const fetchMemorandums = async (
@@ -137,11 +141,11 @@ const fetchIssuingOffices = async (): Promise<FetchedIssuingOffices> => {
     try {
         const res = await fetch("/api/issuing-offices");
 
-        if (!res.ok) throw new Error("Failed to fetch units");
+        if (!res.ok) throw new Error("Failed to fetch offices/agencies");
         return res.json();
     } catch (error: unknown) {
         if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Failed to load units:", error);
+            console.error("Failed to load offices/agencies:", error);
         }
         return {
             issuingOffices: [],
@@ -149,18 +153,18 @@ const fetchIssuingOffices = async (): Promise<FetchedIssuingOffices> => {
     }
 };
 
-const fetchSenders = async (): Promise<FetchedSenders> => {
+const fetchSignatories = async (): Promise<FetchedSignatories> => {
     try {
-        const res = await fetch("/api/senders");
+        const res = await fetch("/api/signatories");
 
-        if (!res.ok) throw new Error("Failed to fetch senders");
+        if (!res.ok) throw new Error("Failed to fetch signatories");
         return res.json();
     } catch (error: unknown) {
         if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Failed to load senders:", error);
+            console.error("Failed to load signatories:", error);
         }
         return {
-            senders: [],
+            signatories: [],
         };
     }
 };
@@ -172,10 +176,10 @@ export default function AdminDashboard() {
     const [isIssuingOfficeDialogOpen, setIsIssuingOfficeDialogOpen] =
         useState(false);
 
-    const [senderOpen, setSenderOpen] = useState(false);
-    const [_senderValue, _setSenderValue] = useState("");
-    const [senders, setSenders] = useState<Sender[]>([]);
-    const [isSenderDialogOpen, setIsSenderDialogOpen] = useState(false);
+    const [signatoryOpen, setSignatoryOpen] = useState(false);
+    const [_signatoryValue, _setSignatoryValue] = useState("");
+    const [signatories, setSignatories] = useState<Signatory[]>([]);
+    const [isSignatoryDialogOpen, setIsSignatoryDialogOpen] = useState(false);
 
     const [date, setDate] = useState<Date | null>(null);
     const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
@@ -228,12 +232,12 @@ export default function AdminDashboard() {
     });
 
     const {
-        register: registerSender,
-        handleSubmit: handleSubmitSender,
-        formState: { errors: senderErrors },
-        reset: resetSender,
-    } = useForm<SenderFormInputs>({
-        resolver: zodResolver(senderSchema),
+        register: registerSignatory,
+        handleSubmit: handleSubmitSignatory,
+        formState: { errors: signatoryErrors },
+        reset: resetSignatory,
+    } = useForm<SignatoryFormInputs>({
+        resolver: zodResolver(signatorySchema),
         mode: "onChange",
     });
 
@@ -286,30 +290,30 @@ export default function AdminDashboard() {
             try {
                 const res = await fetch("/api/issuing-offices");
                 if (!res.ok) {
-                    throw new Error("Failed to fetch units");
+                    throw new Error("Failed to fetch offices/agencies");
                 }
                 const data = await res.json();
                 setIssuingOffices(data.issuingOffices);
             } catch (error) {
-                console.error("Error fetching units:", error);
+                console.error("Error fetching offices/agencies:", error);
             }
         };
 
-        const fetchSenders = async () => {
+        const fetchSignatories = async () => {
             try {
-                const res = await fetch("/api/senders");
+                const res = await fetch("/api/signatories");
                 if (!res.ok) {
-                    throw new Error("Failed to fetch senders");
+                    throw new Error("Failed to fetch signatories");
                 }
                 const data = await res.json();
-                setSenders(data.senders);
+                setSignatories(data.signatories);
             } catch (error) {
-                console.error("Error fetching senders:", error);
+                console.error("Error fetching signatories:", error);
             }
         };
 
         fetchIssuingOffices();
-        fetchSenders();
+        fetchSignatories();
     }, []);
 
     useEffect(() => {
@@ -346,10 +350,10 @@ export default function AdminDashboard() {
         setIssuingOffices(updatedIssuingOffices.issuingOffices);
     }, []);
 
-    const refreshSenders = useCallback(async () => {
-        const updatedSenders = await fetchSenders();
+    const refreshSignatories = useCallback(async () => {
+        const updatedSignatories = await fetchSignatories();
 
-        setSenders(updatedSenders.senders);
+        setSignatories(updatedSignatories.signatories);
     }, []);
 
     const handlePdfUpload = async (file: File) => {
@@ -398,7 +402,7 @@ export default function AdminDashboard() {
             resetMemo();
             setIsDialogOpen(false);
             setIsIssuingOfficeDialogOpen(false);
-            setIsSenderDialogOpen(false);
+            setIsSignatoryDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
                 title: `Memo ${method === "POST" ? "Added" : "Updated"}`,
@@ -437,15 +441,15 @@ export default function AdminDashboard() {
 
             if (!res.ok) {
                 const errorData = await res.json();
-                throw new Error(errorData.error || "Failed to add unit");
+                throw new Error(errorData.error || "Failed to office/agency");
             }
 
             resetIssuingOffice();
             setIsIssuingOfficeDialogOpen(false);
             await refreshIssuingOffices();
             toast({
-                title: "Unit Added",
-                description: "The unit has been successfully added",
+                title: "Office/Agency Added",
+                description: "The Office/Agency has been successfully added",
             });
         } catch (error) {
             console.error("Submit failed", error);
@@ -462,7 +466,7 @@ export default function AdminDashboard() {
         }
     };
 
-    const onSenderSubmit = async (data: SenderFormInputs) => {
+    const onSignatorySubmit = async (data: SignatoryFormInputs) => {
         setSubmitLoading(true);
         try {
             const formData = new FormData();
@@ -471,22 +475,22 @@ export default function AdminDashboard() {
                 formData.append(key, String(value));
             });
 
-            const res = await fetch("/api/senders", {
+            const res = await fetch("/api/signatories", {
                 method: "POST",
                 body: formData,
             });
 
             if (!res.ok) {
                 const errorData = await res.json();
-                throw new Error(errorData.error || "Failed to add sender");
+                throw new Error(errorData.error || "Failed to add signatory");
             }
 
-            resetSender();
-            setIsSenderDialogOpen(false);
-            await refreshSenders();
+            resetSignatory();
+            setIsSignatoryDialogOpen(false);
+            await refreshSignatories();
             toast({
-                title: "Sender Added",
-                description: "The sender has been successfully added",
+                title: "Signatory Added",
+                description: "The signatory has been successfully added",
             });
         } catch (error) {
             console.error("Submit failed", error);
@@ -574,7 +578,9 @@ export default function AdminDashboard() {
             _setIssuingOfficeValue(
                 memorandum.issuingOffice ? memorandum.issuingOffice : ""
             );
-            _setSenderValue(memorandum.sender ? memorandum.sender : "");
+            _setSignatoryValue(
+                memorandum.signatory ? memorandum.signatory : ""
+            );
             resetMemo(memorandum);
             setIsDialogOpen(true);
         },
@@ -585,10 +591,10 @@ export default function AdminDashboard() {
         setEditingMemorandum(null);
         setDate(null);
         _setIssuingOfficeValue("");
-        _setSenderValue("");
+        _setSignatoryValue("");
         resetMemo({
             memoNumber: "",
-            sender: "",
+            signatory: "",
             issuingOffice: "",
             subject: "",
             date: "",
@@ -606,12 +612,12 @@ export default function AdminDashboard() {
         setIsIssuingOfficeDialogOpen(true);
     }, [resetIssuingOffice]);
 
-    const openAddSenderModal = useCallback(() => {
-        resetSender({
+    const openAddSignatoryModal = useCallback(() => {
+        resetSignatory({
             fullName: "",
         });
-        setIsSenderDialogOpen(true);
-    }, [resetSender]);
+        setIsSignatoryDialogOpen(true);
+    }, [resetSignatory]);
 
     const handleExport = async () => {
         try {
@@ -891,34 +897,36 @@ export default function AdminDashboard() {
                         </div>
 
                         <div>
-                            <p className="text-sm my-2 text-gray-500">Sender</p>
+                            <p className="text-sm my-2 text-gray-500">
+                                Signatory
+                            </p>
                             <div className="flex">
                                 <Popover
-                                    open={senderOpen}
-                                    onOpenChange={setSenderOpen}
+                                    open={signatoryOpen}
+                                    onOpenChange={setSignatoryOpen}
                                 >
                                     <PopoverTrigger asChild>
                                         <Button
                                             variant="outline"
                                             role="combobox"
-                                            aria-expanded={senderOpen}
+                                            aria-expanded={signatoryOpen}
                                             className={`w-full justify-between font-normal ${
-                                                senders.find(
-                                                    (sender) =>
-                                                        sender.fullName ===
-                                                        _senderValue
+                                                signatories.find(
+                                                    (signatory) =>
+                                                        signatory.fullName ===
+                                                        _signatoryValue
                                                 )
                                                     ? ""
                                                     : "text-gray-500"
                                             }`}
                                         >
-                                            {_senderValue
-                                                ? senders.find(
-                                                      (sender) =>
-                                                          sender.fullName ===
-                                                          _senderValue
+                                            {_signatoryValue
+                                                ? signatories.find(
+                                                      (signatory) =>
+                                                          signatory.fullName ===
+                                                          _signatoryValue
                                                   )?.fullName
-                                                : "Select sender..."}
+                                                : "Select signatory..."}
                                             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
@@ -927,50 +935,54 @@ export default function AdminDashboard() {
                                         className="w-full p-0"
                                     >
                                         <Command>
-                                            <CommandInput placeholder="Search sender..." />
+                                            <CommandInput placeholder="Search signatory..." />
                                             <CommandList>
                                                 <CommandEmpty>
-                                                    No sender found.
+                                                    No signatory found.
                                                 </CommandEmpty>
                                                 <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
-                                                    {senders.map((sender) => (
-                                                        <CommandItem
-                                                            key={
-                                                                sender.fullName
-                                                            }
-                                                            value={
-                                                                sender.fullName
-                                                            }
-                                                            onSelect={(
-                                                                currentValue
-                                                            ) => {
-                                                                _setSenderValue(
-                                                                    currentValue ===
-                                                                        _senderValue
-                                                                        ? ""
-                                                                        : currentValue
-                                                                );
-                                                                setMemoValue(
-                                                                    "sender",
-                                                                    sender.fullName
-                                                                );
-                                                                setSenderOpen(
-                                                                    false
-                                                                );
-                                                            }}
-                                                        >
-                                                            <CheckIcon
-                                                                className={cn(
-                                                                    "h-4 w-4",
-                                                                    _senderValue ===
-                                                                        sender.fullName
-                                                                        ? "opacity-100"
-                                                                        : "opacity-0"
-                                                                )}
-                                                            />
-                                                            {sender.fullName}
-                                                        </CommandItem>
-                                                    ))}
+                                                    {signatories.map(
+                                                        (signatory) => (
+                                                            <CommandItem
+                                                                key={
+                                                                    signatory.fullName
+                                                                }
+                                                                value={
+                                                                    signatory.fullName
+                                                                }
+                                                                onSelect={(
+                                                                    currentValue
+                                                                ) => {
+                                                                    _setSignatoryValue(
+                                                                        currentValue ===
+                                                                            _signatoryValue
+                                                                            ? ""
+                                                                            : currentValue
+                                                                    );
+                                                                    setMemoValue(
+                                                                        "signatory",
+                                                                        signatory.fullName
+                                                                    );
+                                                                    setSignatoryOpen(
+                                                                        false
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <CheckIcon
+                                                                    className={cn(
+                                                                        "h-4 w-4",
+                                                                        _signatoryValue ===
+                                                                            signatory.fullName
+                                                                            ? "opacity-100"
+                                                                            : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                {
+                                                                    signatory.fullName
+                                                                }
+                                                            </CommandItem>
+                                                        )
+                                                    )}
                                                 </CommandGroup>
                                             </CommandList>
                                         </Command>
@@ -981,16 +993,16 @@ export default function AdminDashboard() {
                                     className={`ms-1 p-0 w-[38px] h-9 ${
                                         submitLoading ? "opacity-50" : ""
                                     }`}
-                                    title="Add sender"
-                                    onClick={openAddSenderModal}
+                                    title="Add signatory"
+                                    onClick={openAddSignatoryModal}
                                     disabled={submitLoading}
                                 >
                                     <Plus size={22} />
                                 </Button>
                             </div>
-                            {memoErrors.sender && (
+                            {memoErrors.signatory && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {memoErrors.sender.message}
+                                    {memoErrors.signatory.message}
                                 </p>
                             )}
                         </div>
@@ -1042,10 +1054,10 @@ export default function AdminDashboard() {
                                         className="w-full p-0"
                                     >
                                         <Command>
-                                            <CommandInput placeholder="Search unit..." />
+                                            <CommandInput placeholder="Search office/agency..." />
                                             <CommandList>
                                                 <CommandEmpty>
-                                                    No unit found.
+                                                    No office/agency found.
                                                 </CommandEmpty>
                                                 <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
                                                     {issuingOffices.map(
@@ -1094,7 +1106,7 @@ export default function AdminDashboard() {
                                     className={`ms-1 p-0 w-[38px] h-9 ${
                                         submitLoading ? "opacity-50" : ""
                                     }`}
-                                    title="Add unit"
+                                    title="Add office/agency"
                                     onClick={openAddIssuingOfficeModal}
                                     disabled={submitLoading}
                                 >
@@ -1194,7 +1206,7 @@ export default function AdminDashboard() {
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add Unit</DialogTitle>
+                        <DialogTitle>Add Office/Agency</DialogTitle>
                     </DialogHeader>
 
                     <form
@@ -1205,7 +1217,7 @@ export default function AdminDashboard() {
                     >
                         <div>
                             <p className="text-sm my-2 text-gray-500">
-                                Unit Code
+                                Office/Agency Code
                             </p>
                             <Input
                                 {...registerIssuingOffice("unitCode")}
@@ -1218,7 +1230,9 @@ export default function AdminDashboard() {
                             )}
                         </div>
                         <div>
-                            <p className="text-sm my-2 text-gray-500">Unit</p>
+                            <p className="text-sm my-2 text-gray-500">
+                                Office/Agency
+                            </p>
                             <Input
                                 {...registerIssuingOffice("unit")}
                                 className="w-full"
@@ -1232,7 +1246,7 @@ export default function AdminDashboard() {
 
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
-                                Add Unit
+                                Add Office/Agency
                             </Button>
                             <DialogClose asChild>
                                 <Button
@@ -1248,34 +1262,36 @@ export default function AdminDashboard() {
             </Dialog>
 
             <Dialog
-                open={isSenderDialogOpen}
-                onOpenChange={setIsSenderDialogOpen}
+                open={isSignatoryDialogOpen}
+                onOpenChange={setIsSignatoryDialogOpen}
             >
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add Sender</DialogTitle>
+                        <DialogTitle>Add Signatory</DialogTitle>
                     </DialogHeader>
 
                     <form
-                        onSubmit={handleSubmitSender(onSenderSubmit)}
+                        onSubmit={handleSubmitSignatory(onSignatorySubmit)}
                         className="space-y-4"
                     >
                         <div>
-                            <p className="text-sm my-2 text-gray-500">Sender</p>
+                            <p className="text-sm my-2 text-gray-500">
+                                Signatory
+                            </p>
                             <Input
-                                {...registerSender("fullName")}
+                                {...registerSignatory("fullName")}
                                 className="w-full"
                             />
-                            {senderErrors.fullName && (
+                            {signatoryErrors.fullName && (
                                 <p className="text-red-500 text-sm my-1">
-                                    {senderErrors.fullName.message}
+                                    {signatoryErrors.fullName.message}
                                 </p>
                             )}
                         </div>
 
                         <DialogFooter>
                             <Button type="submit" disabled={submitLoading}>
-                                Add Sender
+                                Add Signatory
                             </Button>
                             <DialogClose asChild>
                                 <Button

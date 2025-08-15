@@ -27,9 +27,9 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ issuingOffices });
     } catch (error) {
-        console.error("Error fetching units:", error);
+        console.error("Error fetching offices/agencies:", error);
         return NextResponse.json(
-            { error: "Failed to fetch units" },
+            { error: "Failed to fetch offices/agencies" },
             { status: 500 }
         );
     }
@@ -80,9 +80,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.error("Error adding unit:", error);
+        console.error("Error adding office/agency:", error);
         return NextResponse.json(
-            { error: "Failed to add unit" },
+            { error: "Failed to add office/agency" },
             { status: 500 }
         );
     }

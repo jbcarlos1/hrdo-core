@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
                 select: {
                     id: true,
                     memoNumber: true,
-                    sender: true,
+                    signatory: true,
                     issuingOffice: true,
                     subject: true,
                     date: true,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
 
         const memorandumData = {
             memoNumber: formData.get("memoNumber") as string,
-            sender: formData.get("sender") as string,
+            signatory: formData.get("signatory") as string,
             issuingOffice: formData.get("issuingOffice") as string,
             subject: formData.get("subject") as string,
             date: formData.get("date") as string,
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         const memorandum = await db.memorandum.create({
             data: {
                 memoNumber: validatedData.memoNumber,
-                sender: validatedData.sender,
+                signatory: validatedData.signatory,
                 issuingOffice: validatedData.issuingOffice,
                 subject: validatedData.subject,
                 date: dateObj,
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
             select: {
                 id: true,
                 memoNumber: true,
-                sender: true,
+                signatory: true,
                 issuingOffice: true,
                 subject: true,
                 date: true,

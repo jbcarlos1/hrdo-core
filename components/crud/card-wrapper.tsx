@@ -12,7 +12,7 @@ export const CardWrapper = ({ children, headerLabel }: CardWrapperProps) => {
     return (
         <Card className="w-[400px] shadow-md">
             <CardHeader>
-                <Header header="HRDO Policy Portal" label={headerLabel} />
+                <Header header="HRDO CORE" label={headerLabel} />
             </CardHeader>
             <CardContent>{children}</CardContent>
         </Card>

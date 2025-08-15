@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
-import { senderSchema } from "@/schemas";
+import { signatorySchema } from "@/schemas";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -19,17 +19,17 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const senders = await db.sender.findMany({
+        const signatories = await db.signatory.findMany({
             orderBy: {
                 fullName: "asc",
             },
         });
 
-        return NextResponse.json({ senders });
+        return NextResponse.json({ signatories });
     } catch (error) {
-        console.error("Error fetching senders:", error);
+        console.error("Error fetching signatories:", error);
         return NextResponse.json(
-            { error: "Failed to fetch senders" },
+            { error: "Failed to fetch signatories" },
             { status: 500 }
         );
     }
@@ -53,12 +53,12 @@ export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
 
-        const senderData = {
+        const signatoryData = {
             fullName: formData.get("fullName") as string,
         };
 
-        const validatedData = senderSchema.parse(senderData);
-        const sender = await db.sender.create({
+        const validatedData = signatorySchema.parse(signatoryData);
+        const signatory = await db.signatory.create({
             data: {
                 fullName: validatedData.fullName,
             },
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(sender, { status: 201 });
+        return NextResponse.json(signatory, { status: 201 });
     } catch (error) {
         if (error instanceof Error && error.name === "ZodError") {
             return NextResponse.json(
@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.error("Error adding sender:", error);
+        console.error("Error adding signatory:", error);
         return NextResponse.json(
-            { error: "Failed to add sender" },
+            { error: "Failed to add signatory" },
             { status: 500 }
         );
     }
