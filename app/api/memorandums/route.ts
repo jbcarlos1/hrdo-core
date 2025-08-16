@@ -40,7 +40,33 @@ export async function GET(request: NextRequest) {
                 skip: (page - 1) * limit,
                 take: limit,
                 where: {
-                    memoNumber: { contains: search, mode: "insensitive" },
+                    OR: [
+                        {
+                            memoNumber: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
+                        {
+                            subject: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
+                        {
+                            signatory: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
+                        {
+                            issuingOffice: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
+                    ],
+
                     isArchived: memorandumState === "archived",
                 },
                 orderBy: {

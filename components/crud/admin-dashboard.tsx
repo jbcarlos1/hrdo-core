@@ -122,11 +122,11 @@ const fetchMemorandums = async (
             { signal }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch memos");
+        if (!res.ok) throw new Error("Failed to fetch official references");
         return res.json();
     } catch (error: unknown) {
         if (error instanceof Error && error.name !== "AbortError") {
-            console.error("Failed to load memos:", error);
+            console.error("Failed to load official references:", error);
         }
         return {
             memorandums: [],
@@ -245,8 +245,6 @@ export default function AdminDashboard() {
         () => [
             { value: "createdAt:desc", label: "Newest First" },
             { value: "createdAt:asc", label: "Oldest First" },
-            { value: "memoNumber:asc", label: "Name (A-Z)" },
-            { value: "memoNumber:desc", label: "Name (Z-A)" },
         ],
         []
     );
@@ -276,7 +274,7 @@ export default function AdminDashboard() {
                 setTotalPages(totalPages);
             } catch (error: unknown) {
                 if (error instanceof Error && error.name !== "AbortError") {
-                    console.error("Failed to load memos:", error);
+                    console.error("Failed to load official references:", error);
                 }
             } finally {
                 setLoading(false);
@@ -758,7 +756,7 @@ export default function AdminDashboard() {
                 <div className="flex pb-2">
                     <div className="flex-none w-1/2 pe-1">
                         <Input
-                            placeholder="Search memos..."
+                            placeholder="Search official references..."
                             value={searchInput}
                             onChange={(e) => {
                                 setSearchInput(e.target.value);
