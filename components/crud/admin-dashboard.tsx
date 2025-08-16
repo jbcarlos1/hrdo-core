@@ -193,7 +193,7 @@ export default function AdminDashboard() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState("");
     const [sortOption, setSortOption] = useState<string>("createdAt:desc");
-    const [viewMode, setViewMode] = useState<"table" | "card">("card");
+    const [viewMode, setViewMode] = useState<"table" | "card">("table");
     const [memorandumState, setMemorandumState] = useState<
         "active" | "archived"
     >("active");
