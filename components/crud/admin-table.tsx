@@ -63,13 +63,16 @@ export const TableComponent = ({
                                             PDF
                                         </TableHead>
                                         <TableHead className="px-4">
-                                            Memo Number
+                                            Subject
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Signatory
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Issuing Office/Agency
+                                        </TableHead>
+                                        <TableHead className="px-4">
+                                            Reference Number
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Date
@@ -107,9 +110,15 @@ export const TableComponent = ({
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
-                                                title={memorandum.memoNumber}
+                                                title={memorandum.subject}
                                             >
-                                                {memorandum.memoNumber}
+                                                <a
+                                                    href={memorandum.pdfUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    {memorandum.subject}
+                                                </a>
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
@@ -122,6 +131,12 @@ export const TableComponent = ({
                                                 title={memorandum.issuingOffice}
                                             >
                                                 {memorandum.issuingOffice}
+                                            </TableCell>
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.memoNumber}
+                                            >
+                                                {memorandum.memoNumber}
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"

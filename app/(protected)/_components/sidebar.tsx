@@ -42,7 +42,7 @@ const formatName = (name: string) => {
 
 const navItems: NavItem[] = [
     {
-        title: "Memo",
+        title: "Official Reference",
         href: "/admin-dashboard",
         icon: Boxes,
         roles: ["ADMIN"],

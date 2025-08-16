@@ -395,8 +395,8 @@ export default function AdminDashboard() {
                 throw new Error(
                     errorData.error ||
                         (editingMemorandum
-                            ? "Failed to update memo"
-                            : "Failed to add memo")
+                            ? "Failed to update official reference"
+                            : "Failed to add official reference")
                 );
             }
             resetMemo();
@@ -405,8 +405,10 @@ export default function AdminDashboard() {
             setIsSignatoryDialogOpen(false);
             await refreshMemorandums(method === "POST");
             toast({
-                title: `Memo ${method === "POST" ? "Added" : "Updated"}`,
-                description: `The memo has been successfully ${
+                title: `Official Reference ${
+                    method === "POST" ? "Added" : "Updated"
+                }`,
+                description: `The official reference has been successfully ${
                     method === "POST" ? "added" : "updated"
                 }.`,
             });
@@ -518,13 +520,14 @@ export default function AdminDashboard() {
             });
 
             if (!res.ok) {
-                throw new Error("Failed to delete memo");
+                throw new Error("Failed to delete official reference");
             }
 
             await refreshMemorandums();
             toast({
-                title: "Memo Deleted",
-                description: "The memo has been successfully removed.",
+                title: "Official Reference Deleted",
+                description:
+                    "The official reference has been successfully removed.",
             });
         } catch (error) {
             console.error("Delete failed", error);
@@ -533,7 +536,7 @@ export default function AdminDashboard() {
                 description:
                     error instanceof Error
                         ? error.message
-                        : "Failed to delete memo",
+                        : "Failed to delete official reference",
                 variant: "destructive",
             });
         } finally {
@@ -553,8 +556,10 @@ export default function AdminDashboard() {
             if (!res.ok) throw new Error("Failed to update archive status");
             await refreshMemorandums();
             toast({
-                title: currentState ? "Memo Unarchived" : "Memo Archived",
-                description: `The memo has been successfully ${
+                title: currentState
+                    ? "Official Reference Unarchived"
+                    : "Official Reference Archived",
+                description: `The official reference has been successfully ${
                     currentState ? "unarchived" : "archived"
                 }.`,
             });
@@ -843,7 +848,9 @@ export default function AdminDashboard() {
                 <DialogContent className="border-black/80 overflow-hidden">
                     <DialogHeader>
                         <DialogTitle>
-                            {editingMemorandum ? "Edit Memo" : "Add Memo"}
+                            {editingMemorandum
+                                ? "Edit Official Reference"
+                                : "Add Official Reference"}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -854,7 +861,7 @@ export default function AdminDashboard() {
                         <div className="flex gap-2">
                             <div>
                                 <p className="text-sm my-2 text-gray-500">
-                                    Memo Number
+                                    Reference Number
                                 </p>
                                 <Input
                                     {...registerMemo("memoNumber")}
@@ -1186,7 +1193,9 @@ export default function AdminDashboard() {
                                     submitLoading || pdfUploading || !pdfUrl
                                 }
                             >
-                                {editingMemorandum ? "Update Memo" : "Add Memo"}
+                                {editingMemorandum
+                                    ? "Update Official Reference"
+                                    : "Add Official Reference"}
                             </Button>
                             <DialogClose asChild>
                                 <Button
@@ -1324,7 +1333,7 @@ export default function AdminDashboard() {
 
                     <div className="p-6">
                         <AlertDialogDescription className="text-center text-base leading-relaxed text-gray-600 dark:text-gray-300">
-                            The memo &quot;
+                            The official reference &quot;
                             {deleteRestrictedMemorandumName}
                             &quot; cannot be deleted because it has associated
                             transactions.
