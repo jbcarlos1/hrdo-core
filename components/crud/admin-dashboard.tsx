@@ -754,8 +754,8 @@ export default function AdminDashboard() {
                                 disabled={loading}
                                 className={
                                     loading
-                                        ? "opacity-50 h-11 text-lg"
-                                        : "h-11 text-lg"
+                                        ? "opacity-50 h-11 text-md"
+                                        : "h-11 text-md"
                                 }
                             >
                                 Add Official Reference
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
                                 setSearchInput(e.target.value);
                                 setPage(1);
                             }}
-                            className="h-11 shadow-md text-lg"
+                            className="h-11 shadow-md text-md"
                         />
                     </div>
                     <div className="flex w-1/2 ms-1">
@@ -786,7 +786,7 @@ export default function AdminDashboard() {
                                         setPage(1);
                                     }}
                                 >
-                                    <SelectTrigger className="h-11 shadow-md text-lg">
+                                    <SelectTrigger className="h-11 shadow-md text-md">
                                         <SelectValue placeholder="Sort by" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -794,7 +794,7 @@ export default function AdminDashboard() {
                                             <SelectItem
                                                 key={option.value}
                                                 value={option.value}
-                                                className="h-11 text-lg"
+                                                className="h-11 text-md"
                                             >
                                                 {option.label}
                                             </SelectItem>
