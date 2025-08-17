@@ -19,7 +19,11 @@ export async function PUT(
         where: { id: session.user.id },
     });
 
-    if (!currentUser || !currentUser.isApproved) {
+    if (
+        !currentUser ||
+        !currentUser.isApproved ||
+        currentUser.role !== "ADMIN"
+    ) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -122,7 +126,11 @@ export async function DELETE(
         where: { id: session.user.id },
     });
 
-    if (!currentUser || !currentUser.isApproved) {
+    if (
+        !currentUser ||
+        !currentUser.isApproved ||
+        currentUser.role !== "ADMIN"
+    ) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

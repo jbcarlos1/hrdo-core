@@ -18,7 +18,11 @@ export async function PATCH(
         where: { id: session.user.id },
     });
 
-    if (!currentUser || !currentUser.isApproved) {
+    if (
+        !currentUser ||
+        !currentUser.isApproved ||
+        currentUser.role !== "ADMIN"
+    ) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
