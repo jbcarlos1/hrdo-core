@@ -33,7 +33,7 @@ export default function Home() {
                 <div className="space-y-6 flex flex-col items-center justify-center mt-20 relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-center items-center gap-4 group relative z-20">
                         <Image
-                            src="https://res.cloudinary.com/diedm9ddd/image/upload/v1750940289/HRDO_Logo_avvvsw.png"
+                            src="https://res.cloudinary.com/diedm9ddd/image/upload/v1754111403/inventory/spdl4ttcerpmizuqihfd.png"
                             alt="HRDO Logo"
                             width={80}
                             height={80}
