@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const searchParams = new URL(request.url).searchParams;
     const search = searchParams.get("search") || "";
     const memorandumState = searchParams.get("memorandumState");
+    const sectionFilter = searchParams.get("section") || "";
     const [sortField, sortOrder] = (
         searchParams.get("sort") || "createdAt:desc"
     ).split(":");
@@ -37,6 +38,7 @@ export async function GET(request: NextRequest) {
             where: {
                 memoNumber: { contains: search, mode: "insensitive" },
                 isArchived: memorandumState === "archived",
+                ...(sectionFilter && { section: sectionFilter }),
             },
             orderBy: {
                 [sortField]: sortOrder.toLowerCase() as Prisma.SortOrder,

@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
         searchParams.get("sort") || "createdAt:desc"
     ).split(":");
     const memorandumState = searchParams.get("memorandumState");
+    const sectionFilter = searchParams.get("section") || "";
     const limit = 12;
 
     try {
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
                 where: {
                     memoNumber: { contains: search, mode: "insensitive" },
                     isArchived: memorandumState === "archived",
+                    ...(sectionFilter && { section: sectionFilter }),
                 },
             }),
             db.memorandum.findMany({
@@ -80,6 +82,7 @@ export async function GET(request: NextRequest) {
                     ],
 
                     isArchived: memorandumState === "archived",
+                    ...(sectionFilter && { section: sectionFilter }),
                 },
                 orderBy: {
                     [sortField]: sortOrder.toLowerCase() as Prisma.SortOrder,

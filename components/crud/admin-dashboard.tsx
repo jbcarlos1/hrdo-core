@@ -113,6 +113,7 @@ const fetchMemorandums = async (
     searchInput: string = "",
     sort: string = "createdAt:desc",
     memorandumState: string = "active",
+    sectionFilter: string = "",
     signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
     try {
@@ -121,7 +122,9 @@ const fetchMemorandums = async (
                 searchInput
             )}&memorandumState=${encodeURIComponent(
                 memorandumState
-            )}&sort=${encodeURIComponent(sort)}`,
+            )}&sort=${encodeURIComponent(sort)}&section=${encodeURIComponent(
+                sectionFilter
+            )}`,
             { signal }
         );
 
@@ -212,6 +215,7 @@ export default function AdminDashboard() {
         useState(false);
     const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] =
         useState("");
+    const [sectionFilter, setSectionFilter] = useState<string>("");
 
     const {
         register: registerMemo,
@@ -254,6 +258,36 @@ export default function AdminDashboard() {
         []
     );
 
+    const sectionOptions = useMemo(
+        () => [
+            { value: "ALL", label: "All" },
+            { value: "EXECUTIVE", label: "Executive" },
+            { value: "ADMINISTRATIVE", label: "Administrative Section" },
+            {
+                value: "RECRUITMENT_SELECTION",
+                label: "Recruitment & Selection Section",
+            },
+            { value: "APPOINTMENT", label: "Appointment Section" },
+            {
+                value: "PLANNING_RESEARCH",
+                label: "Planning & Research Section",
+            },
+            {
+                value: "MONITORING_EVALUATION",
+                label: "Monitoring & Evaluation Section",
+            },
+            {
+                value: "INFORMATION_MANAGEMENT",
+                label: "Information Management Section",
+            },
+            { value: "PROJECTS", label: "Projects Section" },
+            { value: "SCHOLARSHIP", label: "Scholarship Section" },
+            { value: "TRAINING", label: "Training Section" },
+            { value: "BENEFITS", label: "Benefits Section" },
+        ],
+        []
+    );
+
     const loadMemorandums = useCallback(
         async (page = 1) => {
             setLoading(true);
@@ -272,6 +306,7 @@ export default function AdminDashboard() {
                         debouncedSearchInput,
                         sortOption,
                         memorandumState,
+                        sectionFilter,
                         controller.signal
                     );
 
@@ -285,7 +320,7 @@ export default function AdminDashboard() {
                 setLoading(false);
             }
         },
-        [debouncedSearchInput, sortOption, memorandumState]
+        [debouncedSearchInput, sortOption, memorandumState, sectionFilter]
     );
 
     useEffect(() => {
@@ -333,6 +368,7 @@ export default function AdminDashboard() {
                 debouncedSearchInput,
                 sortOption,
                 memorandumState,
+                sectionFilter,
                 controllerRef.current?.signal
             );
 
@@ -344,7 +380,7 @@ export default function AdminDashboard() {
                 if (add) setPage(1);
             }
         },
-        [page, debouncedSearchInput, sortOption, memorandumState]
+        [page, debouncedSearchInput, sortOption, memorandumState, sectionFilter]
     );
 
     const refreshIssuingOffices = useCallback(async () => {
@@ -636,7 +672,9 @@ export default function AdminDashboard() {
                     debouncedSearchInput
                 )}&memorandumState=${encodeURIComponent(
                     memorandumState
-                )}&sort=${encodeURIComponent(sortOption)}`
+                )}&sort=${encodeURIComponent(
+                    sortOption
+                )}&section=${encodeURIComponent(sectionFilter)}`
             );
 
             if (!response.ok) throw new Error("Failed to export data");
@@ -765,7 +803,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex pb-4">
-                    <div className="flex-none w-1/2 pe-1">
+                    <div className="flex-none w-1/2">
                         <Input
                             placeholder="Search official references..."
                             value={searchInput}
@@ -777,8 +815,34 @@ export default function AdminDashboard() {
                         />
                     </div>
                     <div className="flex w-1/2 ms-1">
+                        <div className="w-1/2 mx-1">
+                            <Select
+                                value={sectionFilter}
+                                onValueChange={(value) => {
+                                    setSectionFilter(
+                                        value === "ALL" ? "" : value
+                                    );
+                                    setPage(1);
+                                }}
+                            >
+                                <SelectTrigger className="h-11 shadow-md text-md">
+                                    <SelectValue placeholder="Filter by section" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {sectionOptions.map((option) => (
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                            className="h-11 text-md"
+                                        >
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="flex flex-grow">
-                            <div className="w-1/2 mx-1">
+                            <div className="flex-grow mx-1">
                                 <Select
                                     value={sortOption}
                                     onValueChange={(value) => {
@@ -810,6 +874,7 @@ export default function AdminDashboard() {
                             onClick={() => {
                                 setPage(1);
                                 setSearchInput("");
+                                setSectionFilter("");
                                 setSortOption("createdAt:desc");
                             }}
                             disabled={loading}
