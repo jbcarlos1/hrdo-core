@@ -68,48 +68,28 @@ export const NewPasswordSchema = z.object({
 export const memorandumSchema = z.object({
     memoNumber: z
         .string()
-        .min(1, "Memo number is required")
-        .max(100, "Name must be less than 100 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Memo number can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .min(1, "Reference number is required")
+        .max(1000, "Name must be less than 1000 characters"),
     signatory: z
         .string()
         .min(1, "Signatory is required")
-        .max(100, "Signatory must be less than 100 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Signatory can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Signatory must be less than 1000 characters"),
     issuingOffice: z
         .string({ required_error: "Issuing office/agency is required" })
         .min(1, "Issuing office/agency is required")
-        .max(100, "Issuing office/agency must be less than 100 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Issuing office/agency can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Issuing office/agency must be less than 1000 characters"),
     subject: z
         .string()
         .min(1, "Subject is required")
-        .max(100, "Subject must be less than 100 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Subject can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Subject must be less than 1000 characters"),
     date: z
         .string({ required_error: "Date is required" })
         .min(1, "Date is required")
-        .max(100, "Date must be less than 100 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-:]+$/,
-            "Date can only contain letters, numbers, spaces, commas, periods, slashes, colons, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Date must be less than 1000 characters"),
     keywords: z
         .string()
         .min(1, "Keywords is required")
-        .max(100, "Keywords must be less than 100 characters"),
+        .max(1000, "Keywords must be less than 1000 characters"),
     pdfUrl: z.string().url({ message: "PDF URL is required" }),
 });
 
@@ -117,28 +97,16 @@ export const issuingOfficeSchema = z.object({
     unitCode: z
         .string()
         .min(1, "Office/Agency code is required")
-        .max(50, "Office/Agency code must be less than 50 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Office/Agency code can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Office/Agency code must be less than 1000 characters"),
     unit: z
         .string()
         .min(1, "Office/Agency is required")
-        .max(200, "Office/Agency must be less than 200 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Office/Agency can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Office/Agency must be less than 1000 characters"),
 });
 
 export const signatorySchema = z.object({
     fullName: z
         .string()
         .min(1, "Full name is required")
-        .max(200, "Full name must be less than 200 characters")
-        .regex(
-            /^[a-zA-Z0-9 ,./()&'\-]+$/,
-            "Full name can only contain letters, numbers, spaces, commas, periods, slashes, parentheses, ampersands, apostrophes, and dashes"
-        ),
+        .max(1000, "Full name must be less than 1000 characters"),
 });

@@ -673,7 +673,7 @@ export default function AdminDashboard() {
                     </h1>
 
                     <div className="flex gap-2">
-                        <div className="flex items-center bg-gray-100 rounded-md p-1">
+                        {/* <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
                                 title="Active Memos"
                                 variant={
@@ -711,7 +711,7 @@ export default function AdminDashboard() {
                             >
                                 <Archive className="h-5 w-5" />
                             </Button>
-                        </div>
+                        </div> */}
 
                         <div className="flex items-center bg-gray-100 rounded-md p-1">
                             <Button
@@ -737,14 +737,14 @@ export default function AdminDashboard() {
                                 <LuTable2 className="h-5 w-5" />
                             </Button>
                         </div>
-                        <Button
+                        {/* <Button
                             onClick={handleExport}
                             disabled={isExporting}
                             className="flex items-center gap-2"
                         >
                             <FiDownload className="h-4 w-4" />
                             {isExporting ? "Exporting..." : "Export CSV"}
-                        </Button>
+                        </Button> */}
                         <Button
                             onClick={openAddModal}
                             disabled={loading}
@@ -927,13 +927,15 @@ export default function AdminDashboard() {
                                                     : "text-gray-500"
                                             }`}
                                         >
-                                            {_signatoryValue
-                                                ? signatories.find(
-                                                      (signatory) =>
-                                                          signatory.fullName ===
-                                                          _signatoryValue
-                                                  )?.fullName
-                                                : "Select signatory..."}
+                                            <span className="truncate max-w-[360px]">
+                                                {_signatoryValue
+                                                    ? signatories.find(
+                                                          (signatory) =>
+                                                              signatory.fullName ===
+                                                              _signatoryValue
+                                                      )?.fullName
+                                                    : "Select signatory..."}
+                                            </span>
                                             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
@@ -1028,7 +1030,7 @@ export default function AdminDashboard() {
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={issuingOfficeOpen}
-                                            className={`w-full justify-between font-normal ${
+                                            className={`w-full justify-between font-normal${
                                                 issuingOffices.find(
                                                     (issuingOffice) =>
                                                         `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
@@ -1038,21 +1040,23 @@ export default function AdminDashboard() {
                                                     : "text-gray-500"
                                             }`}
                                         >
-                                            {_issuingOfficeValue
-                                                ? `${
-                                                      issuingOffices.find(
-                                                          (issuingOffice) =>
-                                                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                                                              _issuingOfficeValue
-                                                      )?.unitCode
-                                                  }-${
-                                                      issuingOffices.find(
-                                                          (issuingOffice) =>
-                                                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                                                              _issuingOfficeValue
-                                                      )?.unit
-                                                  }`
-                                                : "Select office/agency..."}
+                                            <span className="truncate max-w-[360px]">
+                                                {_issuingOfficeValue
+                                                    ? `${
+                                                          issuingOffices.find(
+                                                              (issuingOffice) =>
+                                                                  `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                                                  _issuingOfficeValue
+                                                          )?.unitCode
+                                                      }-${
+                                                          issuingOffices.find(
+                                                              (issuingOffice) =>
+                                                                  `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                                                  _issuingOfficeValue
+                                                          )?.unit
+                                                      }`
+                                                    : "Select office/agency..."}
+                                            </span>
                                             <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                         </Button>
                                     </PopoverTrigger>
