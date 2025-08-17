@@ -1036,7 +1036,7 @@ export default function AdminDashboard() {
                                             variant="outline"
                                             role="combobox"
                                             aria-expanded={issuingOfficeOpen}
-                                            className={`w-full justify-between font-normal${
+                                            className={`w-full justify-between font-normal ${
                                                 issuingOffices.find(
                                                     (issuingOffice) =>
                                                         `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
