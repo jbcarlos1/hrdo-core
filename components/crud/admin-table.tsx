@@ -52,6 +52,20 @@ export const TableComponent = ({
     handleArchive,
     deleteLoading,
 }: TableComponentProps) => {
+    const sectionMap: Record<string, string> = {
+        EXECUTIVE: "Executive",
+        ADMINISTRATIVE: "Administrative Section",
+        RECRUITMENT_SELECTION: "Recruitment & Selection Section",
+        APPOINTMENT: "Appointment Section",
+        PLANNING_RESEARCH: "Planning & Research Section",
+        MONITORING_EVALUATION: "Monitoring & Evaluation Section",
+        INFORMATION_MANAGEMENT: "Information Management Section",
+        PROJECTS: "Projects Section",
+        SCHOLARSHIP: "Scholarship Section",
+        TRAINING: "Training Section",
+        BENEFITS: "Benefits Section",
+    };
+
     return (
         <>
             <div className="border bg-white rounded-md h-full overflow-hidden">
@@ -91,9 +105,9 @@ export const TableComponent = ({
                                         <TableHead className="px-2 text-center">
                                             Delete
                                         </TableHead>
-                                        <TableHead className="px-2 text-center">
+                                        {/* <TableHead className="px-2 text-center">
                                             Archive
-                                        </TableHead>
+                                        </TableHead> */}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody className="overflow-auto">
@@ -156,13 +170,17 @@ export const TableComponent = ({
                                                 )}
                                             </TableCell>
                                             <TableCell
-                                                className="px-4 truncate max-w-[200px]"
-                                                title={memorandum.section}
+                                                className="px-4 truncate max-w-[150px]"
+                                                title={
+                                                    sectionMap[
+                                                        memorandum.section
+                                                    ]
+                                                }
                                             >
-                                                {memorandum.section}
+                                                {sectionMap[memorandum.section]}
                                             </TableCell>
                                             <TableCell
-                                                className="px-4 truncate max-w-[200px]"
+                                                className="px-4 truncate max-w-[150px]"
                                                 title={memorandum.encoder}
                                             >
                                                 {memorandum.encoder}
@@ -230,7 +248,7 @@ export const TableComponent = ({
                                                     </AlertDialogContent>
                                                 </AlertDialog>
                                             </TableCell>
-                                            <TableCell className="px-2 text-center">
+                                            {/* <TableCell className="px-2 text-center">
                                                 <AlertDialog>
                                                     <AlertDialogTrigger
                                                         disabled={deleteLoading}
@@ -301,7 +319,7 @@ export const TableComponent = ({
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
                                                 </AlertDialog>
-                                            </TableCell>
+                                            </TableCell> */}
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -310,7 +328,7 @@ export const TableComponent = ({
                     </div>
                 ) : (
                     <p className="flex justify-center items-center h-full">
-                        No memos found.
+                        No official references found.
                     </p>
                 )}
             </div>
