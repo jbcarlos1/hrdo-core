@@ -713,7 +713,7 @@ export default function AdminDashboard() {
                             </Button>
                         </div> */}
 
-                        <div className="flex items-center bg-gray-100 rounded-md p-1">
+                        <div className="flex items-center bg-gray-200 rounded-md h-11">
                             <Button
                                 title="Card view"
                                 variant={
@@ -721,9 +721,9 @@ export default function AdminDashboard() {
                                 }
                                 size="sm"
                                 onClick={() => setViewMode("card")}
-                                className="px-2"
+                                className="mx-1 px-2 w-9 h-9"
                             >
-                                <LuLayoutGrid className="h-5 w-5" />
+                                <LuLayoutGrid className="h-7 w-7" />
                             </Button>
                             <Button
                                 title="Tabular view"
@@ -732,9 +732,9 @@ export default function AdminDashboard() {
                                 }
                                 size="sm"
                                 onClick={() => setViewMode("table")}
-                                className="px-2"
+                                className="me-1 px-2 w-9 h-9"
                             >
-                                <LuTable2 className="h-5 w-5" />
+                                <LuTable2 className="h-7 w-7" />
                             </Button>
                         </div>
                         {/* <Button
@@ -748,14 +748,18 @@ export default function AdminDashboard() {
                         <Button
                             onClick={openAddModal}
                             disabled={loading}
-                            className={loading ? "opacity-50" : ""}
+                            className={
+                                loading
+                                    ? "opacity-50 h-11 text-lg"
+                                    : "h-11 text-lg"
+                            }
                         >
                             Add Official Reference
                         </Button>
                     </div>
                 </div>
 
-                <div className="flex pb-2">
+                <div className="flex pb-4">
                     <div className="flex-none w-1/2 pe-1">
                         <Input
                             placeholder="Search official references..."
@@ -764,6 +768,7 @@ export default function AdminDashboard() {
                                 setSearchInput(e.target.value);
                                 setPage(1);
                             }}
+                            className="h-11 shadow-md text-lg"
                         />
                     </div>
                     <div className="flex w-1/2 ms-1">
@@ -776,7 +781,7 @@ export default function AdminDashboard() {
                                         setPage(1);
                                     }}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-11 shadow-md text-lg">
                                         <SelectValue placeholder="Sort by" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -784,6 +789,7 @@ export default function AdminDashboard() {
                                             <SelectItem
                                                 key={option.value}
                                                 value={option.value}
+                                                className="h-11 text-lg"
                                             >
                                                 {option.label}
                                             </SelectItem>
@@ -793,8 +799,8 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                         <Button
-                            className={`ms-1 p-0 w-[38px] ${
-                                loading ? "opacity-50" : ""
+                            className={`ms-1 p-0 ${
+                                loading ? "opacity-50 w-11 h-11" : "w-11 h-11"
                             }`}
                             onClick={() => {
                                 setPage(1);
@@ -803,7 +809,7 @@ export default function AdminDashboard() {
                             }}
                             disabled={loading}
                         >
-                            <HiOutlineRefresh size={20} />
+                            <HiOutlineRefresh size={25} />
                         </Button>
                     </div>
                 </div>
