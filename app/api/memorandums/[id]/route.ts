@@ -23,6 +23,13 @@ export async function PUT(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (!currentUser.name || !currentUser.division || !currentUser.section) {
+        return NextResponse.json(
+            { error: "Incomplete user profile" },
+            { status: 400 }
+        );
+    }
+
     if (!id) {
         return NextResponse.json(
             { error: "Memorandum ID is required" },
@@ -58,6 +65,9 @@ export async function PUT(
             date: dateObj,
             keywords: validatedData.keywords,
             pdfUrl: validatedData.pdfUrl,
+            encoder: currentUser.name,
+            division: currentUser.division,
+            section: currentUser.section,
         };
 
         const updatedMemorandum = await db.memorandum.update({
@@ -73,6 +83,9 @@ export async function PUT(
                 keywords: true,
                 pdfUrl: true,
                 isArchived: true,
+                encoder: true,
+                division: true,
+                section: true,
             },
         });
 
