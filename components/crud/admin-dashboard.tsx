@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "next-auth/react";
 import {
     memorandumSchema,
     issuingOfficeSchema,
@@ -172,6 +173,8 @@ const fetchSignatories = async (): Promise<FetchedSignatories> => {
 };
 
 export default function AdminDashboard() {
+    const { data: session } = useSession();
+    const role = session?.user?.role;
     const [issuingOfficeOpen, setIssuingOfficeOpen] = useState(false);
     const [_issuingOfficeValue, _setIssuingOfficeValue] = useState("");
     const [issuingOffices, setIssuingOffices] = useState<IssuingOffice[]>([]);
@@ -745,17 +748,19 @@ export default function AdminDashboard() {
                             <FiDownload className="h-4 w-4" />
                             {isExporting ? "Exporting..." : "Export CSV"}
                         </Button> */}
-                        <Button
-                            onClick={openAddModal}
-                            disabled={loading}
-                            className={
-                                loading
-                                    ? "opacity-50 h-11 text-lg"
-                                    : "h-11 text-lg"
-                            }
-                        >
-                            Add Official Reference
-                        </Button>
+                        {role === "ADMIN" && (
+                            <Button
+                                onClick={openAddModal}
+                                disabled={loading}
+                                className={
+                                    loading
+                                        ? "opacity-50 h-11 text-lg"
+                                        : "h-11 text-lg"
+                                }
+                            >
+                                Add Official Reference
+                            </Button>
+                        )}
                     </div>
                 </div>
 

@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { FileText } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface Memorandum {
     id: string;
@@ -52,6 +53,8 @@ export const TableComponent = ({
     handleArchive,
     deleteLoading,
 }: TableComponentProps) => {
+    const { data: session } = useSession();
+    const role = session?.user?.role;
     const sectionMap: Record<string, string> = {
         EXECUTIVE: "Executive",
         ADMINISTRATIVE: "Administrative Section",
@@ -99,12 +102,17 @@ export const TableComponent = ({
                                         <TableHead className="px-4">
                                             Encoder
                                         </TableHead>
-                                        <TableHead className="px-2 text-center">
-                                            Edit
-                                        </TableHead>
-                                        <TableHead className="px-2 text-center">
-                                            Delete
-                                        </TableHead>
+                                        {role === "ADMIN" && (
+                                            <>
+                                                <TableHead className="px-2 text-center">
+                                                    Edit
+                                                </TableHead>
+                                                <TableHead className="px-2 text-center">
+                                                    Delete
+                                                </TableHead>
+                                            </>
+                                        )}
+
                                         {/* <TableHead className="px-2 text-center">
                                             Archive
                                         </TableHead> */}
@@ -185,69 +193,88 @@ export const TableComponent = ({
                                             >
                                                 {memorandum.encoder}
                                             </TableCell>
-                                            <TableCell className="px-2 text-center">
-                                                <Button
-                                                    title="Edit memorandum"
-                                                    className="mx-1"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        handleEdit(memorandum)
-                                                    }
-                                                    disabled={deleteLoading}
-                                                >
-                                                    <RiEditLine className="h-6 w-6 text-[#273574]" />
-                                                </Button>
-                                            </TableCell>
-                                            <TableCell className="px-2 text-center">
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger>
+
+                                            {role === "ADMIN" && (
+                                                <>
+                                                    <TableCell className="px-2 text-center">
                                                         <Button
-                                                            title="Delete memorandum"
+                                                            title="Edit memorandum"
                                                             className="mx-1"
                                                             variant="outline"
                                                             size="icon"
+                                                            onClick={() =>
+                                                                handleEdit(
+                                                                    memorandum
+                                                                )
+                                                            }
                                                             disabled={
                                                                 deleteLoading
                                                             }
                                                         >
-                                                            <RiDeleteBin6Line className="h-6 w-6 text-[#731012]" />
+                                                            <RiEditLine className="h-6 w-6 text-[#273574]" />
                                                         </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>
-                                                                Are you sure you
-                                                                want to proceed?
-                                                            </AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This action
-                                                                cannot be
-                                                                undone. Deleting
-                                                                this memorandum
-                                                                will permanently
-                                                                remove it and
-                                                                its associated
-                                                                data.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>
-                                                                Cancel
-                                                            </AlertDialogCancel>
-                                                            <AlertDialogAction
-                                                                onClick={() =>
-                                                                    handleDelete(
-                                                                        memorandum.id
-                                                                    )
-                                                                }
-                                                            >
-                                                                Delete
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </TableCell>
+                                                    </TableCell>
+                                                    <TableCell className="px-2 text-center">
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger>
+                                                                <Button
+                                                                    title="Delete memorandum"
+                                                                    className="mx-1"
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    disabled={
+                                                                        deleteLoading
+                                                                    }
+                                                                >
+                                                                    <RiDeleteBin6Line className="h-6 w-6 text-[#731012]" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>
+                                                                        Are you
+                                                                        sure you
+                                                                        want to
+                                                                        proceed?
+                                                                    </AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This
+                                                                        action
+                                                                        cannot
+                                                                        be
+                                                                        undone.
+                                                                        Deleting
+                                                                        this
+                                                                        memorandum
+                                                                        will
+                                                                        permanently
+                                                                        remove
+                                                                        it and
+                                                                        its
+                                                                        associated
+                                                                        data.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>
+                                                                        Cancel
+                                                                    </AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        onClick={() =>
+                                                                            handleDelete(
+                                                                                memorandum.id
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        Delete
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </TableCell>
+                                                </>
+                                            )}
+
                                             {/* <TableCell className="px-2 text-center">
                                                 <AlertDialog>
                                                     <AlertDialogTrigger

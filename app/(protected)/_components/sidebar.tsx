@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
         title: "Official Reference",
         href: "/admin-dashboard",
         icon: Boxes,
-        roles: ["ADMIN"],
+        roles: ["ADMIN", "USER"],
     },
 ];
 
