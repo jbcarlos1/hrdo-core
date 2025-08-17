@@ -123,7 +123,7 @@ export default function Sidebar() {
                         <div className="flex items-center">
                             {isExpanded && (
                                 <Image
-                                    src="https://res.cloudinary.com/diedm9ddd/image/upload/v1750940289/HRDO_Logo_avvvsw.png"
+                                    src="https://res.cloudinary.com/diedm9ddd/image/upload/v1754111403/inventory/spdl4ttcerpmizuqihfd.png"
                                     alt="HRDO Logo"
                                     width={isExpanded ? 60 : 30}
                                     height={isExpanded ? 60 : 30}
@@ -426,7 +426,7 @@ function SidebarContent() {
             {/* Mobile Logo Section */}
             <div className="flex items-center p-4 border-b border-[#f5d4d4]/10 backdrop-blur-sm">
                 <Image
-                    src="https://res.cloudinary.com/diedm9ddd/image/upload/v1750940289/HRDO_Logo_avvvsw.png"
+                    src="https://res.cloudinary.com/diedm9ddd/image/upload/v1754111403/inventory/spdl4ttcerpmizuqihfd.png"
                     alt="HRDO Logo"
                     width={60}
                     height={60}
