@@ -170,7 +170,10 @@ export const TableComponent = ({
                                             </TableCell>
                                             <TableCell
                                                 className="px-4 truncate max-w-[200px]"
-                                                title={memorandum.date}
+                                                title={format(
+                                                    new Date(memorandum.date),
+                                                    "PP"
+                                                )}
                                             >
                                                 {format(
                                                     new Date(memorandum.date),
