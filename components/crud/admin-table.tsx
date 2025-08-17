@@ -30,6 +30,8 @@ interface Memorandum {
     issuingOffice: string;
     subject: string;
     date: string;
+    section: string;
+    encoder: string;
     keywords: string;
     pdfUrl: string;
     isArchived: boolean;
@@ -76,6 +78,12 @@ export const TableComponent = ({
                                         </TableHead>
                                         <TableHead className="px-4">
                                             Date
+                                        </TableHead>
+                                        <TableHead className="px-4">
+                                            Encoding Section
+                                        </TableHead>
+                                        <TableHead className="px-4">
+                                            Encoder
                                         </TableHead>
                                         <TableHead className="px-2 text-center">
                                             Edit
@@ -146,6 +154,18 @@ export const TableComponent = ({
                                                     new Date(memorandum.date),
                                                     "PP"
                                                 )}
+                                            </TableCell>
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.section}
+                                            >
+                                                {memorandum.section}
+                                            </TableCell>
+                                            <TableCell
+                                                className="px-4 truncate max-w-[200px]"
+                                                title={memorandum.encoder}
+                                            >
+                                                {memorandum.encoder}
                                             </TableCell>
                                             <TableCell className="px-2 text-center">
                                                 <Button

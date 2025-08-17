@@ -74,6 +74,8 @@ interface Memorandum {
     issuingOffice: string;
     subject: string;
     date: string;
+    section: string;
+    encoder: string;
     keywords: string;
     pdfUrl: string;
     isArchived: boolean;

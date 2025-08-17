@@ -65,6 +65,18 @@ export async function GET(request: NextRequest) {
                                 mode: "insensitive",
                             },
                         },
+                        {
+                            section: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
+                        {
+                            encoder: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
                     ],
 
                     isArchived: memorandumState === "archived",
@@ -79,6 +91,8 @@ export async function GET(request: NextRequest) {
                     issuingOffice: true,
                     subject: true,
                     date: true,
+                    encoder: true,
+                    section: true,
                     keywords: true,
                     pdfUrl: true,
                     isArchived: true,
