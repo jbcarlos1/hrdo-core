@@ -51,19 +51,19 @@ export default auth(async (req): Promise<any> => {
         }
     }
 
-    if (nextUrl.pathname.startsWith("/admin-dashboard")) {
-        if (session?.user?.role === "USER") {
-            const redirectUrl = new URL(
-                "/supply-out-dashboard",
-                nextUrl.origin
-            );
-            return Response.redirect(redirectUrl);
-        }
-        if (session?.user?.role === "APPROVER") {
-            const redirectUrl = new URL("/requests-dashboard", nextUrl.origin);
-            return Response.redirect(redirectUrl);
-        }
-    }
+    // if (nextUrl.pathname.startsWith("/admin-dashboard")) {
+    //     if (session?.user?.role === "USER") {
+    //         const redirectUrl = new URL(
+    //             "/supply-out-dashboard",
+    //             nextUrl.origin
+    //         );
+    //         return Response.redirect(redirectUrl);
+    //     }
+    //     if (session?.user?.role === "APPROVER") {
+    //         const redirectUrl = new URL("/requests-dashboard", nextUrl.origin);
+    //         return Response.redirect(redirectUrl);
+    //     }
+    // }
 
     return null;
 });

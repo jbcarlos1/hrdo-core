@@ -65,14 +65,14 @@ export default function Home() {
                             </div>
                             <div className="w-14 opacity-0" />
                         </div>
-                        <Image
+                        {/* <Image
                             src="https://res.cloudinary.com/diedm9ddd/image/upload/v1750942836/hrdo_supply_hub_ka8hlg.png"
                             alt="Landing Page"
                             layout="intrinsic"
                             width={850}
                             height={600}
                             className="rounded-b-xl relative z-0 shadow-2xl border border-[#4a0e0e]/20"
-                        />
+                        /> */}
                     </div>
 
                     <div>

@@ -6,9 +6,9 @@ import { useEffect } from "react";
 import UnauthorizedAccess from "../_components/unauthorizedAccess";
 
 export default function AdminPage() {
-    const router = useRouter();
-    const { data: session } = useSession();
-    const role = session?.user?.role;
+    // const router = useRouter();
+    // const { data: session } = useSession();
+    // const role = session?.user?.role;
 
     // useEffect(() => {
     //     if (role === "USER") {
@@ -18,13 +18,13 @@ export default function AdminPage() {
     //     }
     // }, [role, router]);
 
-    if (!role) {
-        return null;
-    }
+    // if (!role) {
+    //     return null;
+    // }
 
     return (
         <div className="h-full flex">
-            {role === "ADMIN" ? <AdminDashboard /> : <UnauthorizedAccess />}
+            <AdminDashboard />
         </div>
     );
 }
