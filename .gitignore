@@ -35,3 +35,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temporary setup scripts (for Google Drive migration)
+scripts/setup-official-refresh-token.ts
+scripts/exchange-code-for-refresh-token.ts
+scripts/test-official-setup.ts
+scripts/cleanup-setup-scripts.ts
