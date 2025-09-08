@@ -109,14 +109,15 @@ const fetchMemorandums = async (
   signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
   try {
-    const res = await fetch(
-      `/api/memorandums?page=${page}&search=${encodeURIComponent(
-        searchInput
-      )}&memorandumState=${encodeURIComponent(memorandumState)}&sort=${encodeURIComponent(
-        sort
-      )}&section=${encodeURIComponent(sectionFilter)}`,
-      { signal }
-    );
+    const params = new URLSearchParams({
+      page: String(page),
+      search: searchInput,
+      memorandumState,
+      sort,
+      sectionFilter,
+    });
+
+    const res = await fetch(`/api/memorandums?${params.toString()}`, { signal });
 
     if (!res.ok) throw new Error("Failed to fetch official references");
     return res.json();
