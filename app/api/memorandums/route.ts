@@ -21,55 +21,33 @@ export async function GET(request: NextRequest) {
 
   const searchParams = new URL(request.url).searchParams;
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
-  const search = searchParams.get("search") || "";
+  const search = searchParams.get("search")?.trim() || "";
   const [sortField, sortOrder] = (searchParams.get("sort") || "createdAt:desc").split(":");
   const memorandumState = searchParams.get("memorandumState");
   const sectionFilter = searchParams.get("section") || "";
   const limit = 12;
 
+  const searchableFields = [
+    "memoNumber",
+    "subject",
+    "signatory",
+    "issuingOffice",
+    "section",
+    "encoder",
+  ] as const;
+
+  const orConditions =
+    search.length > 0
+      ? searchableFields.map((field) => ({
+          [field]: { contains: search, mode: "insensitive" as const },
+        }))
+      : undefined;
+
   try {
     const [totalMemorandums, memorandums] = await db.$transaction([
       db.memorandum.count({
         where: {
-          OR: [
-            {
-              memoNumber: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              subject: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              signatory: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              issuingOffice: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              section: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              encoder: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-          ],
-
+          ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
           ...(sectionFilter && { section: sectionFilter }),
         },
@@ -78,45 +56,7 @@ export async function GET(request: NextRequest) {
         skip: (page - 1) * limit,
         take: limit,
         where: {
-          OR: [
-            {
-              memoNumber: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              subject: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              signatory: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              issuingOffice: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              section: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              encoder: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-          ],
-
+          ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
           ...(sectionFilter && { section: sectionFilter }),
         },
