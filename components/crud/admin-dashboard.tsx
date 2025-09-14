@@ -109,13 +109,12 @@ const fetchMemorandums = async (
   signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
   try {
-    const params = new URLSearchParams({
-      page: String(page),
-      search: searchInput,
-      memorandumState,
-      sort,
-      sectionFilter,
-    });
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    if (searchInput) params.set("search", searchInput.trim());
+    if (memorandumState) params.set("memorandumState", memorandumState);
+    if (sort) params.set("sort", sort);
+    if (sectionFilter) params.set("section", sectionFilter);
 
     const res = await fetch(`/api/memorandums?${params.toString()}`, { signal });
 
