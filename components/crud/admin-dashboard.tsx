@@ -691,7 +691,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <div className="mx-auto mb-2 border bg-white rounded-md px-8 pt-8 pb-3 flex flex-col w-full shadow-md h-[calc(100vh-2rem)]">
+      <div className="mx-auto mb-2 border bg-white px-8 pt-8 pb-3 flex flex-col w-full shadow-md h-full">
         <div className="flex justify-between items-center mb-2">
           <h1 className="text-2xl font-semibold text-[#7b1113]">CORE Dashboard</h1>
 
@@ -776,8 +776,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="flex pb-4">
-          <div className="flex-none w-1/2">
+        <div className="flex w-full pb-2">
+          <div className="flex-none w-[calc(100%-52px)]">
             <Input
               placeholder="Search official references..."
               value={searchInput}
@@ -788,20 +788,178 @@ export default function AdminDashboard() {
               className="h-11 shadow-md text-md"
             />
           </div>
-          <div className="flex w-1/2 ms-1">
-            <div className="w-1/2 mx-1">
+          <Button
+            className={`ms-2 p-0 ${loading ? "opacity-50 w-11 h-11" : "w-11 h-11"}`}
+            onClick={() => {
+              setPage(1);
+              setSearchInput("");
+              setSectionFilter("");
+              setSortOption("createdAt:desc");
+            }}
+            disabled={loading}
+          >
+            <HiOutlineRefresh size={25} />
+          </Button>
+        </div>
+
+        <div className="flex w-full pb-2 gap-2">
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by division" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+          <div className="w-1/4">
+            <Select
+              value={sectionFilter}
+              onValueChange={(value) => {
+                setSectionFilter(value === "ALL" ? "" : value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by section" />
+              </SelectTrigger>
+              <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by encoder" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by date" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex w-full pb-4 gap-2">
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by issuing agency" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by signatory" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectValue placeholder="Filter by keyword" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+          <div className="w-1/4">
+            <div className="flex-grow">
               <Select
-                value={sectionFilter}
+                value={sortOption}
                 onValueChange={(value) => {
-                  setSectionFilter(value === "ALL" ? "" : value);
+                  setSortOption(value);
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="h-11 shadow-md text-md">
-                  <SelectValue placeholder="Filter by section" />
+                <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sectionOptions.map((option) => (
+                  {sortOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value} className="h-11 text-md">
                       {option.label}
                     </SelectItem>
@@ -809,40 +967,6 @@ export default function AdminDashboard() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-grow">
-              <div className="flex-grow mx-1">
-                <Select
-                  value={sortOption}
-                  onValueChange={(value) => {
-                    setSortOption(value);
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger className="h-11 shadow-md text-md">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sortOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <Button
-              className={`ms-1 p-0 ${loading ? "opacity-50 w-11 h-11" : "w-11 h-11"}`}
-              onClick={() => {
-                setPage(1);
-                setSearchInput("");
-                setSectionFilter("");
-                setSortOption("createdAt:desc");
-              }}
-              disabled={loading}
-            >
-              <HiOutlineRefresh size={25} />
-            </Button>
           </div>
         </div>
 
