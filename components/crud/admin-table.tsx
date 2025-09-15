@@ -143,7 +143,10 @@ export const TableComponent = ({
                       >
                         {format(new Date(memorandum.date), "PP")}
                       </TableCell>
-                      <TableCell className="px-4 truncate max-w-[600px]" title={memorandum.subject}>
+                      <TableCell
+                        className="px-4 truncate max-w-[600px] hover:text-blue-500"
+                        title={memorandum.subject}
+                      >
                         <a href={memorandum.pdfUrl} target="_blank" rel="noopener noreferrer">
                           {memorandum.subject}
                         </a>

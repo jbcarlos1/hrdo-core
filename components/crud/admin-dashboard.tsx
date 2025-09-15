@@ -785,7 +785,7 @@ export default function AdminDashboard() {
                 setSearchInput(e.target.value);
                 setPage(1);
               }}
-              className="h-11 text-md"
+              className="h-11 text-md border border-gray-300 border-2"
             />
           </div>
           <Button
