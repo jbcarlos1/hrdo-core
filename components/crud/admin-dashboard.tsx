@@ -785,7 +785,7 @@ export default function AdminDashboard() {
                 setSearchInput(e.target.value);
                 setPage(1);
               }}
-              className="h-11 shadow-md text-md"
+              className="h-11 text-md"
             />
           </div>
           <Button
@@ -811,7 +811,7 @@ export default function AdminDashboard() {
             //   setPage(1);
             // }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by division" />
               </SelectTrigger>
               {/* <SelectContent>
@@ -831,7 +831,7 @@ export default function AdminDashboard() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by section" />
               </SelectTrigger>
               <SelectContent>
@@ -851,7 +851,7 @@ export default function AdminDashboard() {
             //   setPage(1);
             // }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by encoder" />
               </SelectTrigger>
               {/* <SelectContent>
@@ -871,7 +871,7 @@ export default function AdminDashboard() {
             //   setPage(1);
             // }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by date" />
               </SelectTrigger>
               {/* <SelectContent>
@@ -894,7 +894,7 @@ export default function AdminDashboard() {
             //   setPage(1);
             // }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by issuing agency" />
               </SelectTrigger>
               {/* <SelectContent>
@@ -914,7 +914,7 @@ export default function AdminDashboard() {
             //   setPage(1);
             // }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by signatory" />
               </SelectTrigger>
               {/* <SelectContent>
@@ -934,7 +934,7 @@ export default function AdminDashboard() {
             //   setPage(1);
             // }}
             >
-              <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+              <SelectTrigger className="h-11 text-md">
                 <SelectValue placeholder="Filter by keyword" />
               </SelectTrigger>
               {/* <SelectContent>
@@ -955,7 +955,7 @@ export default function AdminDashboard() {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="h-11 text-md bg-[#7b1113] text-[#f5d4d4] shadow hover:bg-[#7b1113]/70">
+                <SelectTrigger className="h-11 text-md">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
