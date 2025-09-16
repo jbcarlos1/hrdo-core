@@ -178,6 +178,8 @@ export default function AdminDashboard() {
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [isSignatoryDialogOpen, setIsSignatoryDialogOpen] = useState(false);
 
+  const [sectionOpen, setSectionOpen] = useState(false);
+
   const [date, setDate] = useState<Date | null>(null);
   const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
   const [loading, setLoading] = useState(false);
@@ -824,25 +826,59 @@ export default function AdminDashboard() {
             </Select>
           </div>
           <div className="w-1/4">
-            <Select
-              value={sectionFilter}
-              onValueChange={(value) => {
-                setSectionFilter(value === "ALL" ? "" : value);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by section" />
-              </SelectTrigger>
-              <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Section</p>
+            <Popover open={sectionOpen} onOpenChange={setSectionOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-between font-normal ${
+                    sectionFilter ? "" : "text-gray-500"
+                  }`}
+                >
+                  <span className="max-w-full truncate">
+                    {sectionFilter
+                      ? sectionOptions.find((option) => option.value === sectionFilter)?.label
+                      : "Filter by section..."}
+                  </span>
+                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search section..." />
+                  <CommandList>
+                    <CommandEmpty>No section found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-y-auto">
+                      {sectionOptions.map((option) => (
+                        <CommandItem
+                          key={option.value}
+                          value={option.value}
+                          onSelect={(currentValue) => {
+                            setSectionFilter(
+                              currentValue === "ALL" || currentValue === sectionFilter
+                                ? ""
+                                : currentValue
+                            );
+                            setPage(1);
+                            setSectionOpen(false);
+                          }}
+                        >
+                          <CheckIcon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              sectionFilter === option.value ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
+
           <div className="w-1/4">
             <Select
             // value={sectionFilter}
