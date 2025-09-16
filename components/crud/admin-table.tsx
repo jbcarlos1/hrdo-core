@@ -31,6 +31,7 @@ interface Memorandum {
   issuingOffice: string;
   subject: string;
   date: string;
+  division: string;
   section: string;
   encoder: string;
   keywords: string;
@@ -55,6 +56,14 @@ export const TableComponent = ({
 }: TableComponentProps) => {
   const { data: session } = useSession();
   const role = session?.user?.role;
+
+  const divisionMap: Record<string, string> = {
+    MANAGEMENT: "Management",
+    RECRUITMENT: "Recruitment Division",
+    PLANNING_RESEARCH: "Planning & Research Division",
+    DEVELOPMENT_BENEFITS: "Development & Benefits Division",
+  };
+
   const sectionMap: Record<string, string> = {
     EXECUTIVE: "Executive",
     ADMINISTRATIVE: "Administrative Section",

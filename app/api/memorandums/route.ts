@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search")?.trim() || "";
   const [sortField, sortOrder] = (searchParams.get("sort") || "createdAt:desc").split(":");
   const memorandumState = searchParams.get("memorandumState");
+  const divisionFilter = searchParams.get("division") || "";
   const sectionFilter = searchParams.get("section") || "";
   const limit = 12;
 
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
     "subject",
     "signatory",
     "issuingOffice",
+    "division",
     "section",
     "encoder",
   ] as const;
@@ -49,6 +51,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
+          ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
         },
       }),
@@ -58,6 +61,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
+          ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
         },
         orderBy: {
@@ -71,6 +75,7 @@ export async function GET(request: NextRequest) {
           subject: true,
           date: true,
           encoder: true,
+          division: true,
           section: true,
           keywords: true,
           pdfUrl: true,

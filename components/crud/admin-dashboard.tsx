@@ -67,6 +67,7 @@ interface Memorandum {
   issuingOffice: string;
   subject: string;
   date: string;
+  division: string;
   section: string;
   encoder: string;
   keywords: string;
@@ -105,6 +106,7 @@ const fetchMemorandums = async (
   searchInput: string = "",
   sort: string = "createdAt:desc",
   memorandumState: string = "active",
+  divisionFilter: string = "",
   sectionFilter: string = "",
   signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
@@ -114,6 +116,7 @@ const fetchMemorandums = async (
     if (searchInput) params.set("search", searchInput.trim());
     if (memorandumState) params.set("memorandumState", memorandumState);
     if (sort) params.set("sort", sort);
+    if (divisionFilter) params.set("division", divisionFilter);
     if (sectionFilter) params.set("section", sectionFilter);
 
     const res = await fetch(`/api/memorandums?${params.toString()}`, { signal });
@@ -178,6 +181,7 @@ export default function AdminDashboard() {
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [isSignatoryDialogOpen, setIsSignatoryDialogOpen] = useState(false);
 
+  const [divisionOpen, setDivisionOpen] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(false);
 
   const [date, setDate] = useState<Date | null>(null);
@@ -201,6 +205,7 @@ export default function AdminDashboard() {
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] = useState(false);
   const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] = useState("");
+  const [divisionFilter, setDivisionFilter] = useState<string>("");
   const [sectionFilter, setSectionFilter] = useState<string>("");
   const requestIdRef = useRef<string>("");
 
@@ -245,6 +250,17 @@ export default function AdminDashboard() {
     []
   );
 
+  const divisionOptions = useMemo(
+    () => [
+      { value: "ALL", label: "All" },
+      { value: "MANAGEMENT", label: "Management" },
+      { value: "RECRUITMENT", label: "Recruitment Division" },
+      { value: "PLANNING_RESEARCH", label: "Planning & Research Division" },
+      { value: "DEVELOPMENT_BENEFITS", label: "Development & Benefits Division" },
+    ],
+    []
+  );
+
   const sectionOptions = useMemo(
     () => [
       { value: "ALL", label: "All" },
@@ -277,7 +293,7 @@ export default function AdminDashboard() {
 
   const loadMemorandums = useCallback(
     async (page = 1) => {
-      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
       setLoading(true);
 
@@ -294,6 +310,7 @@ export default function AdminDashboard() {
           debouncedSearchInput,
           sortOption,
           memorandumState,
+          divisionFilter,
           sectionFilter,
           controller.signal
         );
@@ -312,7 +329,7 @@ export default function AdminDashboard() {
         }
       }
     },
-    [debouncedSearchInput, sortOption, memorandumState, sectionFilter]
+    [debouncedSearchInput, sortOption, memorandumState, divisionFilter, sectionFilter]
   );
 
   useEffect(() => {
@@ -355,7 +372,7 @@ export default function AdminDashboard() {
 
   const refreshMemorandums = useCallback(
     async (add = false) => {
-      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
 
       if (controllerRef.current) {
@@ -371,6 +388,7 @@ export default function AdminDashboard() {
           debouncedSearchInput,
           sortOption,
           memorandumState,
+          divisionFilter,
           sectionFilter,
           controller.signal
         );
@@ -390,7 +408,7 @@ export default function AdminDashboard() {
         }
       }
     },
-    [page, debouncedSearchInput, sortOption, memorandumState, sectionFilter]
+    [page, debouncedSearchInput, sortOption, memorandumState, divisionFilter, sectionFilter]
   );
 
   const refreshIssuingOffices = useCallback(async () => {
@@ -660,7 +678,9 @@ export default function AdminDashboard() {
           debouncedSearchInput
         )}&memorandumState=${encodeURIComponent(memorandumState)}&sort=${encodeURIComponent(
           sortOption
-        )}&section=${encodeURIComponent(sectionFilter)}`
+        )}&division=${encodeURIComponent(divisionFilter)}&section=${encodeURIComponent(
+          sectionFilter
+        )}`
       );
 
       if (!response.ok) throw new Error("Failed to export data");
@@ -795,6 +815,7 @@ export default function AdminDashboard() {
             onClick={() => {
               setPage(1);
               setSearchInput("");
+              setDivisionFilter("");
               setSectionFilter("");
               setSortOption("createdAt:desc");
             }}
@@ -806,24 +827,57 @@ export default function AdminDashboard() {
 
         <div className="flex w-full pb-2 gap-2">
           <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by division" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Division</p>
+            <Popover open={divisionOpen} onOpenChange={setDivisionOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-between font-normal ${
+                    divisionFilter ? "" : "text-gray-500"
+                  }`}
+                >
+                  <span className="max-w-full truncate">
+                    {divisionFilter
+                      ? divisionOptions.find((option) => option.value === divisionFilter)?.label
+                      : "Filter by division..."}
+                  </span>
+                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search division..." />
+                  <CommandList>
+                    <CommandEmpty>No division found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-y-auto">
+                      {divisionOptions.map((option) => (
+                        <CommandItem
+                          key={option.value}
+                          value={option.value}
+                          onSelect={(currentValue) => {
+                            setDivisionFilter(
+                              currentValue === "ALL" || currentValue === divisionFilter
+                                ? ""
+                                : currentValue
+                            );
+                            setPage(1);
+                            setDivisionOpen(false);
+                          }}
+                        >
+                          <CheckIcon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              divisionFilter === option.value ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Section</p>
