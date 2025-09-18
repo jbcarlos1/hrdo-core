@@ -1043,6 +1043,27 @@ export default function AdminDashboard() {
                   <CommandList>
                     <CommandEmpty>No signatory found.</CommandEmpty>
                     <CommandGroup className="max-h-64 overflow-y-auto">
+                      <CommandItem
+                        key="ALL"
+                        value="ALL"
+                        onSelect={(currentValue) => {
+                          setSignatoryFilter(
+                            currentValue === "ALL" || currentValue === signatoryFilter
+                              ? ""
+                              : currentValue
+                          );
+                          setPage(1);
+                          setSignatoryOpen(false);
+                        }}
+                      >
+                        <CheckIcon
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            signatoryFilter === "ALL" ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        All
+                      </CommandItem>
                       {signatories.map((signatory) => (
                         <CommandItem
                           key={signatory.fullName}
