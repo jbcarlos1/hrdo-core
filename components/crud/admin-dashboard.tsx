@@ -63,8 +63,8 @@ type SignatoryFormInputs = z.infer<typeof signatorySchema>;
 interface Memorandum {
   id: string;
   memoNumber: string;
-  signatory: string;
   issuingOffice: string;
+  signatory: string;
   subject: string;
   date: string;
   division: string;
@@ -106,6 +106,7 @@ const fetchMemorandums = async (
   searchInput: string = "",
   sort: string = "createdAt:desc",
   memorandumState: string = "active",
+  signatoryFilter: string = "",
   divisionFilter: string = "",
   sectionFilter: string = "",
   signal?: AbortSignal
@@ -116,6 +117,7 @@ const fetchMemorandums = async (
     if (searchInput) params.set("search", searchInput.trim());
     if (memorandumState) params.set("memorandumState", memorandumState);
     if (sort) params.set("sort", sort);
+    if (signatoryFilter) params.set("signatory", signatoryFilter);
     if (divisionFilter) params.set("division", divisionFilter);
     if (sectionFilter) params.set("section", sectionFilter);
 
@@ -176,11 +178,12 @@ export default function AdminDashboard() {
   const [issuingOffices, setIssuingOffices] = useState<IssuingOffice[]>([]);
   const [isIssuingOfficeDialogOpen, setIsIssuingOfficeDialogOpen] = useState(false);
 
-  const [signatoryOpen, setSignatoryOpen] = useState(false);
+  const [_signatoryOpen, _setSignatoryOpen] = useState(false);
   const [_signatoryValue, _setSignatoryValue] = useState("");
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [isSignatoryDialogOpen, setIsSignatoryDialogOpen] = useState(false);
 
+  const [signatoryOpen, setSignatoryOpen] = useState(false);
   const [divisionOpen, setDivisionOpen] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(false);
 
@@ -205,6 +208,7 @@ export default function AdminDashboard() {
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] = useState(false);
   const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] = useState("");
+  const [signatoryFilter, setSignatoryFilter] = useState<string>("");
   const [divisionFilter, setDivisionFilter] = useState<string>("");
   const [sectionFilter, setSectionFilter] = useState<string>("");
   const requestIdRef = useRef<string>("");
@@ -293,7 +297,7 @@ export default function AdminDashboard() {
 
   const loadMemorandums = useCallback(
     async (page = 1) => {
-      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
       setLoading(true);
 
@@ -310,6 +314,7 @@ export default function AdminDashboard() {
           debouncedSearchInput,
           sortOption,
           memorandumState,
+          signatoryFilter,
           divisionFilter,
           sectionFilter,
           controller.signal
@@ -329,7 +334,14 @@ export default function AdminDashboard() {
         }
       }
     },
-    [debouncedSearchInput, sortOption, memorandumState, divisionFilter, sectionFilter]
+    [
+      debouncedSearchInput,
+      sortOption,
+      memorandumState,
+      signatoryFilter,
+      divisionFilter,
+      sectionFilter,
+    ]
   );
 
   useEffect(() => {
@@ -372,7 +384,7 @@ export default function AdminDashboard() {
 
   const refreshMemorandums = useCallback(
     async (add = false) => {
-      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
 
       if (controllerRef.current) {
@@ -388,6 +400,7 @@ export default function AdminDashboard() {
           debouncedSearchInput,
           sortOption,
           memorandumState,
+          signatoryFilter,
           divisionFilter,
           sectionFilter,
           controller.signal
@@ -408,7 +421,15 @@ export default function AdminDashboard() {
         }
       }
     },
-    [page, debouncedSearchInput, sortOption, memorandumState, divisionFilter, sectionFilter]
+    [
+      page,
+      debouncedSearchInput,
+      sortOption,
+      memorandumState,
+      signatoryFilter,
+      divisionFilter,
+      sectionFilter,
+    ]
   );
 
   const refreshIssuingOffices = useCallback(async () => {
@@ -678,9 +699,9 @@ export default function AdminDashboard() {
           debouncedSearchInput
         )}&memorandumState=${encodeURIComponent(memorandumState)}&sort=${encodeURIComponent(
           sortOption
-        )}&division=${encodeURIComponent(divisionFilter)}&section=${encodeURIComponent(
-          sectionFilter
-        )}`
+        )}&signatory=${encodeURIComponent(signatoryFilter)}&division=${encodeURIComponent(
+          divisionFilter
+        )}&section=${encodeURIComponent(sectionFilter)}`
       );
 
       if (!response.ok) throw new Error("Failed to export data");
@@ -815,6 +836,7 @@ export default function AdminDashboard() {
             onClick={() => {
               setPage(1);
               setSearchInput("");
+              setSignatoryFilter("");
               setDivisionFilter("");
               setSectionFilter("");
               setSortOption("createdAt:desc");
@@ -997,24 +1019,58 @@ export default function AdminDashboard() {
             </Select>
           </div>
           <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by signatory" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Signatory</p>
+            <Popover open={signatoryOpen} onOpenChange={setSignatoryOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-between font-normal ${
+                    signatoryFilter ? "" : "text-gray-500"
+                  }`}
+                >
+                  <span className="max-w-full truncate">
+                    {signatoryFilter
+                      ? signatories.find((signatory) => signatory.fullName === signatoryFilter)
+                          ?.fullName
+                      : "Filter by signatory..."}
+                  </span>
+                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search signatory..." />
+                  <CommandList>
+                    <CommandEmpty>No signatory found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-y-auto">
+                      {signatories.map((signatory) => (
+                        <CommandItem
+                          key={signatory.fullName}
+                          value={signatory.fullName}
+                          onSelect={(currentValue) => {
+                            setSignatoryFilter(
+                              currentValue === "ALL" || currentValue === signatoryFilter
+                                ? ""
+                                : currentValue
+                            );
+                            setPage(1);
+                            setSignatoryOpen(false);
+                          }}
+                        >
+                          <CheckIcon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              signatoryFilter === signatory.fullName ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {signatory.fullName}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="w-1/4">
             <Select
@@ -1140,12 +1196,12 @@ export default function AdminDashboard() {
             <div>
               <p className="text-sm my-2 text-gray-500">Signatory</p>
               <div className="flex">
-                <Popover open={signatoryOpen} onOpenChange={setSignatoryOpen}>
+                <Popover open={_signatoryOpen} onOpenChange={_setSignatoryOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
-                      aria-expanded={signatoryOpen}
+                      aria-expanded={_signatoryOpen}
                       className={`w-full justify-between font-normal ${
                         signatories.find((signatory) => signatory.fullName === _signatoryValue)
                           ? ""
@@ -1176,7 +1232,7 @@ export default function AdminDashboard() {
                                   currentValue === _signatoryValue ? "" : currentValue
                                 );
                                 setMemoValue("signatory", signatory.fullName);
-                                setSignatoryOpen(false);
+                                _setSignatoryOpen(false);
                               }}
                             >
                               <CheckIcon

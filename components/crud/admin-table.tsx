@@ -27,8 +27,8 @@ import { useSession } from "next-auth/react";
 interface Memorandum {
   id: string;
   memoNumber: string;
-  signatory: string;
   issuingOffice: string;
+  signatory: string;
   subject: string;
   date: string;
   division: string;

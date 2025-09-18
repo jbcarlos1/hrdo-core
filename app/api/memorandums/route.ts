@@ -24,15 +24,17 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search")?.trim() || "";
   const [sortField, sortOrder] = (searchParams.get("sort") || "createdAt:desc").split(":");
   const memorandumState = searchParams.get("memorandumState");
+  const signatoryFilter = searchParams.get("signatory") || "";
   const divisionFilter = searchParams.get("division") || "";
   const sectionFilter = searchParams.get("section") || "";
+
   const limit = 12;
 
   const searchableFields = [
     "memoNumber",
     "subject",
-    "signatory",
     "issuingOffice",
+    "signatory",
     "division",
     "section",
     "encoder",
@@ -51,6 +53,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
+          ...(signatoryFilter && { signatory: signatoryFilter }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
         },
@@ -61,6 +64,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
+          ...(signatoryFilter && { signatory: signatoryFilter }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
         },
@@ -70,8 +74,8 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           memoNumber: true,
-          signatory: true,
           issuingOffice: true,
+          signatory: true,
           subject: true,
           date: true,
           encoder: true,
@@ -138,8 +142,8 @@ export async function POST(request: NextRequest) {
     const memorandum = await db.memorandum.create({
       data: {
         memoNumber: validatedData.memoNumber,
-        signatory: validatedData.signatory,
         issuingOffice: validatedData.issuingOffice,
+        signatory: validatedData.signatory,
         subject: validatedData.subject,
         date: dateObj,
         keywords: validatedData.keywords,
@@ -151,8 +155,8 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         memoNumber: true,
-        signatory: true,
         issuingOffice: true,
+        signatory: true,
         subject: true,
         date: true,
         keywords: true,
