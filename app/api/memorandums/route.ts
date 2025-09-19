@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search")?.trim() || "";
   const [sortField, sortOrder] = (searchParams.get("sort") || "createdAt:desc").split(":");
   const memorandumState = searchParams.get("memorandumState");
+  const issuingOfficeFilter = searchParams.get("issuingOffice") || "";
   const signatoryFilter = searchParams.get("signatory") || "";
   const divisionFilter = searchParams.get("division") || "";
   const sectionFilter = searchParams.get("section") || "";
@@ -53,6 +54,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
+          ...(issuingOfficeFilter && { issuingOffice: issuingOfficeFilter }),
           ...(signatoryFilter && { signatory: signatoryFilter }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
@@ -64,6 +66,7 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
+          ...(issuingOfficeFilter && { issuingOffice: issuingOfficeFilter }),
           ...(signatoryFilter && { signatory: signatoryFilter }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
@@ -124,8 +127,8 @@ export async function POST(request: NextRequest) {
 
     const memorandumData = {
       memoNumber: formData.get("memoNumber") as string,
-      signatory: formData.get("signatory") as string,
       issuingOffice: formData.get("issuingOffice") as string,
+      signatory: formData.get("signatory") as string,
       subject: formData.get("subject") as string,
       date: formData.get("date") as string,
       keywords: formData.get("keywords") as string,

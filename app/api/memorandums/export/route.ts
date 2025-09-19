@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   const searchParams = new URL(request.url).searchParams;
   const search = searchParams.get("search") || "";
   const memorandumState = searchParams.get("memorandumState");
+  const issuingOfficeFilter = searchParams.get("issuingOffice") || "";
   const signatoryFilter = searchParams.get("signatory") || "";
   const divisionFilter = searchParams.get("division") || "";
   const sectionFilter = searchParams.get("section") || "";
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
       where: {
         memoNumber: { contains: search, mode: "insensitive" },
         isArchived: memorandumState === "archived",
+        ...(issuingOfficeFilter && { issuingOffice: issuingOfficeFilter }),
         ...(signatoryFilter && { signatory: signatoryFilter }),
         ...(divisionFilter && { division: divisionFilter }),
         ...(sectionFilter && { section: sectionFilter }),
@@ -44,20 +46,20 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         memoNumber: true,
-        signatory: true,
         issuingOffice: true,
+        signatory: true,
         subject: true,
         date: true,
       },
     });
 
-    headers = ["Memo ID", "Memo Number", "Signatory", "Issuing Office/Agency", "Subject", "Date"];
+    headers = ["Memo ID", "Memo Number", "Issuing Office/Agency", "Signatory", "Subject", "Date"];
 
     data = memorandums.map((memorandum) => ({
       "Memorandum ID": memorandum.id,
       "Memo Number": memorandum.memoNumber,
-      Signatory: memorandum.signatory,
       "Issuing Office/Agency": memorandum.issuingOffice,
+      Signatory: memorandum.signatory,
       Subject: memorandum.subject,
       Date: memorandum.date,
     }));

@@ -106,6 +106,7 @@ const fetchMemorandums = async (
   searchInput: string = "",
   sort: string = "createdAt:desc",
   memorandumState: string = "active",
+  issuingOfficeFilter: string = "",
   signatoryFilter: string = "",
   divisionFilter: string = "",
   sectionFilter: string = "",
@@ -117,6 +118,7 @@ const fetchMemorandums = async (
     if (searchInput) params.set("search", searchInput.trim());
     if (memorandumState) params.set("memorandumState", memorandumState);
     if (sort) params.set("sort", sort);
+    if (issuingOfficeFilter) params.set("issuingOffice", issuingOfficeFilter);
     if (signatoryFilter) params.set("signatory", signatoryFilter);
     if (divisionFilter) params.set("division", divisionFilter);
     if (sectionFilter) params.set("section", sectionFilter);
@@ -173,7 +175,7 @@ const fetchSignatories = async (): Promise<FetchedSignatories> => {
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const role = session?.user?.role;
-  const [issuingOfficeOpen, setIssuingOfficeOpen] = useState(false);
+  const [_issuingOfficeOpen, _setIssuingOfficeOpen] = useState(false);
   const [_issuingOfficeValue, _setIssuingOfficeValue] = useState("");
   const [issuingOffices, setIssuingOffices] = useState<IssuingOffice[]>([]);
   const [isIssuingOfficeDialogOpen, setIsIssuingOfficeDialogOpen] = useState(false);
@@ -183,6 +185,7 @@ export default function AdminDashboard() {
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [isSignatoryDialogOpen, setIsSignatoryDialogOpen] = useState(false);
 
+  const [issuingOfficeOpen, setIssuingOfficeOpen] = useState(false);
   const [signatoryOpen, setSignatoryOpen] = useState(false);
   const [divisionOpen, setDivisionOpen] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(false);
@@ -208,6 +211,8 @@ export default function AdminDashboard() {
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] = useState(false);
   const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] = useState("");
+
+  const [issuingOfficeFilter, setIssuingOfficeFilter] = useState<string>("");
   const [signatoryFilter, setSignatoryFilter] = useState<string>("");
   const [divisionFilter, setDivisionFilter] = useState<string>("");
   const [sectionFilter, setSectionFilter] = useState<string>("");
@@ -297,7 +302,7 @@ export default function AdminDashboard() {
 
   const loadMemorandums = useCallback(
     async (page = 1) => {
-      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
       setLoading(true);
 
@@ -314,6 +319,7 @@ export default function AdminDashboard() {
           debouncedSearchInput,
           sortOption,
           memorandumState,
+          issuingOfficeFilter,
           signatoryFilter,
           divisionFilter,
           sectionFilter,
@@ -338,6 +344,7 @@ export default function AdminDashboard() {
       debouncedSearchInput,
       sortOption,
       memorandumState,
+      issuingOfficeFilter,
       signatoryFilter,
       divisionFilter,
       sectionFilter,
@@ -384,7 +391,7 @@ export default function AdminDashboard() {
 
   const refreshMemorandums = useCallback(
     async (add = false) => {
-      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
 
       if (controllerRef.current) {
@@ -400,6 +407,7 @@ export default function AdminDashboard() {
           debouncedSearchInput,
           sortOption,
           memorandumState,
+          issuingOfficeFilter,
           signatoryFilter,
           divisionFilter,
           sectionFilter,
@@ -426,6 +434,7 @@ export default function AdminDashboard() {
       debouncedSearchInput,
       sortOption,
       memorandumState,
+      issuingOfficeFilter,
       signatoryFilter,
       divisionFilter,
       sectionFilter,
@@ -526,7 +535,7 @@ export default function AdminDashboard() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to office/agency");
+        throw new Error(errorData.error || "Failed to add office/agency");
       }
 
       resetIssuingOffice();
@@ -665,8 +674,8 @@ export default function AdminDashboard() {
     _setSignatoryValue("");
     resetMemo({
       memoNumber: "",
-      signatory: "",
       issuingOffice: "",
+      signatory: "",
       subject: "",
       date: "",
       keywords: "",
@@ -699,9 +708,11 @@ export default function AdminDashboard() {
           debouncedSearchInput
         )}&memorandumState=${encodeURIComponent(memorandumState)}&sort=${encodeURIComponent(
           sortOption
-        )}&signatory=${encodeURIComponent(signatoryFilter)}&division=${encodeURIComponent(
-          divisionFilter
-        )}&section=${encodeURIComponent(sectionFilter)}`
+        )}&issuingOffice=${encodeURIComponent(issuingOfficeFilter)}&signatory=${encodeURIComponent(
+          signatoryFilter
+        )}&division=${encodeURIComponent(divisionFilter)}&section=${encodeURIComponent(
+          sectionFilter
+        )}`
       );
 
       if (!response.ok) throw new Error("Failed to export data");
@@ -836,6 +847,7 @@ export default function AdminDashboard() {
             onClick={() => {
               setPage(1);
               setSearchInput("");
+              setIssuingOfficeFilter("");
               setSignatoryFilter("");
               setDivisionFilter("");
               setSectionFilter("");
@@ -999,24 +1011,93 @@ export default function AdminDashboard() {
 
         <div className="flex w-full pb-4 gap-2">
           <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by issuing agency" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Issuing Office/Agency</p>
+            <Popover open={issuingOfficeOpen} onOpenChange={setIssuingOfficeOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-between font-normal ${
+                    issuingOfficeFilter ? "" : "text-gray-500"
+                  }`}
+                >
+                  <span className="max-w-full truncate">
+                    {issuingOfficeFilter
+                      ? `${
+                          issuingOffices.find(
+                            (issuingOffice) =>
+                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                              issuingOfficeFilter
+                          )?.unitCode
+                        }-${
+                          issuingOffices.find(
+                            (issuingOffice) =>
+                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                              issuingOfficeFilter
+                          )?.unit
+                        }`
+                      : "Filter by issuing office..."}
+                  </span>
+                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search issuing office..." />
+                  <CommandList>
+                    <CommandEmpty>No issuing office found.</CommandEmpty>
+                    <CommandGroup className="max-h-64 overflow-y-auto">
+                      <CommandItem
+                        key="ALL"
+                        value="ALL"
+                        onSelect={(currentValue) => {
+                          setIssuingOfficeFilter(
+                            currentValue === "ALL" || currentValue === issuingOfficeFilter
+                              ? ""
+                              : currentValue
+                          );
+                          setPage(1);
+                          setIssuingOfficeOpen(false);
+                        }}
+                      >
+                        <CheckIcon
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            issuingOfficeFilter === "ALL" ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        All
+                      </CommandItem>
+                      {issuingOffices.map((issuingOffice) => (
+                        <CommandItem
+                          key={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                          value={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                          onSelect={(currentValue) => {
+                            setIssuingOfficeFilter(
+                              currentValue === "ALL" || currentValue === issuingOfficeFilter
+                                ? ""
+                                : currentValue
+                            );
+                            setPage(1);
+                            setIssuingOfficeOpen(false);
+                          }}
+                        >
+                          <CheckIcon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              issuingOfficeFilter ===
+                                `${issuingOffice.unitCode}-${issuingOffice.unit}`
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Signatory</p>
@@ -1290,12 +1371,12 @@ export default function AdminDashboard() {
             <div>
               <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
               <div className="flex">
-                <Popover open={issuingOfficeOpen} onOpenChange={setIssuingOfficeOpen}>
+                <Popover open={_issuingOfficeOpen} onOpenChange={_setIssuingOfficeOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
-                      aria-expanded={issuingOfficeOpen}
+                      aria-expanded={_issuingOfficeOpen}
                       className={`w-full justify-between font-normal ${
                         issuingOffices.find(
                           (issuingOffice) =>
@@ -1344,7 +1425,7 @@ export default function AdminDashboard() {
                                   "issuingOffice",
                                   `${issuingOffice.unitCode}-${issuingOffice.unit}`
                                 );
-                                setIssuingOfficeOpen(false);
+                                _setIssuingOfficeOpen(false);
                               }}
                             >
                               <CheckIcon
@@ -1378,6 +1459,7 @@ export default function AdminDashboard() {
                 <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffice.message}</p>
               )}
             </div>
+            {/* jkhfgjdfjhdfjhgjdfhgjdjhdjhfdg */}
             <div>
               <p className="text-sm my-2 text-gray-500">Subject</p>
               <Input {...registerMemo("subject")} className="w-full" />
