@@ -189,6 +189,7 @@ export default function AdminDashboard() {
   const [signatoryOpen, setSignatoryOpen] = useState(false);
   const [divisionOpen, setDivisionOpen] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
 
   const [date, setDate] = useState<Date | null>(null);
   const [memorandums, setMemorandums] = useState<Memorandum[]>([]);
@@ -1195,26 +1196,44 @@ export default function AdminDashboard() {
             </Select>
           </div>
           <div className="w-1/4">
-            <div className="flex-grow">
-              <Select
-                value={sortOption}
-                onValueChange={(value) => {
-                  setSortOption(value);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger className="h-11 text-md">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <p className="text-sm my-1 text-gray-500">Sort Options</p>
+            <Popover open={sortOpen} onOpenChange={setSortOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-between font-normal">
+                  <span className="max-w-full truncate">
+                    {sortOptions.find((option) => option.value === sortOption)?.label}
+                  </span>
+                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandList>
+                    <CommandGroup className="max-h-64 overflow-y-auto">
+                      {sortOptions.map((option) => (
+                        <CommandItem
+                          key={option.value}
+                          value={option.value}
+                          onSelect={(currentValue) => {
+                            setSortOption(currentValue);
+                            setPage(1);
+                            setSortOpen(false);
+                          }}
+                        >
+                          <CheckIcon
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              sortOption === option.value ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
