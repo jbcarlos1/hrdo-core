@@ -254,8 +254,10 @@ export default function AdminDashboard() {
 
   const sortOptions = useMemo(
     () => [
-      { value: "createdAt:desc", label: "Newest First" },
-      { value: "createdAt:asc", label: "Oldest First" },
+      { value: "createdAt:desc", label: "Date Encoded (Newest)" },
+      { value: "createdAt:asc", label: "Date Encoded (Oldest)" },
+      { value: "date:desc", label: "Date Issued (Newest)" },
+      { value: "date:asc", label: "Date Issued (Oldest)" },
     ],
     []
   );
