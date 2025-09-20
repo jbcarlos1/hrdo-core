@@ -133,8 +133,8 @@ export function MultiSelectValue({
 } & Omit<ComponentPropsWithoutRef<"div">, "children">) {
   const { selectedValues, toggleValue, items, open } = useMultiSelectContext();
   const [overflowAmount, setOverflowAmount] = useState(0);
-  const valueRef = useRef<HTMLDivElement>(null);
-  const overflowRef = useRef<HTMLDivElement>(null);
+  const valueRef = useRef<HTMLDivElement | null>(null);
+  const overflowRef = useRef<HTMLDivElement | null>(null);
 
   const shouldWrap = overflowBehavior === "wrap" || (overflowBehavior === "wrap-when-open" && open);
 
@@ -165,16 +165,17 @@ export function MultiSelectValue({
   }, [selectedValues, checkOverflow, shouldWrap]);
 
   const handleResize = useCallback(
-    (node: HTMLDivElement) => {
-      valueRef.current = node;
+    (node: HTMLDivElement | null) => {
+      if (node) {
+        valueRef.current = node;
 
-      const observer = new ResizeObserver(checkOverflow);
-      observer.observe(node);
+        const observer = new ResizeObserver(checkOverflow);
+        observer.observe(node);
 
-      return () => {
-        observer.disconnect();
-        valueRef.current = null;
-      };
+        return () => {
+          observer.disconnect();
+        };
+      }
     },
     [checkOverflow]
   );
@@ -220,15 +221,14 @@ export function MultiSelectValue({
             )}
           </Badge>
         ))}
-      <Badge
+      <div
+        ref={overflowRef}
         style={{
           display: overflowAmount > 0 && !shouldWrap ? "block" : "none",
         }}
-        variant="outline"
-        ref={overflowRef}
       >
-        +{overflowAmount}
-      </Badge>
+        <Badge variant="outline">+{overflowAmount}</Badge>
+      </div>
     </div>
   );
 }
