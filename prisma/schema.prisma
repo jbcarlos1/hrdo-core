@@ -116,7 +116,7 @@ model Memorandum {
     issuingOffice   String
     subject         String
     date            DateTime
-    keywords        String
+    keywords        String[]
     pdfUrl          String?
     encoder         String
     division        String

@@ -72,7 +72,7 @@ interface Memorandum {
   division: string;
   section: string;
   encoder: string;
-  keywords: string;
+  keywords: string[];
   pdfUrl: string;
   isArchived: boolean;
 }
@@ -477,7 +477,12 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, String(value));
+        if (key === "keywords" && Array.isArray(value)) {
+          formData.delete("keywords");
+          value.forEach((keyword) => formData.append("keywords", keyword));
+        } else {
+          formData.append(key, String(value));
+        }
       });
 
       if (pdfUrl && pdfUrl !== "undefined") {
@@ -666,7 +671,11 @@ export default function AdminDashboard() {
       setDate(memorandum.date ? new Date(memorandum.date) : null);
       _setIssuingOfficeValue(memorandum.issuingOffice ? memorandum.issuingOffice : "");
       _setSignatoryValue(memorandum.signatory ? memorandum.signatory : "");
-      resetMemo(memorandum);
+      setPdfUrl(memorandum.pdfUrl || null);
+      resetMemo({
+        ...memorandum,
+        keywords: Array.isArray(memorandum.keywords) ? memorandum.keywords : [],
+      });
       setIsDialogOpen(true);
     },
     [resetMemo]
@@ -677,13 +686,14 @@ export default function AdminDashboard() {
     setDate(null);
     _setIssuingOfficeValue("");
     _setSignatoryValue("");
+    setPdfUrl(null);
     resetMemo({
       memoNumber: "",
       issuingOffice: "",
       signatory: "",
       subject: "",
       date: "",
-      keywords: "",
+      keywords: [],
       pdfUrl: "",
     });
     setIsDialogOpen(true);
@@ -844,7 +854,7 @@ export default function AdminDashboard() {
                 setSearchInput(e.target.value);
                 setPage(1);
               }}
-              className="h-11 text-md border border-gray-300 border-2"
+              className="h-11 text-md border-2 border-gray-300"
             />
           </div>
           <Button
@@ -1396,7 +1406,12 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-sm my-2 text-gray-500">Keywords</p>
                 <div className="flex">
-                  <MultiSelect>
+                  <MultiSelect
+                    values={watchMemo("keywords") || []}
+                    onValuesChange={(values) => {
+                      setMemoValue("keywords", values, { shouldValidate: true });
+                    }}
+                  >
                     <MultiSelectTrigger className="w-full">
                       <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
                         <MultiSelectValue placeholder="Select one or more keywords..." />
@@ -1413,6 +1428,9 @@ export default function AdminDashboard() {
                     </MultiSelectContent>
                   </MultiSelect>
                 </div>
+                {memoErrors.keywords && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.keywords.message}</p>
+                )}
               </div>
 
               <div>
@@ -1511,14 +1529,6 @@ export default function AdminDashboard() {
                 <Input {...registerMemo("subject")} className="w-full" />
                 {memoErrors.subject && (
                   <p className="text-red-500 text-sm my-1">{memoErrors.subject.message}</p>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm my-2 text-gray-500">Keywords</p>
-                <Input {...registerMemo("keywords")} className="w-full" />
-                {memoErrors.keywords && (
-                  <p className="text-red-500 text-sm my-1">{memoErrors.keywords.message}</p>
                 )}
               </div>
 

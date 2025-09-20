@@ -25,7 +25,7 @@ interface Memorandum {
   division: string;
   section: string;
   encoder: string;
-  keywords: string;
+  keywords: string[];
   pdfUrl: string;
   isArchived: boolean;
 }
