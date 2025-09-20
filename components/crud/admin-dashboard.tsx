@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { memorandumSchema, issuingOfficeSchema, signatorySchema } from "@/schemas";
+import { memorandumSchema, issuingOfficeSchema, signatorySchema, keywordSchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { Plus } from "lucide-react";
@@ -61,6 +61,7 @@ import {
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 type IssuingOfficeFormInputs = z.infer<typeof issuingOfficeSchema>;
 type SignatoryFormInputs = z.infer<typeof signatorySchema>;
+type KeywordFormInputs = z.infer<typeof keywordSchema>;
 
 interface Memorandum {
   id: string;
@@ -88,6 +89,11 @@ interface Signatory {
   fullName: string;
 }
 
+interface Keyword {
+  id: string;
+  keyword: string;
+}
+
 interface PaginatedMemorandums {
   memorandums: Memorandum[];
   totalMemorandums: number;
@@ -101,6 +107,10 @@ interface FetchedIssuingOffices {
 
 interface FetchedSignatories {
   signatories: Signatory[];
+}
+
+interface FetchedKeywords {
+  keywords: Keyword[];
 }
 
 const fetchMemorandums = async (
@@ -174,6 +184,22 @@ const fetchSignatories = async (): Promise<FetchedSignatories> => {
   }
 };
 
+const fetchKeywords = async (): Promise<FetchedKeywords> => {
+  try {
+    const res = await fetch("/api/keywords");
+
+    if (!res.ok) throw new Error("Failed to fetch keywords");
+    return res.json();
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name !== "AbortError") {
+      console.error("Failed to load keywords:", error);
+    }
+    return {
+      keywords: [],
+    };
+  }
+};
+
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const role = session?.user?.role;
@@ -186,6 +212,11 @@ export default function AdminDashboard() {
   const [_signatoryValue, _setSignatoryValue] = useState("");
   const [signatories, setSignatories] = useState<Signatory[]>([]);
   const [isSignatoryDialogOpen, setIsSignatoryDialogOpen] = useState(false);
+
+  const [_keywordOpen, _setKeywordOpen] = useState(false);
+  const [_keywordValue, _setKeywordValue] = useState("");
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
+  const [isKeywordDialogOpen, setIsKeywordDialogOpen] = useState(false);
 
   const [issuingOfficeOpen, setIssuingOfficeOpen] = useState(false);
   const [signatoryOpen, setSignatoryOpen] = useState(false);
@@ -251,6 +282,16 @@ export default function AdminDashboard() {
     reset: resetSignatory,
   } = useForm<SignatoryFormInputs>({
     resolver: zodResolver(signatorySchema),
+    mode: "onChange",
+  });
+
+  const {
+    register: registerKeyword,
+    handleSubmit: handleSubmitKeyword,
+    formState: { errors: keywordErrors },
+    reset: resetKeyword,
+  } = useForm<KeywordFormInputs>({
+    resolver: zodResolver(keywordSchema),
     mode: "onChange",
   });
 
@@ -383,8 +424,22 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchKeywords = async () => {
+      try {
+        const res = await fetch("/api/keywords");
+        if (!res.ok) {
+          throw new Error("Failed to fetch keywords");
+        }
+        const data = await res.json();
+        setKeywords(data.keywords);
+      } catch (error) {
+        console.error("Error fetching keywords:", error);
+      }
+    };
+
     fetchIssuingOffices();
     fetchSignatories();
+    fetchKeywords();
   }, []);
 
   useEffect(() => {
@@ -456,6 +511,12 @@ export default function AdminDashboard() {
     const updatedSignatories = await fetchSignatories();
 
     setSignatories(updatedSignatories.signatories);
+  }, []);
+
+  const refreshKeywords = useCallback(async () => {
+    const updatedKeywords = await fetchKeywords();
+
+    setKeywords(updatedKeywords.keywords);
   }, []);
 
   const handlePdfUpload = async (file: File) => {
@@ -553,7 +614,7 @@ export default function AdminDashboard() {
       await refreshIssuingOffices();
       toast({
         title: "Office/Agency Added",
-        description: "The Office/Agency has been successfully added",
+        description: "The office/agency has been successfully added",
       });
     } catch (error) {
       console.error("Submit failed", error);
@@ -592,6 +653,44 @@ export default function AdminDashboard() {
       toast({
         title: "Signatory Added",
         description: "The signatory has been successfully added",
+      });
+    } catch (error) {
+      console.error("Submit failed", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
+  const onKeywordSubmit = async (data: KeywordFormInputs) => {
+    setSubmitLoading(true);
+    try {
+      const formData = new FormData();
+      const { ...restData } = data;
+      Object.entries(restData).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+
+      const res = await fetch("/api/keywords", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to add keyword");
+      }
+
+      resetKeyword();
+      setIsKeywordDialogOpen(false);
+      await refreshKeywords();
+      toast({
+        title: "Keyword Added",
+        description: "The keyword has been successfully added",
       });
     } catch (error) {
       console.error("Submit failed", error);
@@ -713,6 +812,13 @@ export default function AdminDashboard() {
     });
     setIsSignatoryDialogOpen(true);
   }, [resetSignatory]);
+
+  const openAddKeywordModal = useCallback(() => {
+    resetKeyword({
+      keyword: "",
+    });
+    setIsKeywordDialogOpen(true);
+  }, [resetKeyword]);
 
   const handleExport = async () => {
     try {
@@ -1417,16 +1523,30 @@ export default function AdminDashboard() {
                         <MultiSelectValue placeholder="Select one or more keywords..." />
                       </div>
                     </MultiSelectTrigger>
-                    <MultiSelectContent>
+                    <MultiSelectContent
+                      search={{
+                        placeholder: "Search keywords...",
+                        emptyMessage: "No keywords found",
+                      }}
+                    >
                       <MultiSelectGroup>
-                        {signatories.map((signatory) => (
-                          <MultiSelectItem key={signatory.id} value={signatory.fullName}>
-                            {signatory.fullName}
+                        {keywords.map((keyword) => (
+                          <MultiSelectItem key={keyword.id} value={keyword.keyword}>
+                            {keyword.keyword}
                           </MultiSelectItem>
                         ))}
                       </MultiSelectGroup>
                     </MultiSelectContent>
                   </MultiSelect>
+                  <Button
+                    type="button"
+                    className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
+                    title="Add keyword"
+                    onClick={openAddKeywordModal}
+                    disabled={submitLoading}
+                  >
+                    <Plus size={22} />
+                  </Button>
                 </div>
                 {memoErrors.keywords && (
                   <p className="text-red-500 text-sm my-1">{memoErrors.keywords.message}</p>
@@ -1622,6 +1742,35 @@ export default function AdminDashboard() {
             <DialogFooter>
               <Button type="submit" disabled={submitLoading}>
                 Add Signatory
+              </Button>
+              <DialogClose asChild>
+                <Button variant="outline" disabled={submitLoading}>
+                  Cancel
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isKeywordDialogOpen} onOpenChange={setIsKeywordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Keyword</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitKeyword(onKeywordSubmit)} className="space-y-4">
+            <div>
+              <p className="text-sm my-2 text-gray-500">Keyword</p>
+              <Input {...registerKeyword("keyword")} className="w-full" />
+              {keywordErrors.keyword && (
+                <p className="text-red-500 text-sm my-1">{keywordErrors.keyword.message}</p>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" disabled={submitLoading}>
+                Add Keyword
               </Button>
               <DialogClose asChild>
                 <Button variant="outline" disabled={submitLoading}>

@@ -106,3 +106,10 @@ export const signatorySchema = z.object({
     .min(1, "Full name is required")
     .max(1000, "Full name must be less than 1000 characters"),
 });
+
+export const keywordSchema = z.object({
+  keyword: z
+    .string()
+    .min(1, "Keyword is required")
+    .max(1000, "Keyword must be less than 1000 characters"),
+});

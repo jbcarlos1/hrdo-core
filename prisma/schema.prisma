@@ -137,6 +137,11 @@ model Signatory {
     fullName    String @unique
 }
 
+model Keyword {
+    id          String @id @default(cuid())
+    keyword     String @unique
+}
+
 
 
 
