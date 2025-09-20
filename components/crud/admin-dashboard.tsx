@@ -1393,22 +1393,27 @@ export default function AdminDashboard() {
                 )}
               </div>
 
-              <MultiSelect>
-                <MultiSelectTrigger className="w-full max-w-[400px]">
-                  <div className="max-h-[100px] overflow-y-auto flex-1">
-                    <MultiSelectValue placeholder="Select frameworks..." />
-                  </div>
-                </MultiSelectTrigger>
-                <MultiSelectContent>
-                  <MultiSelectGroup>
-                    {signatories.map((signatory) => (
-                      <MultiSelectItem key={signatory.id} value={signatory.fullName}>
-                        {signatory.fullName}
-                      </MultiSelectItem>
-                    ))}
-                  </MultiSelectGroup>
-                </MultiSelectContent>
-              </MultiSelect>
+              <div>
+                <p className="text-sm my-2 text-gray-500">Keywords</p>
+                <div className="flex">
+                  <MultiSelect>
+                    <MultiSelectTrigger className="w-full">
+                      <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                        <MultiSelectValue placeholder="Select one or more keywords..." />
+                      </div>
+                    </MultiSelectTrigger>
+                    <MultiSelectContent>
+                      <MultiSelectGroup>
+                        {signatories.map((signatory) => (
+                          <MultiSelectItem key={signatory.id} value={signatory.fullName}>
+                            {signatory.fullName}
+                          </MultiSelectItem>
+                        ))}
+                      </MultiSelectGroup>
+                    </MultiSelectContent>
+                  </MultiSelect>
+                </div>
+              </div>
 
               <div>
                 <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
