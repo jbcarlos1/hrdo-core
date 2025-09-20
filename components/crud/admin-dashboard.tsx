@@ -10,15 +10,8 @@ import { useSession } from "next-auth/react";
 import { memorandumSchema, issuingOfficeSchema, signatorySchema } from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
-import { FiDownload } from "react-icons/fi";
 import { Plus } from "lucide-react";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +48,15 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+import {
+  MultiSelect,
+  MultiSelectContent,
+  MultiSelectGroup,
+  MultiSelectItem,
+  MultiSelectTrigger,
+  MultiSelectValue,
+} from "@/components/ui/multi-select";
 
 type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 type IssuingOfficeFormInputs = z.infer<typeof issuingOfficeSchema>;
@@ -1282,254 +1284,273 @@ export default function AdminDashboard() {
               {editingMemorandum ? "Edit Official Reference" : "Add Official Reference"}
             </DialogTitle>
           </DialogHeader>
+          <div className="overflow-y-auto max-h-[90vh] flex-1 px-1">
+            <form onSubmit={handleSubmitMemo(onMemoSubmit)} className="space-y-4">
+              <div className="flex gap-2">
+                <div>
+                  <p className="text-sm my-2 text-gray-500">Reference Number</p>
+                  <Input {...registerMemo("memoNumber")} className="w-full" />
+                  {memoErrors.memoNumber && (
+                    <p className="text-red-500 text-sm my-1">{memoErrors.memoNumber.message}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm my-2 text-gray-500">Date</p>
+                  <DatePicker
+                    date={date}
+                    setDate={(d: Date | null) => {
+                      setDate(d);
+                      setMemoValue(
+                        "date",
+                        d
+                          ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+                              2,
+                              "0"
+                            )}-${String(d.getDate()).padStart(2, "0")}`
+                          : ""
+                      );
+                      triggerMemo("date");
+                    }}
+                    content="Date"
+                  />
+                  {memoErrors.date && (
+                    <p className="text-red-500 text-sm my-1">{memoErrors.date.message}</p>
+                  )}
+                </div>
+              </div>
 
-          <form onSubmit={handleSubmitMemo(onMemoSubmit)} className="space-y-4">
-            <div className="flex gap-2">
               <div>
-                <p className="text-sm my-2 text-gray-500">Reference Number</p>
-                <Input {...registerMemo("memoNumber")} className="w-full" />
-                {memoErrors.memoNumber && (
-                  <p className="text-red-500 text-sm my-1">{memoErrors.memoNumber.message}</p>
+                <p className="text-sm my-2 text-gray-500">Signatory</p>
+                <div className="flex">
+                  <Popover open={_signatoryOpen} onOpenChange={_setSignatoryOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={_signatoryOpen}
+                        className={`w-full justify-between font-normal ${
+                          signatories.find((signatory) => signatory.fullName === _signatoryValue)
+                            ? ""
+                            : "text-gray-500"
+                        }`}
+                      >
+                        <span className="truncate max-w-[360px]">
+                          {_signatoryValue
+                            ? signatories.find(
+                                (signatory) => signatory.fullName === _signatoryValue
+                              )?.fullName
+                            : "Select signatory..."}
+                        </span>
+                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent disablePortal className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search signatory..." />
+                        <CommandList>
+                          <CommandEmpty>No signatory found.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
+                            {signatories.map((signatory) => (
+                              <CommandItem
+                                key={signatory.fullName}
+                                value={signatory.fullName}
+                                onSelect={(currentValue) => {
+                                  _setSignatoryValue(
+                                    currentValue === _signatoryValue ? "" : currentValue
+                                  );
+                                  setMemoValue("signatory", signatory.fullName);
+                                  _setSignatoryOpen(false);
+                                }}
+                              >
+                                <CheckIcon
+                                  className={cn(
+                                    "h-4 w-4",
+                                    _signatoryValue === signatory.fullName
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {signatory.fullName}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    type="button"
+                    className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
+                    title="Add signatory"
+                    onClick={openAddSignatoryModal}
+                    disabled={submitLoading}
+                  >
+                    <Plus size={22} />
+                  </Button>
+                </div>
+                {memoErrors.signatory && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.signatory.message}</p>
                 )}
               </div>
+
+              <MultiSelect>
+                <MultiSelectTrigger className="w-full max-w-[400px]">
+                  <div className="max-h-[100px] overflow-y-auto flex-1">
+                    <MultiSelectValue placeholder="Select frameworks..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent>
+                  <MultiSelectGroup>
+                    {signatories.map((signatory) => (
+                      <MultiSelectItem key={signatory.id} value={signatory.fullName}>
+                        {signatory.fullName}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+
               <div>
-                <p className="text-sm my-2 text-gray-500">Date</p>
-                <DatePicker
-                  date={date}
-                  setDate={(d: Date | null) => {
-                    setDate(d);
-                    setMemoValue(
-                      "date",
-                      d
-                        ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-                            d.getDate()
-                          ).padStart(2, "0")}`
-                        : ""
-                    );
-                    triggerMemo("date");
-                  }}
-                  content="Date"
-                />
-                {memoErrors.date && (
-                  <p className="text-red-500 text-sm my-1">{memoErrors.date.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <p className="text-sm my-2 text-gray-500">Signatory</p>
-              <div className="flex">
-                <Popover open={_signatoryOpen} onOpenChange={_setSignatoryOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={_signatoryOpen}
-                      className={`w-full justify-between font-normal ${
-                        signatories.find((signatory) => signatory.fullName === _signatoryValue)
-                          ? ""
-                          : "text-gray-500"
-                      }`}
-                    >
-                      <span className="truncate max-w-[360px]">
-                        {_signatoryValue
-                          ? signatories.find((signatory) => signatory.fullName === _signatoryValue)
-                              ?.fullName
-                          : "Select signatory..."}
-                      </span>
-                      <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent disablePortal className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search signatory..." />
-                      <CommandList>
-                        <CommandEmpty>No signatory found.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
-                          {signatories.map((signatory) => (
-                            <CommandItem
-                              key={signatory.fullName}
-                              value={signatory.fullName}
-                              onSelect={(currentValue) => {
-                                _setSignatoryValue(
-                                  currentValue === _signatoryValue ? "" : currentValue
-                                );
-                                setMemoValue("signatory", signatory.fullName);
-                                _setSignatoryOpen(false);
-                              }}
-                            >
-                              <CheckIcon
-                                className={cn(
-                                  "h-4 w-4",
-                                  _signatoryValue === signatory.fullName
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {signatory.fullName}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  type="button"
-                  className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
-                  title="Add signatory"
-                  onClick={openAddSignatoryModal}
-                  disabled={submitLoading}
-                >
-                  <Plus size={22} />
-                </Button>
-              </div>
-              {memoErrors.signatory && (
-                <p className="text-red-500 text-sm my-1">{memoErrors.signatory.message}</p>
-              )}
-            </div>
-
-            <div>
-              <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
-              <div className="flex">
-                <Popover open={_issuingOfficeOpen} onOpenChange={_setIssuingOfficeOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={_issuingOfficeOpen}
-                      className={`w-full justify-between font-normal ${
-                        issuingOffices.find(
-                          (issuingOffice) =>
-                            `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                            _issuingOfficeValue
-                        )
-                          ? ""
-                          : "text-gray-500"
-                      }`}
-                    >
-                      <span className="truncate max-w-[360px]">
-                        {_issuingOfficeValue
-                          ? `${
-                              issuingOffices.find(
-                                (issuingOffice) =>
-                                  `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                                  _issuingOfficeValue
-                              )?.unitCode
-                            }-${
-                              issuingOffices.find(
-                                (issuingOffice) =>
-                                  `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                                  _issuingOfficeValue
-                              )?.unit
-                            }`
-                          : "Select office/agency..."}
-                      </span>
-                      <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent disablePortal className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search office/agency..." />
-                      <CommandList>
-                        <CommandEmpty>No office/agency found.</CommandEmpty>
-                        <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
-                          {issuingOffices.map((issuingOffice) => (
-                            <CommandItem
-                              key={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                              value={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                              onSelect={(currentValue) => {
-                                _setIssuingOfficeValue(
-                                  currentValue === _issuingOfficeValue ? "" : currentValue
-                                );
-                                setMemoValue(
-                                  "issuingOffice",
-                                  `${issuingOffice.unitCode}-${issuingOffice.unit}`
-                                );
-                                _setIssuingOfficeOpen(false);
-                              }}
-                            >
-                              <CheckIcon
-                                className={cn(
-                                  "h-4 w-4",
-                                  _issuingOfficeValue ===
+                <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
+                <div className="flex">
+                  <Popover open={_issuingOfficeOpen} onOpenChange={_setIssuingOfficeOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={_issuingOfficeOpen}
+                        className={`w-full justify-between font-normal ${
+                          issuingOffices.find(
+                            (issuingOffice) =>
+                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                              _issuingOfficeValue
+                          )
+                            ? ""
+                            : "text-gray-500"
+                        }`}
+                      >
+                        <span className="truncate max-w-[360px]">
+                          {_issuingOfficeValue
+                            ? `${
+                                issuingOffices.find(
+                                  (issuingOffice) =>
+                                    `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                    _issuingOfficeValue
+                                )?.unitCode
+                              }-${
+                                issuingOffices.find(
+                                  (issuingOffice) =>
+                                    `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
+                                    _issuingOfficeValue
+                                )?.unit
+                              }`
+                            : "Select office/agency..."}
+                        </span>
+                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent disablePortal className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search office/agency..." />
+                        <CommandList>
+                          <CommandEmpty>No office/agency found.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
+                            {issuingOffices.map((issuingOffice) => (
+                              <CommandItem
+                                key={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                                value={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                                onSelect={(currentValue) => {
+                                  _setIssuingOfficeValue(
+                                    currentValue === _issuingOfficeValue ? "" : currentValue
+                                  );
+                                  setMemoValue(
+                                    "issuingOffice",
                                     `${issuingOffice.unitCode}-${issuingOffice.unit}`
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <Button
-                  type="button"
-                  className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
-                  title="Add office/agency"
-                  onClick={openAddIssuingOfficeModal}
-                  disabled={submitLoading}
-                >
-                  <Plus size={22} />
-                </Button>
+                                  );
+                                  _setIssuingOfficeOpen(false);
+                                }}
+                              >
+                                <CheckIcon
+                                  className={cn(
+                                    "h-4 w-4",
+                                    _issuingOfficeValue ===
+                                      `${issuingOffice.unitCode}-${issuingOffice.unit}`
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {`${issuingOffice.unitCode}-${issuingOffice.unit}`}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    type="button"
+                    className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
+                    title="Add office/agency"
+                    onClick={openAddIssuingOfficeModal}
+                    disabled={submitLoading}
+                  >
+                    <Plus size={22} />
+                  </Button>
+                </div>
+                {memoErrors.issuingOffice && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffice.message}</p>
+                )}
               </div>
-              {memoErrors.issuingOffice && (
-                <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffice.message}</p>
-              )}
-            </div>
-            {/* jkhfgjdfjhdfjhgjdfhgjdjhdjhfdg */}
-            <div>
-              <p className="text-sm my-2 text-gray-500">Subject</p>
-              <Input {...registerMemo("subject")} className="w-full" />
-              {memoErrors.subject && (
-                <p className="text-red-500 text-sm my-1">{memoErrors.subject.message}</p>
-              )}
-            </div>
+              <div>
+                <p className="text-sm my-2 text-gray-500">Subject</p>
+                <Input {...registerMemo("subject")} className="w-full" />
+                {memoErrors.subject && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.subject.message}</p>
+                )}
+              </div>
 
-            <div>
-              <p className="text-sm my-2 text-gray-500">Keywords</p>
-              <Input {...registerMemo("keywords")} className="w-full" />
-              {memoErrors.keywords && (
-                <p className="text-red-500 text-sm my-1">{memoErrors.keywords.message}</p>
-              )}
-            </div>
+              <div>
+                <p className="text-sm my-2 text-gray-500">Keywords</p>
+                <Input {...registerMemo("keywords")} className="w-full" />
+                {memoErrors.keywords && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.keywords.message}</p>
+                )}
+              </div>
 
-            <div>
-              <p className="text-sm my-2 text-gray-500">PDF Document</p>
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handlePdfUpload(file);
-                }}
-                disabled={pdfUploading}
-              />
-              {pdfUploading && <span>Uploading PDF...</span>}
-              {pdfUrl && (
-                <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
-                  View PDF
-                </a>
-              )}
-              {memoErrors.pdfUrl && (
-                <p className="text-red-500 text-sm my-1">{memoErrors.pdfUrl.message}</p>
-              )}
-            </div>
+              <div>
+                <p className="text-sm my-2 text-gray-500">PDF Document</p>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePdfUpload(file);
+                  }}
+                  disabled={pdfUploading}
+                />
+                {pdfUploading && <span>Uploading PDF...</span>}
+                {pdfUrl && (
+                  <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
+                    View PDF
+                  </a>
+                )}
+                {memoErrors.pdfUrl && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.pdfUrl.message}</p>
+                )}
+              </div>
 
-            <DialogFooter>
-              <Button type="submit" disabled={submitLoading || pdfUploading || !pdfUrl}>
-                {editingMemorandum ? "Update Official Reference" : "Add Official Reference"}
-              </Button>
-              <DialogClose asChild>
-                <Button variant="outline" disabled={submitLoading}>
-                  Cancel
+              <DialogFooter>
+                <Button type="submit" disabled={submitLoading || pdfUploading || !pdfUrl}>
+                  {editingMemorandum ? "Update Official Reference" : "Add Official Reference"}
                 </Button>
-              </DialogClose>
-            </DialogFooter>
-          </form>
+                <DialogClose asChild>
+                  <Button variant="outline" disabled={submitLoading}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
       <Dialog open={isIssuingOfficeDialogOpen} onOpenChange={setIsIssuingOfficeDialogOpen}>
