@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search")?.trim() || "";
   const [sortField, sortOrder] = (searchParams.get("sort") || "createdAt:desc").split(":");
   const memorandumState = searchParams.get("memorandumState");
-  const issuingOfficeFilter = searchParams.get("issuingOffice") || "";
-  const signatoryFilter = searchParams.get("signatory") || "";
+  const issuingOfficeFilter = searchParams.getAll("issuingOffices") || [];
+  const signatoryFilter = searchParams.getAll("signatories") || [];
   const divisionFilter = searchParams.get("division") || "";
   const sectionFilter = searchParams.get("section") || "";
   const keywordFilter = searchParams.getAll("keywords") || [];
@@ -55,8 +55,10 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
-          ...(issuingOfficeFilter && { issuingOffice: issuingOfficeFilter }),
-          ...(signatoryFilter && { signatory: signatoryFilter }),
+          ...(issuingOfficeFilter.length > 0 && {
+            issuingOffices: { hasEvery: issuingOfficeFilter },
+          }),
+          ...(signatoryFilter.length > 0 && { signatories: { hasEvery: signatoryFilter } }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
           ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
@@ -68,8 +70,10 @@ export async function GET(request: NextRequest) {
         where: {
           ...(orConditions ? { OR: orConditions } : {}),
           isArchived: memorandumState === "archived",
-          ...(issuingOfficeFilter && { issuingOffice: issuingOfficeFilter }),
-          ...(signatoryFilter && { signatory: signatoryFilter }),
+          ...(issuingOfficeFilter.length > 0 && {
+            issuingOffices: { hasEvery: issuingOfficeFilter },
+          }),
+          ...(signatoryFilter.length > 0 && { signatories: { hasEvery: signatoryFilter } }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
           ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
@@ -80,8 +84,8 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           memoNumber: true,
-          issuingOffice: true,
-          signatory: true,
+          issuingOffices: true,
+          signatories: true,
           subject: true,
           date: true,
           encoder: true,
@@ -130,8 +134,8 @@ export async function POST(request: NextRequest) {
 
     const memorandumData = {
       memoNumber: formData.get("memoNumber") as string,
-      issuingOffice: formData.get("issuingOffice") as string,
-      signatory: formData.get("signatory") as string,
+      issuingOffices: formData.getAll("issuingOffices") as string[],
+      signatories: formData.getAll("signatories") as string[],
       subject: formData.get("subject") as string,
       date: formData.get("date") as string,
       keywords: formData.getAll("keywords") as string[],
@@ -148,8 +152,8 @@ export async function POST(request: NextRequest) {
     const memorandum = await db.memorandum.create({
       data: {
         memoNumber: validatedData.memoNumber,
-        issuingOffice: validatedData.issuingOffice,
-        signatory: validatedData.signatory,
+        issuingOffices: validatedData.issuingOffices,
+        signatories: validatedData.signatories,
         subject: validatedData.subject,
         date: dateObj,
         keywords: validatedData.keywords,
@@ -161,8 +165,8 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         memoNumber: true,
-        issuingOffice: true,
-        signatory: true,
+        issuingOffices: true,
+        signatories: true,
         subject: true,
         date: true,
         keywords: true,

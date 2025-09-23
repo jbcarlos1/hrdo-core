@@ -110,20 +110,20 @@ model TwoFactorConfirmation {
 }
 
 model Memorandum {
-    id              String        @id @default(cuid())
-    memoNumber      String @unique
-    signatory       String
-    issuingOffice   String
-    subject         String
-    date            DateTime
-    keywords        String[]
-    pdfUrl          String?
-    encoder         String
-    division        String
-    section         String
-    createdAt       DateTime      @default(now())
-    updatedAt       DateTime      @updatedAt
-    isArchived      Boolean       @default(false)
+    id                  String        @id @default(cuid())
+    memoNumber          String @unique
+    signatories         String[]
+    issuingOffices      String[]
+    subject             String
+    date                DateTime
+    keywords            String[]
+    pdfUrl              String?
+    encoder             String
+    division            String
+    section             String
+    createdAt           DateTime      @default(now())
+    updatedAt           DateTime      @updatedAt
+    isArchived          Boolean       @default(false)
 }
 
 model IssuingOffice {

@@ -33,8 +33,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     const MemorandumData = {
       memoNumber: formData.get("memoNumber") as string,
-      issuingOffice: formData.get("issuingOffice") as string,
-      signatory: formData.get("signatory") as string,
+      issuingOffices: formData.getAll("issuingOffices") as string[],
+      signatories: formData.getAll("signatories") as string[],
       subject: formData.get("subject") as string,
       date: formData.get("date") as string,
       keywords: formData.getAll("keywords") as string[],
@@ -50,8 +50,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     const updateData = {
       memoNumber: validatedData.memoNumber,
-      issuingOffice: validatedData.issuingOffice,
-      signatory: validatedData.signatory,
+      issuingOffices: validatedData.issuingOffices,
+      signatories: validatedData.signatories,
       subject: validatedData.subject,
       date: dateObj,
       keywords: validatedData.keywords,
@@ -67,8 +67,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       select: {
         id: true,
         memoNumber: true,
-        issuingOffice: true,
-        signatory: true,
+        issuingOffices: true,
+        signatories: true,
         subject: true,
         date: true,
         keywords: true,

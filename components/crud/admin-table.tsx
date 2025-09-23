@@ -27,8 +27,8 @@ import { useSession } from "next-auth/react";
 interface Memorandum {
   id: string;
   memoNumber: string;
-  issuingOffice: string;
-  signatory: string;
+  issuingOffices: string[];
+  signatories: string[];
   subject: string;
   date: string;
   division: string;
@@ -163,9 +163,9 @@ export const TableComponent = ({
 
                       <TableCell
                         className="px-4 truncate max-w-[200px]"
-                        title={memorandum.issuingOffice}
+                        title={memorandum.issuingOffices[0]}
                       >
-                        {memorandum.issuingOffice}
+                        {memorandum.issuingOffices}
                       </TableCell>
 
                       {role === "ADMIN" && (

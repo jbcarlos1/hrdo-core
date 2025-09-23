@@ -66,8 +66,8 @@ type KeywordFormInputs = z.infer<typeof keywordSchema>;
 interface Memorandum {
   id: string;
   memoNumber: string;
-  issuingOffice: string;
-  signatory: string;
+  issuingOffices: string[];
+  signatories: string[];
   subject: string;
   date: string;
   division: string;
@@ -118,8 +118,8 @@ const fetchMemorandums = async (
   searchInput: string = "",
   sort: string = "createdAt:desc",
   memorandumState: string = "active",
-  issuingOfficeFilter: string = "",
-  signatoryFilter: string = "",
+  issuingOfficeFilter: string[] = [],
+  signatoryFilter: string[] = [],
   divisionFilter: string = "",
   sectionFilter: string = "",
   keywordFilter: string[] = [],
@@ -131,16 +131,20 @@ const fetchMemorandums = async (
     if (searchInput) params.set("search", searchInput.trim());
     if (memorandumState) params.set("memorandumState", memorandumState);
     if (sort) params.set("sort", sort);
-    if (issuingOfficeFilter) params.set("issuingOffice", issuingOfficeFilter);
-    if (signatoryFilter) params.set("signatory", signatoryFilter);
+    if (issuingOfficeFilter.length > 0) {
+      issuingOfficeFilter.forEach((issuingOffice) =>
+        params.append("issuingOffices", issuingOffice)
+      );
+    }
+    if (signatoryFilter.length > 0) {
+      signatoryFilter.forEach((signatory) => params.append("signatories", signatory));
+    }
     if (divisionFilter) params.set("division", divisionFilter);
     if (sectionFilter) params.set("section", sectionFilter);
     if (keywordFilter.length > 0) {
       keywordFilter.forEach((keyword) => params.append("keywords", keyword));
     }
-
     const res = await fetch(`/api/memorandums?${params.toString()}`, { signal });
-
     if (!res.ok) throw new Error("Failed to fetch official references");
     return res.json();
   } catch (error: unknown) {
@@ -222,8 +226,6 @@ export default function AdminDashboard() {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [isKeywordDialogOpen, setIsKeywordDialogOpen] = useState(false);
 
-  const [issuingOfficeOpen, setIssuingOfficeOpen] = useState(false);
-  const [signatoryOpen, setSignatoryOpen] = useState(false);
   const [divisionOpen, setDivisionOpen] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
@@ -250,8 +252,8 @@ export default function AdminDashboard() {
   const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] = useState(false);
   const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] = useState("");
 
-  const [issuingOfficeFilter, setIssuingOfficeFilter] = useState<string>("");
-  const [signatoryFilter, setSignatoryFilter] = useState<string>("");
+  const [issuingOfficeFilter, setIssuingOfficeFilter] = useState<string[]>([]);
+  const [signatoryFilter, setSignatoryFilter] = useState<string[]>([]);
   const [divisionFilter, setDivisionFilter] = useState<string>("");
   const [sectionFilter, setSectionFilter] = useState<string>("");
   const [keywordFilter, setKeywordFilter] = useState<string[]>([]);
@@ -353,7 +355,9 @@ export default function AdminDashboard() {
 
   const loadMemorandums = useCallback(
     async (page = 1) => {
-      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
+      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${JSON.stringify(
+        issuingOfficeFilter
+      )}-${JSON.stringify(signatoryFilter)}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
         keywordFilter
       )}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
@@ -460,7 +464,9 @@ export default function AdminDashboard() {
 
   const refreshMemorandums = useCallback(
     async (add = false) => {
-      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
+      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${JSON.stringify(
+        issuingOfficeFilter
+      )}-${JSON.stringify(signatoryFilter)}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
         keywordFilter
       )}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
@@ -551,7 +557,13 @@ export default function AdminDashboard() {
     try {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => {
-        if (key === "keywords" && Array.isArray(value)) {
+        if (key === "issuingOffices" && Array.isArray(value)) {
+          formData.delete("issuingOffices");
+          value.forEach((issuingOffice) => formData.append("issuingOffices", issuingOffice));
+        } else if (key === "signatories" && Array.isArray(value)) {
+          formData.delete("signatories");
+          value.forEach((signatory) => formData.append("signatories", signatory));
+        } else if (key === "keywords" && Array.isArray(value)) {
           formData.delete("keywords");
           value.forEach((keyword) => formData.append("keywords", keyword));
         } else {
@@ -781,11 +793,11 @@ export default function AdminDashboard() {
     (memorandum: Memorandum) => {
       setEditingMemorandum(memorandum);
       setDate(memorandum.date ? new Date(memorandum.date) : null);
-      _setIssuingOfficeValue(memorandum.issuingOffice ? memorandum.issuingOffice : "");
-      _setSignatoryValue(memorandum.signatory ? memorandum.signatory : "");
       setPdfUrl(memorandum.pdfUrl || null);
       resetMemo({
         ...memorandum,
+        issuingOffices: Array.isArray(memorandum.issuingOffices) ? memorandum.issuingOffices : [],
+        signatories: Array.isArray(memorandum.signatories) ? memorandum.signatories : [],
         keywords: Array.isArray(memorandum.keywords) ? memorandum.keywords : [],
       });
       setIsDialogOpen(true);
@@ -801,8 +813,8 @@ export default function AdminDashboard() {
     setPdfUrl(null);
     resetMemo({
       memoNumber: "",
-      issuingOffice: "",
-      signatory: "",
+      issuingOffices: [],
+      signatories: [],
       subject: "",
       date: "",
       keywords: [],
@@ -841,8 +853,14 @@ export default function AdminDashboard() {
       if (debouncedSearchInput) params.set("search", debouncedSearchInput.trim());
       if (memorandumState) params.set("memorandumState", memorandumState);
       if (sortOption) params.set("sort", sortOption);
-      if (issuingOfficeFilter) params.set("issuingOffice", issuingOfficeFilter);
-      if (signatoryFilter) params.set("signatory", signatoryFilter);
+      if (issuingOfficeFilter.length > 0) {
+        issuingOfficeFilter.forEach((issuingOffice) =>
+          params.append("issuingOffices", issuingOffice)
+        );
+      }
+      if (signatoryFilter.length > 0) {
+        signatoryFilter.forEach((signatory) => params.append("signatories", signatory));
+      }
       if (divisionFilter) params.set("division", divisionFilter);
       if (sectionFilter) params.set("section", sectionFilter);
       if (keywordFilter.length > 0) {
@@ -983,8 +1001,8 @@ export default function AdminDashboard() {
             onClick={() => {
               setPage(1);
               setSearchInput("");
-              setIssuingOfficeFilter("");
-              setSignatoryFilter("");
+              setIssuingOfficeFilter([]);
+              setSignatoryFilter([]);
               setDivisionFilter("");
               setSectionFilter("");
               setKeywordFilter([]);
@@ -1103,7 +1121,115 @@ export default function AdminDashboard() {
               </PopoverContent>
             </Popover>
           </div>
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md">
+                <SelectValue placeholder="Filter by keyword" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
 
+          <div className="w-1/4">
+            <Select
+            // value={sectionFilter}
+            // onValueChange={(value) => {
+            //   setSectionFilter(value === "ALL" ? "" : value);
+            //   setPage(1);
+            // }}
+            >
+              <SelectTrigger className="h-11 text-md">
+                <SelectValue placeholder="Filter by date" />
+              </SelectTrigger>
+              {/* <SelectContent>
+                {sectionOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent> */}
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex w-full pb-4 gap-2">
+          <div className="w-1/4">
+            <p className="text-sm my-1 text-gray-500">Issuing Offices/Agencies</p>
+            <div className="flex">
+              <MultiSelect
+                values={issuingOfficeFilter || []}
+                onValuesChange={(values) => {
+                  setIssuingOfficeFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by issuing offices/agencies..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search issuing offices/agencies...",
+                    emptyMessage: "No issuing offices/agencies found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {issuingOffices.map((issuingOffice) => (
+                      <MultiSelectItem key={issuingOffice.id} value={issuingOffice.unitCode}>
+                        {issuingOffice.unitCode}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
+          </div>
+
+          <div className="w-1/4">
+            <p className="text-sm my-1 text-gray-500">Signatories</p>
+            <div className="flex">
+              <MultiSelect
+                values={signatoryFilter || []}
+                onValuesChange={(values) => {
+                  setSignatoryFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by signatories..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search signatories...",
+                    emptyMessage: "No signatories found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {signatories.map((signatory) => (
+                      <MultiSelectItem key={signatory.id} value={signatory.fullName}>
+                        {signatory.fullName}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
+          </div>
           <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Keywords</p>
             <div className="flex">
@@ -1136,213 +1262,7 @@ export default function AdminDashboard() {
               </MultiSelect>
             </div>
           </div>
-          <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by date" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
-          </div>
-        </div>
 
-        <div className="flex w-full pb-4 gap-2">
-          <div className="w-1/4">
-            <p className="text-sm my-1 text-gray-500">Issuing Office/Agency</p>
-            <Popover open={issuingOfficeOpen} onOpenChange={setIssuingOfficeOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`w-full justify-between font-normal ${
-                    issuingOfficeFilter ? "" : "text-gray-500"
-                  }`}
-                >
-                  <span className="max-w-full truncate">
-                    {issuingOfficeFilter
-                      ? `${
-                          issuingOffices.find(
-                            (issuingOffice) =>
-                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                              issuingOfficeFilter
-                          )?.unitCode
-                        }-${
-                          issuingOffices.find(
-                            (issuingOffice) =>
-                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                              issuingOfficeFilter
-                          )?.unit
-                        }`
-                      : "Filter by issuing office..."}
-                  </span>
-                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search issuing office..." />
-                  <CommandList>
-                    <CommandEmpty>No issuing office found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-y-auto">
-                      <CommandItem
-                        key="ALL"
-                        value="ALL"
-                        onSelect={(currentValue) => {
-                          setIssuingOfficeFilter(
-                            currentValue === "ALL" || currentValue === issuingOfficeFilter
-                              ? ""
-                              : currentValue
-                          );
-                          setPage(1);
-                          setIssuingOfficeOpen(false);
-                        }}
-                      >
-                        <CheckIcon
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            issuingOfficeFilter === "ALL" ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        All
-                      </CommandItem>
-                      {issuingOffices.map((issuingOffice) => (
-                        <CommandItem
-                          key={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                          value={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                          onSelect={(currentValue) => {
-                            setIssuingOfficeFilter(
-                              currentValue === "ALL" || currentValue === issuingOfficeFilter
-                                ? ""
-                                : currentValue
-                            );
-                            setPage(1);
-                            setIssuingOfficeOpen(false);
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              issuingOfficeFilter ===
-                                `${issuingOffice.unitCode}-${issuingOffice.unit}`
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="w-1/4">
-            <p className="text-sm my-1 text-gray-500">Signatory</p>
-            <Popover open={signatoryOpen} onOpenChange={setSignatoryOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`w-full justify-between font-normal ${
-                    signatoryFilter ? "" : "text-gray-500"
-                  }`}
-                >
-                  <span className="max-w-full truncate">
-                    {signatoryFilter
-                      ? signatories.find((signatory) => signatory.fullName === signatoryFilter)
-                          ?.fullName
-                      : "Filter by signatory..."}
-                  </span>
-                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search signatory..." />
-                  <CommandList>
-                    <CommandEmpty>No signatory found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-y-auto">
-                      <CommandItem
-                        key="ALL"
-                        value="ALL"
-                        onSelect={(currentValue) => {
-                          setSignatoryFilter(
-                            currentValue === "ALL" || currentValue === signatoryFilter
-                              ? ""
-                              : currentValue
-                          );
-                          setPage(1);
-                          setSignatoryOpen(false);
-                        }}
-                      >
-                        <CheckIcon
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            signatoryFilter === "ALL" ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        All
-                      </CommandItem>
-                      {signatories.map((signatory) => (
-                        <CommandItem
-                          key={signatory.fullName}
-                          value={signatory.fullName}
-                          onSelect={(currentValue) => {
-                            setSignatoryFilter(
-                              currentValue === "ALL" || currentValue === signatoryFilter
-                                ? ""
-                                : currentValue
-                            );
-                            setPage(1);
-                            setSignatoryOpen(false);
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              signatoryFilter === signatory.fullName ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {signatory.fullName}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by keyword" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
-          </div>
           <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Sort Options</p>
             <Popover open={sortOpen} onOpenChange={setSortOpen}>
@@ -1464,64 +1384,34 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <p className="text-sm my-2 text-gray-500">Signatory</p>
+                <p className="text-sm my-2 text-gray-500">Signatories</p>
                 <div className="flex">
-                  <Popover open={_signatoryOpen} onOpenChange={_setSignatoryOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={_signatoryOpen}
-                        className={`w-full justify-between font-normal ${
-                          signatories.find((signatory) => signatory.fullName === _signatoryValue)
-                            ? ""
-                            : "text-gray-500"
-                        }`}
-                      >
-                        <span className="truncate max-w-[360px]">
-                          {_signatoryValue
-                            ? signatories.find(
-                                (signatory) => signatory.fullName === _signatoryValue
-                              )?.fullName
-                            : "Select signatory..."}
-                        </span>
-                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent disablePortal className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Search signatory..." />
-                        <CommandList>
-                          <CommandEmpty>No signatory found.</CommandEmpty>
-                          <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
-                            {signatories.map((signatory) => (
-                              <CommandItem
-                                key={signatory.fullName}
-                                value={signatory.fullName}
-                                onSelect={(currentValue) => {
-                                  _setSignatoryValue(
-                                    currentValue === _signatoryValue ? "" : currentValue
-                                  );
-                                  setMemoValue("signatory", signatory.fullName);
-                                  _setSignatoryOpen(false);
-                                }}
-                              >
-                                <CheckIcon
-                                  className={cn(
-                                    "h-4 w-4",
-                                    _signatoryValue === signatory.fullName
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {signatory.fullName}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <MultiSelect
+                    values={watchMemo("signatories") || []}
+                    onValuesChange={(values) => {
+                      setMemoValue("signatories", values, { shouldValidate: true });
+                    }}
+                  >
+                    <MultiSelectTrigger className="w-full">
+                      <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                        <MultiSelectValue placeholder="Select one or more signatories..." />
+                      </div>
+                    </MultiSelectTrigger>
+                    <MultiSelectContent
+                      search={{
+                        placeholder: "Search signatories...",
+                        emptyMessage: "No signatories found",
+                      }}
+                    >
+                      <MultiSelectGroup>
+                        {signatories.map((signatory) => (
+                          <MultiSelectItem key={signatory.id} value={signatory.fullName}>
+                            {signatory.fullName}
+                          </MultiSelectItem>
+                        ))}
+                      </MultiSelectGroup>
+                    </MultiSelectContent>
+                  </MultiSelect>
                   <Button
                     type="button"
                     className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
@@ -1532,8 +1422,8 @@ export default function AdminDashboard() {
                     <Plus size={22} />
                   </Button>
                 </div>
-                {memoErrors.signatory && (
-                  <p className="text-red-500 text-sm my-1">{memoErrors.signatory.message}</p>
+                {memoErrors.signatories && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.signatories.message}</p>
                 )}
               </div>
 
@@ -1584,94 +1474,47 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
                 <div className="flex">
-                  <Popover open={_issuingOfficeOpen} onOpenChange={_setIssuingOfficeOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={_issuingOfficeOpen}
-                        className={`w-full justify-between font-normal ${
-                          issuingOffices.find(
-                            (issuingOffice) =>
-                              `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                              _issuingOfficeValue
-                          )
-                            ? ""
-                            : "text-gray-500"
-                        }`}
-                      >
-                        <span className="truncate max-w-[360px]">
-                          {_issuingOfficeValue
-                            ? `${
-                                issuingOffices.find(
-                                  (issuingOffice) =>
-                                    `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                                    _issuingOfficeValue
-                                )?.unitCode
-                              }-${
-                                issuingOffices.find(
-                                  (issuingOffice) =>
-                                    `${issuingOffice.unitCode}-${issuingOffice.unit}` ===
-                                    _issuingOfficeValue
-                                )?.unit
-                              }`
-                            : "Select office/agency..."}
-                        </span>
-                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent disablePortal className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Search office/agency..." />
-                        <CommandList>
-                          <CommandEmpty>No office/agency found.</CommandEmpty>
-                          <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
-                            {issuingOffices.map((issuingOffice) => (
-                              <CommandItem
-                                key={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                                value={`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                                onSelect={(currentValue) => {
-                                  _setIssuingOfficeValue(
-                                    currentValue === _issuingOfficeValue ? "" : currentValue
-                                  );
-                                  setMemoValue(
-                                    "issuingOffice",
-                                    `${issuingOffice.unitCode}-${issuingOffice.unit}`
-                                  );
-                                  _setIssuingOfficeOpen(false);
-                                }}
-                              >
-                                <CheckIcon
-                                  className={cn(
-                                    "h-4 w-4",
-                                    _issuingOfficeValue ===
-                                      `${issuingOffice.unitCode}-${issuingOffice.unit}`
-                                      ? "opacity-100"
-                                      : "opacity-0"
-                                  )}
-                                />
-                                {`${issuingOffice.unitCode}-${issuingOffice.unit}`}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <MultiSelect
+                    values={watchMemo("issuingOffices") || []}
+                    onValuesChange={(values) => {
+                      setMemoValue("issuingOffices", values, { shouldValidate: true });
+                    }}
+                  >
+                    <MultiSelectTrigger className="w-full">
+                      <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                        <MultiSelectValue placeholder="Select one or more issuing offices/agencies..." />
+                      </div>
+                    </MultiSelectTrigger>
+                    <MultiSelectContent
+                      search={{
+                        placeholder: "Search issuing offices/agencies...",
+                        emptyMessage: "No issuing offices/agencies found",
+                      }}
+                    >
+                      <MultiSelectGroup>
+                        {issuingOffices.map((issuingOffice) => (
+                          <MultiSelectItem key={issuingOffice.id} value={issuingOffice.unitCode}>
+                            {issuingOffice.unitCode}
+                          </MultiSelectItem>
+                        ))}
+                      </MultiSelectGroup>
+                    </MultiSelectContent>
+                  </MultiSelect>
                   <Button
                     type="button"
                     className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
-                    title="Add office/agency"
+                    title="Add issuing office/agency"
                     onClick={openAddIssuingOfficeModal}
                     disabled={submitLoading}
                   >
                     <Plus size={22} />
                   </Button>
                 </div>
-                {memoErrors.issuingOffice && (
-                  <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffice.message}</p>
+                {memoErrors.issuingOffices && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffices.message}</p>
                 )}
               </div>
+
               <div>
                 <p className="text-sm my-2 text-gray-500">Subject</p>
                 <Input {...registerMemo("subject")} className="w-full" />

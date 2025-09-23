@@ -18,8 +18,8 @@ import { HiDotsHorizontal } from "react-icons/hi";
 interface Memorandum {
   id: string;
   memoNumber: string;
-  issuingOffice: string;
-  signatory: string;
+  issuingOffices: string[];
+  signatories: string[];
   subject: string;
   date: string;
   division: string;

@@ -62,14 +62,22 @@ export const memorandumSchema = z.object({
     .string()
     .min(1, "Reference number is required")
     .max(1000, "Name must be less than 1000 characters"),
-  signatory: z
-    .string()
-    .min(1, "Signatory is required")
-    .max(1000, "Signatory must be less than 1000 characters"),
-  issuingOffice: z
-    .string({ required_error: "Issuing office/agency is required" })
-    .min(1, "Issuing office/agency is required")
-    .max(1000, "Issuing office/agency must be less than 1000 characters"),
+  signatories: z
+    .array(
+      z
+        .string()
+        .min(1, "Each signatory must not be empty")
+        .max(1000, "Signatory must be less than 1000 characters")
+    )
+    .min(1, "At least one signatory is required"),
+  issuingOffices: z
+    .array(
+      z
+        .string()
+        .min(1, "Each issuing office/agency must not be empty")
+        .max(1000, "Issuing office/agency must be less than 1000 characters")
+    )
+    .min(1, "At least one issuing office/agency is required"),
   subject: z
     .string()
     .min(1, "Subject is required")
