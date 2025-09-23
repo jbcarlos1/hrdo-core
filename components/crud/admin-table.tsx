@@ -196,7 +196,7 @@ export const TableComponent = ({
                           </TableCell>
                           <TableCell className="px-2 text-center">
                             <AlertDialog>
-                              <AlertDialogTrigger>
+                              <AlertDialogTrigger asChild>
                                 <Button
                                   title="Delete memorandum"
                                   className="mx-1"
