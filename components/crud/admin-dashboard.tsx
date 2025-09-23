@@ -1323,6 +1323,50 @@ export default function AdminDashboard() {
               </div>
 
               <div>
+                <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
+                <div className="flex">
+                  <MultiSelect
+                    values={watchMemo("issuingOffices") || []}
+                    onValuesChange={(values) => {
+                      setMemoValue("issuingOffices", values, { shouldValidate: true });
+                    }}
+                  >
+                    <MultiSelectTrigger className="w-full">
+                      <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                        <MultiSelectValue placeholder="Select one or more issuing offices/agencies..." />
+                      </div>
+                    </MultiSelectTrigger>
+                    <MultiSelectContent
+                      search={{
+                        placeholder: "Search issuing offices/agencies...",
+                        emptyMessage: "No issuing offices/agencies found",
+                      }}
+                    >
+                      <MultiSelectGroup>
+                        {issuingOffices.map((issuingOffice) => (
+                          <MultiSelectItem key={issuingOffice.id} value={issuingOffice.unitCode}>
+                            {issuingOffice.unitCode}
+                          </MultiSelectItem>
+                        ))}
+                      </MultiSelectGroup>
+                    </MultiSelectContent>
+                  </MultiSelect>
+                  <Button
+                    type="button"
+                    className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
+                    title="Add issuing office/agency"
+                    onClick={openAddIssuingOfficeModal}
+                    disabled={submitLoading}
+                  >
+                    <Plus size={22} />
+                  </Button>
+                </div>
+                {memoErrors.issuingOffices && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffices.message}</p>
+                )}
+              </div>
+
+              <div>
                 <p className="text-sm my-2 text-gray-500">Signatories</p>
                 <div className="flex">
                   <MultiSelect
@@ -1407,50 +1451,6 @@ export default function AdminDashboard() {
                 </div>
                 {memoErrors.keywords && (
                   <p className="text-red-500 text-sm my-1">{memoErrors.keywords.message}</p>
-                )}
-              </div>
-
-              <div>
-                <p className="text-sm my-2 text-gray-500">Issuing Office/Agency</p>
-                <div className="flex">
-                  <MultiSelect
-                    values={watchMemo("issuingOffices") || []}
-                    onValuesChange={(values) => {
-                      setMemoValue("issuingOffices", values, { shouldValidate: true });
-                    }}
-                  >
-                    <MultiSelectTrigger className="w-full">
-                      <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
-                        <MultiSelectValue placeholder="Select one or more issuing offices/agencies..." />
-                      </div>
-                    </MultiSelectTrigger>
-                    <MultiSelectContent
-                      search={{
-                        placeholder: "Search issuing offices/agencies...",
-                        emptyMessage: "No issuing offices/agencies found",
-                      }}
-                    >
-                      <MultiSelectGroup>
-                        {issuingOffices.map((issuingOffice) => (
-                          <MultiSelectItem key={issuingOffice.id} value={issuingOffice.unitCode}>
-                            {issuingOffice.unitCode}
-                          </MultiSelectItem>
-                        ))}
-                      </MultiSelectGroup>
-                    </MultiSelectContent>
-                  </MultiSelect>
-                  <Button
-                    type="button"
-                    className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
-                    title="Add issuing office/agency"
-                    onClick={openAddIssuingOfficeModal}
-                    disabled={submitLoading}
-                  >
-                    <Plus size={22} />
-                  </Button>
-                </div>
-                {memoErrors.issuingOffices && (
-                  <p className="text-red-500 text-sm my-1">{memoErrors.issuingOffices.message}</p>
                 )}
               </div>
 
