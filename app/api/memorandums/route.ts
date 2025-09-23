@@ -32,15 +32,7 @@ export async function GET(request: NextRequest) {
 
   const limit = 12;
 
-  const searchableFields = [
-    "memoNumber",
-    "subject",
-    "issuingOffice",
-    "signatory",
-    "division",
-    "section",
-    "encoder",
-  ] as const;
+  const searchableFields = ["memoNumber", "subject", "division", "section", "encoder"] as const;
 
   const orConditions =
     search.length > 0
