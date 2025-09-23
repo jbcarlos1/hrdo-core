@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
   const signatoryFilter = searchParams.get("signatory") || "";
   const divisionFilter = searchParams.get("division") || "";
   const sectionFilter = searchParams.get("section") || "";
+  const keywordFilter = searchParams.getAll("keywords") || [];
 
   const limit = 12;
 
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
           ...(signatoryFilter && { signatory: signatoryFilter }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
+          ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
         },
       }),
       db.memorandum.findMany({
@@ -70,6 +72,7 @@ export async function GET(request: NextRequest) {
           ...(signatoryFilter && { signatory: signatoryFilter }),
           ...(divisionFilter && { division: divisionFilter }),
           ...(sectionFilter && { section: sectionFilter }),
+          ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
         },
         orderBy: {
           [sortField]: sortOrder.toLowerCase() as Prisma.SortOrder,

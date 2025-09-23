@@ -122,6 +122,7 @@ const fetchMemorandums = async (
   signatoryFilter: string = "",
   divisionFilter: string = "",
   sectionFilter: string = "",
+  keywordFilter: string[] = [],
   signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
   try {
@@ -134,6 +135,9 @@ const fetchMemorandums = async (
     if (signatoryFilter) params.set("signatory", signatoryFilter);
     if (divisionFilter) params.set("division", divisionFilter);
     if (sectionFilter) params.set("section", sectionFilter);
+    if (keywordFilter.length > 0) {
+      keywordFilter.forEach((keyword) => params.append("keywords", keyword));
+    }
 
     const res = await fetch(`/api/memorandums?${params.toString()}`, { signal });
 
@@ -250,6 +254,7 @@ export default function AdminDashboard() {
   const [signatoryFilter, setSignatoryFilter] = useState<string>("");
   const [divisionFilter, setDivisionFilter] = useState<string>("");
   const [sectionFilter, setSectionFilter] = useState<string>("");
+  const [keywordFilter, setKeywordFilter] = useState<string[]>([]);
   const requestIdRef = useRef<string>("");
 
   const {
@@ -348,7 +353,9 @@ export default function AdminDashboard() {
 
   const loadMemorandums = useCallback(
     async (page = 1) => {
-      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
+        keywordFilter
+      )}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
       setLoading(true);
 
@@ -369,6 +376,7 @@ export default function AdminDashboard() {
           signatoryFilter,
           divisionFilter,
           sectionFilter,
+          keywordFilter,
           controller.signal
         );
 
@@ -394,6 +402,7 @@ export default function AdminDashboard() {
       signatoryFilter,
       divisionFilter,
       sectionFilter,
+      keywordFilter,
     ]
   );
 
@@ -451,7 +460,9 @@ export default function AdminDashboard() {
 
   const refreshMemorandums = useCallback(
     async (add = false) => {
-      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${Date.now()}`;
+      const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${issuingOfficeFilter}-${signatoryFilter}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
+        keywordFilter
+      )}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
 
       if (controllerRef.current) {
@@ -471,6 +482,7 @@ export default function AdminDashboard() {
           signatoryFilter,
           divisionFilter,
           sectionFilter,
+          keywordFilter,
           controller.signal
         );
 
@@ -498,6 +510,7 @@ export default function AdminDashboard() {
       signatoryFilter,
       divisionFilter,
       sectionFilter,
+      keywordFilter,
     ]
   );
 
@@ -824,17 +837,19 @@ export default function AdminDashboard() {
     try {
       setIsExporting(true);
 
-      const response = await fetch(
-        `/api/memorandums/export?search=${encodeURIComponent(
-          debouncedSearchInput
-        )}&memorandumState=${encodeURIComponent(memorandumState)}&sort=${encodeURIComponent(
-          sortOption
-        )}&issuingOffice=${encodeURIComponent(issuingOfficeFilter)}&signatory=${encodeURIComponent(
-          signatoryFilter
-        )}&division=${encodeURIComponent(divisionFilter)}&section=${encodeURIComponent(
-          sectionFilter
-        )}`
-      );
+      const params = new URLSearchParams();
+      if (debouncedSearchInput) params.set("search", debouncedSearchInput.trim());
+      if (memorandumState) params.set("memorandumState", memorandumState);
+      if (sortOption) params.set("sort", sortOption);
+      if (issuingOfficeFilter) params.set("issuingOffice", issuingOfficeFilter);
+      if (signatoryFilter) params.set("signatory", signatoryFilter);
+      if (divisionFilter) params.set("division", divisionFilter);
+      if (sectionFilter) params.set("section", sectionFilter);
+      if (keywordFilter.length > 0) {
+        keywordFilter.forEach((keyword) => params.append("keywords", keyword));
+      }
+
+      const response = await fetch(`/api/memorandums/export?${params.toString()}`);
 
       if (!response.ok) throw new Error("Failed to export data");
 
@@ -972,6 +987,7 @@ export default function AdminDashboard() {
               setSignatoryFilter("");
               setDivisionFilter("");
               setSectionFilter("");
+              setKeywordFilter([]);
               setSortOption("createdAt:desc");
             }}
             disabled={loading}
@@ -1089,24 +1105,36 @@ export default function AdminDashboard() {
           </div>
 
           <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by encoder" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Keywords</p>
+            <div className="flex">
+              <MultiSelect
+                values={keywordFilter || []}
+                onValuesChange={(values) => {
+                  setKeywordFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by keywords..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search keywords...",
+                    emptyMessage: "No keywords found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {keywords.map((keyword) => (
+                      <MultiSelectItem key={keyword.id} value={keyword.keyword}>
+                        {keyword.keyword}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
           </div>
           <div className="w-1/4">
             <Select
