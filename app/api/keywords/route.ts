@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     where: { id: session.user.id },
   });
 
-  if (!currentUser || !currentUser.isApproved || currentUser.role !== "ADMIN") {
+  if (!currentUser || !currentUser.isApproved) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
