@@ -163,9 +163,9 @@ export const TableComponent = ({
 
                       <TableCell
                         className="px-4 truncate max-w-[200px]"
-                        title={memorandum.issuingOffices[0]}
+                        title={memorandum.issuingOffices.join(", ")}
                       >
-                        {memorandum.issuingOffices}
+                        {memorandum.issuingOffices.join(", ")}
                       </TableCell>
 
                       {role === "ADMIN" && (

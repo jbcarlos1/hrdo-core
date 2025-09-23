@@ -248,7 +248,6 @@ export default function AdminDashboard() {
   const debouncedSearchInput = useDebounce(searchInput, 250);
   const controllerRef = useRef<AbortController | null>(null);
   const { toast } = useToast();
-  const [isExporting, setIsExporting] = useState(false);
   const [isDeleteRestrictedDialogOpen, setIsDeleteRestrictedDialogOpen] = useState(false);
   const [deleteRestrictedMemorandumName, setDeleteRestrictedMemorandumName] = useState("");
 
@@ -845,58 +844,6 @@ export default function AdminDashboard() {
     setIsKeywordDialogOpen(true);
   }, [resetKeyword]);
 
-  const handleExport = async () => {
-    try {
-      setIsExporting(true);
-
-      const params = new URLSearchParams();
-      if (debouncedSearchInput) params.set("search", debouncedSearchInput.trim());
-      if (memorandumState) params.set("memorandumState", memorandumState);
-      if (sortOption) params.set("sort", sortOption);
-      if (issuingOfficeFilter.length > 0) {
-        issuingOfficeFilter.forEach((issuingOffice) =>
-          params.append("issuingOffices", issuingOffice)
-        );
-      }
-      if (signatoryFilter.length > 0) {
-        signatoryFilter.forEach((signatory) => params.append("signatories", signatory));
-      }
-      if (divisionFilter) params.set("division", divisionFilter);
-      if (sectionFilter) params.set("section", sectionFilter);
-      if (keywordFilter.length > 0) {
-        keywordFilter.forEach((keyword) => params.append("keywords", keyword));
-      }
-
-      const response = await fetch(`/api/memorandums/export?${params.toString()}`);
-
-      if (!response.ok) throw new Error("Failed to export data");
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `report-${new Date().toISOString().split("T")[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      toast({
-        title: "Success",
-        description: "Data exported successfully",
-      });
-    } catch (error) {
-      console.error("Failed to export data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to export data",
-        variant: "destructive",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   return (
     <>
       <div className="mx-auto mb-2 border bg-white px-8 pt-8 pb-3 flex flex-col w-full shadow-md h-full">
@@ -964,14 +911,6 @@ export default function AdminDashboard() {
                 <LuTable2 className="h-7 w-7" />
               </Button>
             </div>
-            {/* <Button
-                            onClick={handleExport}
-                            disabled={isExporting}
-                            className="flex items-center gap-2"
-                        >
-                            <FiDownload className="h-4 w-4" />
-                            {isExporting ? "Exporting..." : "Export CSV"}
-                        </Button> */}
             {role === "ADMIN" && (
               <Button
                 onClick={openAddModal}
