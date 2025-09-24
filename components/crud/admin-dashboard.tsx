@@ -120,8 +120,8 @@ const fetchMemorandums = async (
   memorandumState: string = "active",
   issuingOfficeFilter: string[] = [],
   signatoryFilter: string[] = [],
-  divisionFilter: string = "",
-  sectionFilter: string = "",
+  divisionFilter: string[] = [],
+  sectionFilter: string[] = [],
   keywordFilter: string[] = [],
   signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
@@ -139,8 +139,12 @@ const fetchMemorandums = async (
     if (signatoryFilter.length > 0) {
       signatoryFilter.forEach((signatory) => params.append("signatories", signatory));
     }
-    if (divisionFilter) params.set("division", divisionFilter);
-    if (sectionFilter) params.set("section", sectionFilter);
+    if (divisionFilter.length > 0) {
+      divisionFilter.forEach((division) => params.append("divisions", division));
+    }
+    if (sectionFilter.length > 0) {
+      sectionFilter.forEach((section) => params.append("sections", section));
+    }
     if (keywordFilter.length > 0) {
       keywordFilter.forEach((keyword) => params.append("keywords", keyword));
     }
@@ -211,6 +215,7 @@ const fetchKeywords = async (): Promise<FetchedKeywords> => {
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const role = session?.user?.role;
+
   const [_issuingOfficeOpen, _setIssuingOfficeOpen] = useState(false);
   const [_issuingOfficeValue, _setIssuingOfficeValue] = useState("");
   const [issuingOffices, setIssuingOffices] = useState<IssuingOffice[]>([]);
@@ -226,7 +231,6 @@ export default function AdminDashboard() {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [isKeywordDialogOpen, setIsKeywordDialogOpen] = useState(false);
 
-  const [divisionOpen, setDivisionOpen] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
@@ -253,8 +257,8 @@ export default function AdminDashboard() {
 
   const [issuingOfficeFilter, setIssuingOfficeFilter] = useState<string[]>([]);
   const [signatoryFilter, setSignatoryFilter] = useState<string[]>([]);
-  const [divisionFilter, setDivisionFilter] = useState<string>("");
-  const [sectionFilter, setSectionFilter] = useState<string>("");
+  const [divisionFilter, setDivisionFilter] = useState<string[]>([]);
+  const [sectionFilter, setSectionFilter] = useState<string[]>([]);
   const [keywordFilter, setKeywordFilter] = useState<string[]>([]);
   const requestIdRef = useRef<string>("");
 
@@ -313,7 +317,6 @@ export default function AdminDashboard() {
 
   const divisionOptions = useMemo(
     () => [
-      { value: "ALL", label: "All" },
       { value: "MANAGEMENT", label: "Management" },
       { value: "RECRUITMENT", label: "Recruitment Division" },
       { value: "PLANNING_RESEARCH", label: "Planning & Research Division" },
@@ -324,7 +327,6 @@ export default function AdminDashboard() {
 
   const sectionOptions = useMemo(
     () => [
-      { value: "ALL", label: "All" },
       { value: "EXECUTIVE", label: "Executive" },
       { value: "ADMINISTRATIVE", label: "Administrative Section" },
       {
@@ -356,9 +358,9 @@ export default function AdminDashboard() {
     async (page = 1) => {
       const currentRequestId = `${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${JSON.stringify(
         issuingOfficeFilter
-      )}-${JSON.stringify(signatoryFilter)}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
-        keywordFilter
-      )}-${Date.now()}`;
+      )}-${JSON.stringify(signatoryFilter)}-${JSON.stringify(divisionFilter)}-${JSON.stringify(
+        sectionFilter
+      )}-${JSON.stringify(keywordFilter)}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
       setLoading(true);
 
@@ -465,9 +467,9 @@ export default function AdminDashboard() {
     async (add = false) => {
       const currentRequestId = `refresh-${page}-${debouncedSearchInput}-${sortOption}-${memorandumState}-${JSON.stringify(
         issuingOfficeFilter
-      )}-${JSON.stringify(signatoryFilter)}-${divisionFilter}-${sectionFilter}-${JSON.stringify(
-        keywordFilter
-      )}-${Date.now()}`;
+      )}-${JSON.stringify(signatoryFilter)}-${JSON.stringify(divisionFilter)}-${JSON.stringify(
+        sectionFilter
+      )}-${JSON.stringify(keywordFilter)}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
 
       if (controllerRef.current) {
@@ -942,8 +944,8 @@ export default function AdminDashboard() {
               setSearchInput("");
               setIssuingOfficeFilter([]);
               setSignatoryFilter([]);
-              setDivisionFilter("");
-              setSectionFilter("");
+              setDivisionFilter([]);
+              setSectionFilter([]);
               setKeywordFilter([]);
               setSortOption("createdAt:desc");
             }}
@@ -954,7 +956,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex w-full pb-2 gap-2">
-          <div className="w-1/4">
+          {/* <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Division</p>
             <Popover open={divisionOpen} onOpenChange={setDivisionOpen}>
               <PopoverTrigger asChild>
@@ -1006,8 +1008,75 @@ export default function AdminDashboard() {
                 </Command>
               </PopoverContent>
             </Popover>
-          </div>
+          </div> */}
+
           <div className="w-1/4">
+            <p className="text-sm my-1 text-gray-500">Divisions</p>
+            <div className="flex">
+              <MultiSelect
+                values={divisionFilter || []}
+                onValuesChange={(values) => {
+                  setDivisionFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by divisions..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search divisions...",
+                    emptyMessage: "No divisions found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {divisionOptions.map((division) => (
+                      <MultiSelectItem key={division.value} value={division.value}>
+                        {division.label}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
+          </div>
+
+          <div className="w-1/4">
+            <p className="text-sm my-1 text-gray-500">Sections</p>
+            <div className="flex">
+              <MultiSelect
+                values={sectionFilter || []}
+                onValuesChange={(values) => {
+                  setSectionFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by sections..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search sections...",
+                    emptyMessage: "No sections found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {sectionOptions.map((section) => (
+                      <MultiSelectItem key={section.value} value={section.value}>
+                        {section.label}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
+          </div>
+
+          {/* <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Section</p>
             <Popover open={sectionOpen} onOpenChange={setSectionOpen}>
               <PopoverTrigger asChild>
@@ -1059,7 +1128,7 @@ export default function AdminDashboard() {
                 </Command>
               </PopoverContent>
             </Popover>
-          </div>
+          </div> */}
           <div className="w-1/4">
             <Select
             // value={sectionFilter}

@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
   const memorandumState = searchParams.get("memorandumState");
   const issuingOfficeFilter = searchParams.getAll("issuingOffices") || [];
   const signatoryFilter = searchParams.getAll("signatories") || [];
-  const divisionFilter = searchParams.get("division") || "";
-  const sectionFilter = searchParams.get("section") || "";
+  const divisionFilter = searchParams.getAll("divisions") || [];
+  const sectionFilter = searchParams.getAll("sections") || [];
   const keywordFilter = searchParams.getAll("keywords") || [];
 
   const limit = 12;
@@ -51,8 +51,8 @@ export async function GET(request: NextRequest) {
             issuingOffices: { hasEvery: issuingOfficeFilter },
           }),
           ...(signatoryFilter.length > 0 && { signatories: { hasEvery: signatoryFilter } }),
-          ...(divisionFilter && { division: divisionFilter }),
-          ...(sectionFilter && { section: sectionFilter }),
+          ...(divisionFilter.length > 0 && { division: { in: divisionFilter } }),
+          ...(sectionFilter.length > 0 && { section: { in: sectionFilter } }),
           ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
         },
       }),
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
             issuingOffices: { hasEvery: issuingOfficeFilter },
           }),
           ...(signatoryFilter.length > 0 && { signatories: { hasEvery: signatoryFilter } }),
-          ...(divisionFilter && { division: divisionFilter }),
-          ...(sectionFilter && { section: sectionFilter }),
+          ...(divisionFilter.length > 0 && { division: { in: divisionFilter } }),
+          ...(sectionFilter.length > 0 && { section: { in: sectionFilter } }),
           ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
         },
         orderBy: {
