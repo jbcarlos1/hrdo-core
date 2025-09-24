@@ -1023,45 +1023,69 @@ export default function AdminDashboard() {
           </div>
 
           <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by keyword" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Sections</p>
+            <div className="flex">
+              <MultiSelect
+                values={sectionFilter || []}
+                onValuesChange={(values) => {
+                  setSectionFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by sections..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search sections...",
+                    emptyMessage: "No sections found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {sectionOptions.map((section) => (
+                      <MultiSelectItem key={section.value} value={section.value}>
+                        {section.label}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
           </div>
 
           <div className="w-1/4">
-            <Select
-            // value={sectionFilter}
-            // onValueChange={(value) => {
-            //   setSectionFilter(value === "ALL" ? "" : value);
-            //   setPage(1);
-            // }}
-            >
-              <SelectTrigger className="h-11 text-md">
-                <SelectValue placeholder="Filter by date" />
-              </SelectTrigger>
-              {/* <SelectContent>
-                {sectionOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className="h-11 text-md">
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent> */}
-            </Select>
+            <p className="text-sm my-1 text-gray-500">Sections</p>
+            <div className="flex">
+              <MultiSelect
+                values={sectionFilter || []}
+                onValuesChange={(values) => {
+                  setSectionFilter(values);
+                  setPage(1);
+                }}
+              >
+                <MultiSelectTrigger className="w-full">
+                  <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
+                    <MultiSelectValue placeholder="Filter by sections..." />
+                  </div>
+                </MultiSelectTrigger>
+                <MultiSelectContent
+                  search={{
+                    placeholder: "Search sections...",
+                    emptyMessage: "No sections found",
+                  }}
+                >
+                  <MultiSelectGroup>
+                    {sectionOptions.map((section) => (
+                      <MultiSelectItem key={section.value} value={section.value}>
+                        {section.label}
+                      </MultiSelectItem>
+                    ))}
+                  </MultiSelectGroup>
+                </MultiSelectContent>
+              </MultiSelect>
+            </div>
           </div>
         </div>
 
