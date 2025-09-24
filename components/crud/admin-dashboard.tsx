@@ -956,60 +956,6 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex w-full pb-2 gap-2">
-          {/* <div className="w-1/4">
-            <p className="text-sm my-1 text-gray-500">Division</p>
-            <Popover open={divisionOpen} onOpenChange={setDivisionOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`w-full justify-between font-normal ${
-                    divisionFilter ? "" : "text-gray-500"
-                  }`}
-                >
-                  <span className="max-w-full truncate">
-                    {divisionFilter
-                      ? divisionOptions.find((option) => option.value === divisionFilter)?.label
-                      : "Filter by division..."}
-                  </span>
-                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search division..." />
-                  <CommandList>
-                    <CommandEmpty>No division found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-y-auto">
-                      {divisionOptions.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.value}
-                          onSelect={(currentValue) => {
-                            setDivisionFilter(
-                              currentValue === "ALL" || currentValue === divisionFilter
-                                ? ""
-                                : currentValue
-                            );
-                            setPage(1);
-                            setDivisionOpen(false);
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              divisionFilter === option.value ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {option.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div> */}
-
           <div className="w-1/4">
             <p className="text-sm my-1 text-gray-500">Divisions</p>
             <div className="flex">
@@ -1076,59 +1022,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* <div className="w-1/4">
-            <p className="text-sm my-1 text-gray-500">Section</p>
-            <Popover open={sectionOpen} onOpenChange={setSectionOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`w-full justify-between font-normal ${
-                    sectionFilter ? "" : "text-gray-500"
-                  }`}
-                >
-                  <span className="max-w-full truncate">
-                    {sectionFilter
-                      ? sectionOptions.find((option) => option.value === sectionFilter)?.label
-                      : "Filter by section..."}
-                  </span>
-                  <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
-                  <CommandInput placeholder="Search section..." />
-                  <CommandList>
-                    <CommandEmpty>No section found.</CommandEmpty>
-                    <CommandGroup className="max-h-64 overflow-y-auto">
-                      {sectionOptions.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.value}
-                          onSelect={(currentValue) => {
-                            setSectionFilter(
-                              currentValue === "ALL" || currentValue === sectionFilter
-                                ? ""
-                                : currentValue
-                            );
-                            setPage(1);
-                            setSectionOpen(false);
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              sectionFilter === option.value ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {option.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div> */}
           <div className="w-1/4">
             <Select
             // value={sectionFilter}
