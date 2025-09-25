@@ -904,12 +904,15 @@ export default function AdminDashboard() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleEdit = useCallback(
     (memorandum: Memorandum) => {
       setEditingMemorandum(memorandum);
       setDate(memorandum.date ? new Date(memorandum.date) : null);
       setPdfUrl(memorandum.pdfUrl || null);
+      setPdfUploading(false);
       _setDocumentTypeValue(memorandum.documentType || "");
+      _setDocumentTypeOpen(false);
       resetMemo({
         ...memorandum,
         issuingOffices: Array.isArray(memorandum.issuingOffices) ? memorandum.issuingOffices : [],
@@ -926,7 +929,10 @@ export default function AdminDashboard() {
     setDate(null);
     _setIssuingOfficeValue("");
     _setSignatoryValue("");
+    _setDocumentTypeValue("");
+    _setDocumentTypeOpen(false);
     setPdfUrl(null);
+    setPdfUploading(false);
     resetMemo({
       memoNumber: "",
       issuingOffices: [],
