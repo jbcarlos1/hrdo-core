@@ -117,6 +117,7 @@ model Memorandum {
     subject             String
     date                DateTime
     keywords            String[]
+    documentType        String
     pdfUrl              String?
     encoder             String
     division            String
@@ -140,6 +141,11 @@ model Signatory {
 model Keyword {
     id          String @id @default(cuid())
     keyword     String @unique
+}
+
+model DocumentType {
+    id              String @id @default(cuid())
+    documentType    String @unique
 }
 
 

@@ -29,10 +29,17 @@ export async function GET(request: NextRequest) {
   const divisionFilter = searchParams.getAll("divisions") || [];
   const sectionFilter = searchParams.getAll("sections") || [];
   const keywordFilter = searchParams.getAll("keywords") || [];
+  const documentTypeFilter = searchParams.getAll("documentTypes") || [];
 
   const limit = 12;
 
-  const searchableFields = ["memoNumber", "subject", "division", "section", "encoder"] as const;
+  const searchableFields = [
+    "memoNumber",
+    "subject",
+    "division",
+    "section",
+    "documentType",
+  ] as const;
 
   const orConditions =
     search.length > 0
@@ -54,6 +61,7 @@ export async function GET(request: NextRequest) {
           ...(divisionFilter.length > 0 && { division: { in: divisionFilter } }),
           ...(sectionFilter.length > 0 && { section: { in: sectionFilter } }),
           ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
+          ...(documentTypeFilter.length > 0 && { documentType: { in: documentTypeFilter } }),
         },
       }),
       db.memorandum.findMany({
@@ -69,6 +77,7 @@ export async function GET(request: NextRequest) {
           ...(divisionFilter.length > 0 && { division: { in: divisionFilter } }),
           ...(sectionFilter.length > 0 && { section: { in: sectionFilter } }),
           ...(keywordFilter.length > 0 && { keywords: { hasEvery: keywordFilter } }),
+          ...(documentTypeFilter.length > 0 && { documentType: { in: documentTypeFilter } }),
         },
         orderBy: {
           [sortField]: sortOrder.toLowerCase() as Prisma.SortOrder,
@@ -84,6 +93,7 @@ export async function GET(request: NextRequest) {
           division: true,
           section: true,
           keywords: true,
+          documentType: true,
           pdfUrl: true,
           isArchived: true,
         },
@@ -153,6 +163,7 @@ export async function POST(request: NextRequest) {
         encoder: currentUser.name,
         division: currentUser.division,
         section: currentUser.section,
+        documentType: validatedData.documentType,
       },
       select: {
         id: true,
@@ -166,6 +177,7 @@ export async function POST(request: NextRequest) {
         encoder: true,
         division: true,
         section: true,
+        documentType: true,
         isArchived: true,
       },
     });

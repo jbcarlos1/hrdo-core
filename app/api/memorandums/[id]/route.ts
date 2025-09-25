@@ -59,6 +59,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       encoder: currentUser.name,
       division: currentUser.division,
       section: currentUser.section,
+      documentType: validatedData.documentType,
     };
 
     const updatedMemorandum = await db.memorandum.update({
@@ -77,6 +78,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         encoder: true,
         division: true,
         section: true,
+        documentType: true,
       },
     });
 

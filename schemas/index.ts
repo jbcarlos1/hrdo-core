@@ -58,6 +58,10 @@ export const NewPasswordSchema = z.object({
 });
 
 export const memorandumSchema = z.object({
+  documentType: z
+    .string()
+    .min(1, "Document type is required")
+    .max(1000, "Document type must be less than 1000 characters"),
   memoNumber: z
     .string()
     .min(1, "Reference number is required")
@@ -120,4 +124,11 @@ export const keywordSchema = z.object({
     .string()
     .min(1, "Keyword is required")
     .max(1000, "Keyword must be less than 1000 characters"),
+});
+
+export const documentTypeSchema = z.object({
+  documentType: z
+    .string()
+    .min(1, "Document type is required")
+    .max(1000, "Document type must be less than 1000 characters"),
 });

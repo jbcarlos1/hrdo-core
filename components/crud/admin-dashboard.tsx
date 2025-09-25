@@ -7,7 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { memorandumSchema, issuingOfficeSchema, signatorySchema, keywordSchema } from "@/schemas";
+import {
+  memorandumSchema,
+  issuingOfficeSchema,
+  signatorySchema,
+  keywordSchema,
+  documentTypeSchema,
+} from "@/schemas";
 import { HashLoader } from "react-spinners";
 import { HiOutlineRefresh } from "react-icons/hi";
 import { Plus } from "lucide-react";
@@ -62,6 +68,7 @@ type MemorandumFormInputs = z.infer<typeof memorandumSchema>;
 type IssuingOfficeFormInputs = z.infer<typeof issuingOfficeSchema>;
 type SignatoryFormInputs = z.infer<typeof signatorySchema>;
 type KeywordFormInputs = z.infer<typeof keywordSchema>;
+type DocumentTypeFormInputs = z.infer<typeof documentTypeSchema>;
 
 interface Memorandum {
   id: string;
@@ -74,6 +81,7 @@ interface Memorandum {
   section: string;
   encoder: string;
   keywords: string[];
+  documentType: string;
   pdfUrl: string;
   isArchived: boolean;
 }
@@ -92,6 +100,11 @@ interface Signatory {
 interface Keyword {
   id: string;
   keyword: string;
+}
+
+interface DocumentType {
+  id: string;
+  documentType: string;
 }
 
 interface PaginatedMemorandums {
@@ -113,6 +126,10 @@ interface FetchedKeywords {
   keywords: Keyword[];
 }
 
+interface FetchedDocumentTypes {
+  documentTypes: DocumentType[];
+}
+
 const fetchMemorandums = async (
   page: number = 1,
   searchInput: string = "",
@@ -123,6 +140,7 @@ const fetchMemorandums = async (
   divisionFilter: string[] = [],
   sectionFilter: string[] = [],
   keywordFilter: string[] = [],
+  documentTypeFilter: string[] = [],
   signal?: AbortSignal
 ): Promise<PaginatedMemorandums> => {
   try {
@@ -147,6 +165,9 @@ const fetchMemorandums = async (
     }
     if (keywordFilter.length > 0) {
       keywordFilter.forEach((keyword) => params.append("keywords", keyword));
+    }
+    if (documentTypeFilter.length > 0) {
+      documentTypeFilter.forEach((documentType) => params.append("documentTypes", documentType));
     }
     const res = await fetch(`/api/memorandums?${params.toString()}`, { signal });
     if (!res.ok) throw new Error("Failed to fetch official references");
@@ -212,6 +233,22 @@ const fetchKeywords = async (): Promise<FetchedKeywords> => {
   }
 };
 
+const fetchDocumentTypes = async (): Promise<FetchedDocumentTypes> => {
+  try {
+    const res = await fetch("/api/document-types");
+
+    if (!res.ok) throw new Error("Failed to fetch document types");
+    return res.json();
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name !== "AbortError") {
+      console.error("Failed to load document types:", error);
+    }
+    return {
+      documentTypes: [],
+    };
+  }
+};
+
 export default function AdminDashboard() {
   const { data: session } = useSession();
   const role = session?.user?.role;
@@ -231,7 +268,11 @@ export default function AdminDashboard() {
   const [keywords, setKeywords] = useState<Keyword[]>([]);
   const [isKeywordDialogOpen, setIsKeywordDialogOpen] = useState(false);
 
-  const [sectionOpen, setSectionOpen] = useState(false);
+  const [_documentTypeOpen, _setDocumentTypeOpen] = useState(false);
+  const [_documentTypeValue, _setDocumentTypeValue] = useState("");
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [isDocumentTypeDialogOpen, setIsDocumentTypeDialogOpen] = useState(false);
+
   const [sortOpen, setSortOpen] = useState(false);
 
   const [date, setDate] = useState<Date | null>(null);
@@ -260,6 +301,7 @@ export default function AdminDashboard() {
   const [divisionFilter, setDivisionFilter] = useState<string[]>([]);
   const [sectionFilter, setSectionFilter] = useState<string[]>([]);
   const [keywordFilter, setKeywordFilter] = useState<string[]>([]);
+  const [documentTypeFilter, setDocumentTypeFilter] = useState<string[]>([]);
   const requestIdRef = useRef<string>("");
 
   const {
@@ -302,6 +344,16 @@ export default function AdminDashboard() {
     reset: resetKeyword,
   } = useForm<KeywordFormInputs>({
     resolver: zodResolver(keywordSchema),
+    mode: "onChange",
+  });
+
+  const {
+    register: registerDocumentType,
+    handleSubmit: handleSubmitDocumentType,
+    formState: { errors: documentTypeErrors },
+    reset: resetDocumentType,
+  } = useForm<DocumentTypeFormInputs>({
+    resolver: zodResolver(documentTypeSchema),
     mode: "onChange",
   });
 
@@ -360,7 +412,7 @@ export default function AdminDashboard() {
         issuingOfficeFilter
       )}-${JSON.stringify(signatoryFilter)}-${JSON.stringify(divisionFilter)}-${JSON.stringify(
         sectionFilter
-      )}-${JSON.stringify(keywordFilter)}-${Date.now()}`;
+      )}-${JSON.stringify(keywordFilter)}-${JSON.stringify(documentTypeFilter)}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
       setLoading(true);
 
@@ -382,6 +434,7 @@ export default function AdminDashboard() {
           divisionFilter,
           sectionFilter,
           keywordFilter,
+          documentTypeFilter,
           controller.signal
         );
 
@@ -408,6 +461,7 @@ export default function AdminDashboard() {
       divisionFilter,
       sectionFilter,
       keywordFilter,
+      documentTypeFilter,
     ]
   );
 
@@ -451,9 +505,23 @@ export default function AdminDashboard() {
       }
     };
 
+    const fetchDocumentTypes = async () => {
+      try {
+        const res = await fetch("/api/document-types");
+        if (!res.ok) {
+          throw new Error("Failed to fetch document types");
+        }
+        const data = await res.json();
+        setDocumentTypes(data.documentTypes);
+      } catch (error) {
+        console.error("Error fetching document types:", error);
+      }
+    };
+
     fetchIssuingOffices();
     fetchSignatories();
     fetchKeywords();
+    fetchDocumentTypes();
   }, []);
 
   useEffect(() => {
@@ -469,7 +537,7 @@ export default function AdminDashboard() {
         issuingOfficeFilter
       )}-${JSON.stringify(signatoryFilter)}-${JSON.stringify(divisionFilter)}-${JSON.stringify(
         sectionFilter
-      )}-${JSON.stringify(keywordFilter)}-${Date.now()}`;
+      )}-${JSON.stringify(keywordFilter)}-${JSON.stringify(documentTypeFilter)}-${Date.now()}`;
       requestIdRef.current = currentRequestId;
 
       if (controllerRef.current) {
@@ -490,6 +558,7 @@ export default function AdminDashboard() {
           divisionFilter,
           sectionFilter,
           keywordFilter,
+          documentTypeFilter,
           controller.signal
         );
 
@@ -518,6 +587,7 @@ export default function AdminDashboard() {
       divisionFilter,
       sectionFilter,
       keywordFilter,
+      documentTypeFilter,
     ]
   );
 
@@ -537,6 +607,12 @@ export default function AdminDashboard() {
     const updatedKeywords = await fetchKeywords();
 
     setKeywords(updatedKeywords.keywords);
+  }, []);
+
+  const refreshDocumentTypes = useCallback(async () => {
+    const updatedDocumentTypes = await fetchDocumentTypes();
+
+    setDocumentTypes(updatedDocumentTypes.documentTypes);
   }, []);
 
   const handlePdfUpload = async (file: File) => {
@@ -730,6 +806,44 @@ export default function AdminDashboard() {
     }
   };
 
+  const onDocumentTypeSubmit = async (data: DocumentTypeFormInputs) => {
+    setSubmitLoading(true);
+    try {
+      const formData = new FormData();
+      const { ...restData } = data;
+      Object.entries(restData).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+
+      const res = await fetch("/api/document-types", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to add document type");
+      }
+
+      resetDocumentType();
+      setIsDocumentTypeDialogOpen(false);
+      await refreshDocumentTypes();
+      toast({
+        title: "Document Type Added",
+        description: "The document type has been successfully added",
+      });
+    } catch (error) {
+      console.error("Submit failed", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     setDeleteLoading(true);
     try {
@@ -819,6 +933,7 @@ export default function AdminDashboard() {
       subject: "",
       date: "",
       keywords: [],
+      documentType: "",
       pdfUrl: "",
     });
     setIsDialogOpen(true);
@@ -845,6 +960,13 @@ export default function AdminDashboard() {
     });
     setIsKeywordDialogOpen(true);
   }, [resetKeyword]);
+
+  const openAddDocumentTypeModal = useCallback(() => {
+    resetDocumentType({
+      documentType: "",
+    });
+    setIsDocumentTypeDialogOpen(true);
+  }, [resetDocumentType]);
 
   return (
     <>
@@ -947,6 +1069,7 @@ export default function AdminDashboard() {
               setDivisionFilter([]);
               setSectionFilter([]);
               setKeywordFilter([]);
+              setDocumentTypeFilter([]);
               setSortOption("createdAt:desc");
             }}
             disabled={loading}
@@ -1023,30 +1146,30 @@ export default function AdminDashboard() {
           </div>
 
           <div className="w-1/4">
-            <p className="text-sm my-1 text-gray-500">Sections</p>
+            <p className="text-sm my-1 text-gray-500">Document Types</p>
             <div className="flex">
               <MultiSelect
-                values={sectionFilter || []}
+                values={documentTypeFilter || []}
                 onValuesChange={(values) => {
-                  setSectionFilter(values);
+                  setDocumentTypeFilter(values);
                   setPage(1);
                 }}
               >
                 <MultiSelectTrigger className="w-full">
                   <div className="max-h-[100px] overflow-y-auto flex-1 text-left">
-                    <MultiSelectValue placeholder="Filter by sections..." />
+                    <MultiSelectValue placeholder="Filter by document types..." />
                   </div>
                 </MultiSelectTrigger>
                 <MultiSelectContent
                   search={{
-                    placeholder: "Search sections...",
-                    emptyMessage: "No sections found",
+                    placeholder: "Search document types...",
+                    emptyMessage: "No document types found",
                   }}
                 >
                   <MultiSelectGroup>
-                    {sectionOptions.map((section) => (
-                      <MultiSelectItem key={section.value} value={section.value}>
-                        {section.label}
+                    {documentTypes.map((documentType) => (
+                      <MultiSelectItem key={documentType.id} value={documentType.documentType}>
+                        {documentType.documentType}
                       </MultiSelectItem>
                     ))}
                   </MultiSelectGroup>
@@ -1441,6 +1564,82 @@ export default function AdminDashboard() {
               </div>
 
               <div>
+                <p className="text-sm my-2 text-gray-500">Document Type</p>
+                <div className="flex">
+                  <Popover open={_documentTypeOpen} onOpenChange={_setDocumentTypeOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={_documentTypeOpen}
+                        className={`w-full justify-between font-normal ${
+                          documentTypes.find(
+                            (documentType) => documentType.documentType === _documentTypeValue
+                          )
+                            ? ""
+                            : "text-gray-500"
+                        }`}
+                      >
+                        <span className="truncate max-w-[360px]">
+                          {_documentTypeValue
+                            ? documentTypes.find(
+                                (documentType) => documentType.documentType === _documentTypeValue
+                              )?.documentType
+                            : "Select document type..."}
+                        </span>
+                        <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent disablePortal className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search document type..." />
+                        <CommandList>
+                          <CommandEmpty>No document types found.</CommandEmpty>
+                          <CommandGroup className="max-h-64 overflow-y-auto max-w-[420px]">
+                            {documentTypes.map((documentType) => (
+                              <CommandItem
+                                key={documentType.documentType}
+                                value={documentType.documentType}
+                                onSelect={(currentValue) => {
+                                  _setDocumentTypeValue(
+                                    currentValue === _documentTypeValue ? "" : currentValue
+                                  );
+                                  setMemoValue("documentType", documentType.documentType);
+                                  _setDocumentTypeOpen(false);
+                                }}
+                              >
+                                <CheckIcon
+                                  className={cn(
+                                    "h-4 w-4",
+                                    _documentTypeValue === documentType.documentType
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {documentType.documentType}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <Button
+                    type="button"
+                    className={`ms-1 p-0 w-[38px] h-9 ${submitLoading ? "opacity-50" : ""}`}
+                    title="Add document type"
+                    onClick={openAddDocumentTypeModal}
+                    disabled={submitLoading}
+                  >
+                    <Plus size={22} />
+                  </Button>
+                </div>
+                {memoErrors.documentType && (
+                  <p className="text-red-500 text-sm my-1">{memoErrors.documentType.message}</p>
+                )}
+              </div>
+
+              <div>
                 <p className="text-sm my-2 text-gray-500">Subject</p>
                 <Input {...registerMemo("subject")} className="w-full" />
                 {memoErrors.subject && (
@@ -1567,6 +1766,37 @@ export default function AdminDashboard() {
             <DialogFooter>
               <Button type="submit" disabled={submitLoading}>
                 Add Keyword
+              </Button>
+              <DialogClose asChild>
+                <Button variant="outline" disabled={submitLoading}>
+                  Cancel
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDocumentTypeDialogOpen} onOpenChange={setIsDocumentTypeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Document Type</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitDocumentType(onDocumentTypeSubmit)} className="space-y-4">
+            <div>
+              <p className="text-sm my-2 text-gray-500">Document Type</p>
+              <Input {...registerDocumentType("documentType")} className="w-full" />
+              {documentTypeErrors.documentType && (
+                <p className="text-red-500 text-sm my-1">
+                  {documentTypeErrors.documentType.message}
+                </p>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" disabled={submitLoading}>
+                Add Document Type
               </Button>
               <DialogClose asChild>
                 <Button variant="outline" disabled={submitLoading}>
