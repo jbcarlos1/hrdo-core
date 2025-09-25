@@ -38,6 +38,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       subject: formData.get("subject") as string,
       date: formData.get("date") as string,
       keywords: formData.getAll("keywords") as string[],
+      documentType: formData.get("documentType") as string,
       pdfUrl: formData.get("pdfUrl") as string,
     };
 
