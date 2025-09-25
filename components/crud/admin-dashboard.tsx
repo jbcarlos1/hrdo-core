@@ -909,6 +909,7 @@ export default function AdminDashboard() {
       setEditingMemorandum(memorandum);
       setDate(memorandum.date ? new Date(memorandum.date) : null);
       setPdfUrl(memorandum.pdfUrl || null);
+      _setDocumentTypeValue(memorandum.documentType || "");
       resetMemo({
         ...memorandum,
         issuingOffices: Array.isArray(memorandum.issuingOffices) ? memorandum.issuingOffices : [],

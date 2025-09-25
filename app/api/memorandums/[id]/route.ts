@@ -45,7 +45,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     const validatedData = memorandumSchema.parse(MemorandumData);
 
     if (!validatedData.date) {
-      throw new Error("Date is required");
+      return NextResponse.json({ error: "Date is required" }, { status: 400 });
     }
     const dateObj = new Date(validatedData.date);
 
